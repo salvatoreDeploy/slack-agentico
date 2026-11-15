@@ -22,7 +22,7 @@ O Pencil tem as fundações, as seções de componentes e as telas; o código te
 | Telas | Frames de 1440 × 900, uma seção por fluxo (Login, Home, Conversa, Atividade, Casca, Diálogos da casca, Painel de perfil, Portas e toasts, Rotas especiais, Erros corretos) | Uma página inicial provisória; as telas da F01 entram com as tarefas de tela dela |
 | Bibliotecas | Desenho pensado para `lucide-react`, Radix, CVA e Sonner | Só a Lato; as outras entram com o primeiro componente que as usa |
 
-As descrições dos componentes no Figma citam arquivos de uma implementação de referência (`shared/ui/button.tsx`, `entities/message/ui/message-item.tsx` e outros, no estilo Feature-Sliced Design). Esses arquivos não existem neste repositório. Use as descrições pelo comportamento que documentam, não pelos caminhos; a pasta de cada componente segue a seção "Organização no código" abaixo.
+No Pencil, o comportamento de cada componente se lê pelos frames das seções de componentes e pelos estados das telas. As descrições dos componentes no arquivo do Figma, a ferramenta anterior, citam arquivos de uma implementação de referência (`shared/ui/button.tsx`, `entities/message/ui/message-item.tsx` e outros, no estilo Feature-Sliced Design), que não existem neste repositório. A pasta de cada componente segue a seção "Organização no código" abaixo.
 
 ## Stack de interface
 

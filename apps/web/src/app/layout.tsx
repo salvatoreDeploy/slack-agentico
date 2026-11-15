@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Lato } from "next/font/google";
 import "./globals.css";
 
-const lato = Lato({
+const LATO = Lato({
   variable: "--font-lato",
   subsets: ["latin"],
   weight: ["400", "700", "900"],
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function rootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" className={`${lato.variable} h-full antialiased`}>
+    <html lang="pt-BR" className={`${LATO.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
