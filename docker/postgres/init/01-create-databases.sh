@@ -12,11 +12,13 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname postgres <<-'SQL'
 	ALTER ROLE business_readonly SET default_transaction_read_only = on;
 
 	CREATE DATABASE chat OWNER chat;
+	-- Banco das suítes e2e e de integração da API do chat; o globalSetup zera o schema dele.
+	CREATE DATABASE chat_test OWNER chat;
 	CREATE DATABASE agents OWNER agents;
 	CREATE DATABASE business OWNER business;
 
 	-- Por padrão qualquer usuário conecta em qualquer banco; o dono continua conectando.
-	REVOKE CONNECT, TEMPORARY ON DATABASE chat, agents, business, postgres FROM PUBLIC;
+	REVOKE CONNECT, TEMPORARY ON DATABASE chat, chat_test, agents, business, postgres FROM PUBLIC;
 	GRANT CONNECT ON DATABASE business TO business_readonly;
 SQL
 

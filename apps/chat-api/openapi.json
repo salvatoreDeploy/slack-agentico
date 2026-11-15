@@ -1,0 +1,15 @@
+{
+  "openapi": "3.0.0",
+  "paths": {},
+  "info": {
+    "title": "API do chat",
+    "description": "Contrato REST da API do chat do Full Cycle Chat.",
+    "version": "1",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {}
+  }
+}
