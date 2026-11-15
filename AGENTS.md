@@ -107,13 +107,11 @@ Na conexão entre serviços (banco, storage), seja em variável de ambiente, arq
 
 **Exceção:** quando o processo fala com algo que roda no mesmo contêiner, o endereço é `127.0.0.1`. É o caso do healthcheck de um serviço, que confere o próprio contêiner, e de um teste que abre um servidor temporário no contêiner onde roda.
 
-## Design e Figma
+## Design e Pencil
 
-O Figma é a ferramenta de design do projeto, acessada pelo servidor MCP do plugin `figma`.
+O Pencil é a ferramenta de design do projeto, acessada pelo servidor MCP `pencil`, com o arquivo `slack-ia.pen` aberto no aplicativo. O MCP só responde enquanto o Pencil roda. O Figma foi a ferramenta anterior.
 
-**Arquivo do Figma:** <https://www.figma.com/design/ekcnMHgGn98DuH5GIApyVW/slack?m=auto&t=V1fULEa8lAuBrvST-6>
-
-**Sempre que a tarefa envolver design ou interface, leia antes o `docs/design-system.md`**, seja para desenhar no Figma, seja para implementar uma tela ou um componente no código. Ele define os tokens, os componentes e o fluxo de trabalho com o Figma (sincronia, passos do Figma para o código, assets e validação visual), e as regras dele são obrigatórias.
+**Sempre que a tarefa envolver design ou interface, leia antes o `docs/design-system.md`**, seja para desenhar no Pencil, seja para implementar uma tela ou um componente no código. Ele define os tokens, os componentes e o fluxo de trabalho com a ferramenta de design (passos do design para o código, do código para o design e validação visual), e as regras dele são obrigatórias.
 
 ## Planejamento
 

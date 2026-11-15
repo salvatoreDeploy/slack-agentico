@@ -1,0 +1,262 @@
+/* Tokens do design system (docs/design-system.md, "Tokens"). Um token muda aqui, no design
+   system e na ferramenta de design, na mesma tarefa. */
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Cores semânticas: claro. Valores são os primitivos resolvidos. */
+:root {
+  /* superfícies */
+  --surface: #ffffff;
+  --surface-subtle: #f8f8f8;
+  --surface-raised: #ffffff;
+  --surface-inset: #f0f0f0;
+  --surface-overlay: #1d1c1d80;
+  /* texto */
+  --fg: #1d1c1d;
+  --fg-muted: #616061;
+  --fg-subtle: #868686;
+  --fg-inverse: #ffffff;
+  /* bordas */
+  --border: #dddddd;
+  --border-subtle: #e4e4e4;
+  --border-strong: #868686;
+  /* marca */
+  --primary: #007a5a;
+  --primary-hover: #006b4f;
+  --primary-active: #005a43;
+  --on-primary: #ffffff;
+  /* link e foco */
+  --link: #1264a3;
+  --link-hover: #0b4c8c;
+  --focus: #1d9bd1;
+  /* status */
+  --danger: #e01e5a;
+  --danger-hover: #c01343;
+  --danger-fg: #c01343;
+  --success: #007a5a;
+  --warning: #ecb22e;
+  --on-warning: #1d1c1d;
+  --badge: #e01e5a;
+  --on-badge: #ffffff;
+  --presence-online: #2bac76;
+  --presence-away: #868686;
+  /* menções e destaque */
+  --mention-bg: #e8f5fa;
+  --mention-fg: #1264a3;
+  --mention-self-bg: #f8e3a3;
+  --mention-self-fg: #1d1c1d;
+  --highlight-bg: #fcf4da;
+  --highlight-border: #f2c744;
+  /* casca: rail e sidebar */
+  --chrome: #350d36;
+  --sidebar: #3f0e40;
+  --sidebar-fg: #d6c8d7;
+  --sidebar-fg-strong: #ffffff;
+  --sidebar-hover: #ffffff14;
+  --sidebar-active: #1264a3;
+  --sidebar-on-active: #ffffff;
+  --sidebar-border: #ffffff1f;
+  --sidebar-field: #ffffff29;
+  /* avatares: iguais nos dois temas */
+  --avatar-1: #611f69;
+  --avatar-2: #1264a3;
+  --avatar-3: #007a5a;
+  --avatar-4: #b3492a;
+  --avatar-5: #8a5a00;
+  --avatar-6: #c01343;
+  /* elevação: sombra em camadas no claro */
+  --elevation-1: 0 1px 3px #00000014;
+  --elevation-2: 0 4px 12px #0000001f, 0 0 0 1px #1d1c1d21;
+  --elevation-3: 0 18px 48px #0000003d, 0 6px 16px #00000024, 0 0 0 1px #1d1c1d21;
+  /* raios */
+  --shape-control: 4px;
+  --shape-item: 6px;
+  --shape-card: 8px;
+  --shape-panel: 12px;
+  --shape-pill: 999px;
+  /* tamanhos do shell */
+  --size-rail: 68px;
+  --size-sidebar: 260px;
+  --size-header: 49px;
+  --size-panel: 384px;
+}
+
+/* Cores semânticas: escuro. Os tokens ausentes aqui são iguais nos dois temas. */
+:root[data-theme="dark"] {
+  --surface: #1a1d21;
+  --surface-subtle: #222529;
+  --surface-raised: #222529;
+  --surface-inset: #121417;
+  --surface-overlay: #00000099;
+  --fg: #d1d2d3;
+  --fg-muted: #ababad;
+  --fg-subtle: #8d8e90;
+  --fg-inverse: #1d1c1d;
+  --border: #3b3d42;
+  --border-subtle: #2c2e33;
+  --border-strong: #6f7074;
+  --primary-hover: #148567;
+  --primary-active: #006b4f;
+  --link: #1d9bd1;
+  --link-hover: #40b3e4;
+  --danger-hover: #e96379;
+  --danger-fg: #e96379;
+  --success: #2bac76;
+  --mention-bg: #1d9bd129;
+  --mention-fg: #1d9bd1;
+  --mention-self-bg: #f2c74447;
+  --mention-self-fg: #f2c744;
+  --highlight-bg: #f2c7441a;
+  --highlight-border: #f2c74480;
+  --chrome: #121016;
+  --sidebar: #19171d;
+  --sidebar-fg: #b9babd;
+  --sidebar-hover: #ffffff0f;
+  --sidebar-border: #ffffff1a;
+  --sidebar-field: #ffffff1a;
+  /* elevação: borda + superfície mais clara no escuro */
+  --elevation-1: 0 0 0 1px #2c2e33;
+  --elevation-2: 0 4px 12px #00000066, 0 0 0 1px #3b3d42;
+  --elevation-3: 0 18px 48px #00000099, 0 0 0 1px #3b3d42;
+}
+
+/* Cada token vira utilitário do Tailwind com o mesmo nome. */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-inset: var(--surface-inset);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-fg-inverse: var(--fg-inverse);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-on-primary: var(--on-primary);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-focus: var(--focus);
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-fg: var(--danger-fg);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-on-warning: var(--on-warning);
+  --color-badge: var(--badge);
+  --color-on-badge: var(--on-badge);
+  --color-presence-online: var(--presence-online);
+  --color-presence-away: var(--presence-away);
+  --color-mention-bg: var(--mention-bg);
+  --color-mention-fg: var(--mention-fg);
+  --color-mention-self-bg: var(--mention-self-bg);
+  --color-mention-self-fg: var(--mention-self-fg);
+  --color-highlight-bg: var(--highlight-bg);
+  --color-highlight-border: var(--highlight-border);
+  --color-chrome: var(--chrome);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-fg: var(--sidebar-fg);
+  --color-sidebar-fg-strong: var(--sidebar-fg-strong);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-on-active: var(--sidebar-on-active);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-field: var(--sidebar-field);
+  --color-avatar-1: var(--avatar-1);
+  --color-avatar-2: var(--avatar-2);
+  --color-avatar-3: var(--avatar-3);
+  --color-avatar-4: var(--avatar-4);
+  --color-avatar-5: var(--avatar-5);
+  --color-avatar-6: var(--avatar-6);
+  --shadow-1: var(--elevation-1);
+  --shadow-2: var(--elevation-2);
+  --shadow-3: var(--elevation-3);
+  --radius-control: var(--shape-control);
+  --radius-item: var(--shape-item);
+  --radius-card: var(--shape-card);
+  --radius-panel: var(--shape-panel);
+  --radius-pill: var(--shape-pill);
+  --spacing-rail: var(--size-rail);
+  --spacing-sidebar: var(--size-sidebar);
+  --spacing-header: var(--size-header);
+  --spacing-panel: var(--size-panel);
+  --font-sans: var(--font-lato), system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* Tipografia, com os nomes do design system, e movimento. */
+@theme {
+  --text-display: 28px;
+  --text-display--line-height: 34px;
+  --text-heading: 22px;
+  --text-heading--line-height: 28px;
+  --text-title: 18px;
+  --text-title--line-height: 24px;
+  --text-body: 15px;
+  --text-body--line-height: 22px;
+  --text-small: 13px;
+  --text-small--line-height: 18px;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-micro: 10px;
+  --text-micro--line-height: 12px;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --animate-spin: spin 0.8s linear infinite;
+  --animate-pulse: pulse 1.6s ease-in-out infinite;
+  --animate-pop-in: pop-in 200ms var(--ease-out);
+  --animate-fade-in: fade-in 200ms var(--ease-out);
+  --animate-slide-in: slide-in 200ms var(--ease-out);
+
+  @keyframes pulse {
+    50% {
+      opacity: 0.45;
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+  }
+}
+
+body {
+  background: var(--surface);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+}
+
+/* Foco global (docs/design-system.md, "Estados de interação"). */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -4,23 +4,23 @@ Linguagem visual da interface do Full Cycle Chat: tokens, componentes, ícones, 
 
 **Onde cada coisa mora**
 
-- **Design:** o arquivo do Figma (<https://www.figma.com/design/plW17JDOoRHydUJIIi2u87/slack>, `fileKey` `plW17JDOoRHydUJIIi2u87`). As variables, os estilos e os componentes de lá são a fonte do design.
+- **Design:** o arquivo `slack-ia.pen`, aberto no Pencil e lido pelo MCP `pencil` (seção "Fluxo com a ferramenta de design"). As variables, as Foundations e os frames de lá são a fonte do design. O arquivo do Figma (<https://www.figma.com/design/plW17JDOoRHydUJIIi2u87/slack>, `fileKey` `plW17JDOoRHydUJIIi2u87`) foi a ferramenta anterior e vale só se o Pencil for trocado de volta.
 - **Especificação:** este documento. Nomes, valores e regras de uso dos tokens e dos componentes.
 - **Implementação:** `apps/web/src/app/globals.css` (tokens) e `apps/web/src/app/components/` (componentes).
 - **Fora daqui:** comandos, Server Components e estrutura de pastas ficam no `apps/web/AGENTS.md`. Nomes de identificadores ficam em `.claude/rules/next-web-coding-standards.md`. Escopo e plataforma ficam no `docs/product-brief.md`, seção "Escopo do MVP".
 
-Um token muda nos três lugares na mesma tarefa: a variable no Figma, este documento e o `globals.css`.
+Um token muda nos três lugares na mesma tarefa: a variable na ferramenta de design, este documento e o `globals.css`.
 
 ## Estado atual
 
-O Figma tem as fundações, os componentes e as telas; o código tem os tokens e recebe os componentes à medida que as telas os usam.
+O Pencil tem as fundações, as seções de componentes e as telas; o código tem os tokens e recebe os componentes e as bibliotecas à medida que as telas os usam.
 
-| Item | Figma | Código |
+| Item | Pencil (`slack-ia.pen`) | Código |
 | --- | --- | --- |
-| Tokens | 3 coleções de variables (`Primitives`, `Semantic`, `Layout`), 14 estilos de texto, 3 de elevação | `globals.css` com o conjunto completo, nos temas claro e escuro |
-| Componentes | 57 componentes em 3 seções, mais 42 ícones | Os da F01: Button, Input, Field, Spinner, Avatar, EmptyState, DropdownMenu, Rail, Sidebar e UserMenu |
-| Telas | 129 frames de 1440 × 900, em 10 seções | As da F01: Login, Home / Vazio, o menu do usuário e as portas de carregamento e de erro de sessão |
-| Bibliotecas | Desenho pensado para `lucide-react`, Radix, CVA e Sonner | `lucide-react`, `radix-ui` e CVA instalados; Sonner a instalar |
+| Tokens | Frames "Foundations" (cores primitivas e semânticas, tipografia, espaçamento, raios, elevação, layout, camadas, movimento e foco) | `globals.css` com o conjunto completo, nos temas claro e escuro |
+| Componentes | Seções "Primitivos", "Entities" e "Features e widgets", sem nós marcados como componente reutilizável | Nenhum ainda; os da F01 (Button, Input, Field, Spinner, Avatar, EmptyState, DropdownMenu, Rail, Sidebar e UserMenu) entram com as telas dela |
+| Telas | Frames de 1440 × 900, uma seção por fluxo (Login, Home, Conversa, Atividade, Casca, Diálogos da casca, Painel de perfil, Portas e toasts, Rotas especiais, Erros corretos) | Uma página inicial provisória; as telas da F01 entram com as tarefas de tela dela |
+| Bibliotecas | Desenho pensado para `lucide-react`, Radix, CVA e Sonner | Só a Lato; as outras entram com o primeiro componente que as usa |
 
 As descrições dos componentes no Figma citam arquivos de uma implementação de referência (`shared/ui/button.tsx`, `entities/message/ui/message-item.tsx` e outros, no estilo Feature-Sliced Design). Esses arquivos não existem neste repositório. Use as descrições pelo comportamento que documentam, não pelos caminhos; a pasta de cada componente segue a seção "Organização no código" abaixo.
 
@@ -31,10 +31,10 @@ As descrições dos componentes no Figma citam arquivos de uma implementação d
 | Framework | Next.js 16 (App Router, `src/app`), React 19 | Instalado |
 | Estilo | Tailwind CSS 4, configurado só em CSS (`@theme`), sem `tailwind.config` | Instalado |
 | Build | Turbopack, com o loader `@tailwindcss/turbopack` no `next.config.ts` | Instalado |
-| Ícones | `lucide-react` | Instalado |
-| Primitivos acessíveis | `radix-ui` (Dialog, AlertDialog, DropdownMenu, Tooltip, Switch, Tabs) | Instalado |
-| Variantes | `class-variance-authority`, com `clsx` e `tailwind-merge` num helper `cn` em `src/app/utils/cn.ts` | Instalado |
-| Toasts | `sonner` | Instalado |
+| Ícones | `lucide-react` | A instalar com o primeiro componente que usa |
+| Primitivos acessíveis | `radix-ui` (Dialog, AlertDialog, DropdownMenu, Tooltip, Switch, Tabs) | A instalar com o primeiro componente que usa |
+| Variantes | `class-variance-authority`, com `clsx` e `tailwind-merge` num helper `cn` em `src/app/utils/cn.ts` | A instalar com o primeiro componente que usa |
+| Toasts | `sonner` | A instalar com o primeiro componente que usa |
 | Fonte | Lato pelo `next/font/google` | Instalada |
 
 Instale uma biblioteca quando o primeiro componente precisar dela, sempre dentro do contêiner (`docker compose -f compose.yaml exec web pnpm add <pacote>`). O arquivo do Figma tem kits da comunidade ligados (Material 3, Simple Design System, kits da Apple): **não use nenhum deles**. O produto usa só as variables e os componentes locais do arquivo.
@@ -594,7 +594,29 @@ Os breakpoints são os padrões do Tailwind, e o Figma registra o que acontece e
 
 `lg` (1024) e `2xl` (1536) não têm uso no produto. Escreva mobile-first com os prefixos do Tailwind (`md:`, `xl:`), sem media queries soltas no CSS.
 
-## Fluxo com o Figma
+## Fluxo com a ferramenta de design
+
+### Com o Pencil (ferramenta atual)
+
+O arquivo `slack-ia.pen` fica aberto no aplicativo do Pencil, e o MCP `pencil` só responde enquanto ele roda. O arquivo é criptografado: leia e edite só pelas ferramentas do MCP, nunca pelo sistema de arquivos. O plano gratuito limita os dias de uso do MCP por período; uma chamada recusada por esse limite bloqueia a tarefa de tela, que para e avisa.
+
+**Do design para o código**
+
+1. Leia este documento.
+2. Chame `get_editor_state` para confirmar o arquivo aberto e, sem o schema do `.pen` no contexto, com `include_schema: true`.
+3. Ache os frames pelo nome com `batch_get` (padrão `<Fluxo> / <Grupo> / <Estado>`, por exemplo `Login / Credenciais incorretas`) e leia a árvore do frame, com pouca profundidade.
+4. Chame `get_screenshot` do frame para ter a referência visual, e `get_variables` para conferir os tokens.
+5. Valores soltos (hex, px) viram o token equivalente das tabelas deste documento. Se não houver, pare e pergunte, em vez de criar um valor.
+6. Implemente todos os estados do fluxo, e os dois temas.
+
+**Do código para o design**
+
+1. Monte o frame novo com `batch_design`, na seção do fluxo, no padrão de nome dos frames e com as variables do arquivo. Nada de cor, tamanho ou raio soltos.
+2. Variable nova entra no arquivo e é registrada aqui e no `globals.css` na mesma tarefa.
+
+**Validação visual:** como em "Validação visual", comparando a tela com o `get_screenshot` do frame no Pencil.
+
+As subseções abaixo descrevem o fluxo com o Figma, a ferramenta anterior, e valem só se ela voltar a ser usada.
 
 ### Arquivo
 
@@ -642,7 +664,7 @@ Ainda não há mapeamentos. Quando um componente existir no código, mapeie-o ao
 
 ### Validação visual
 
-Uma tela ou um componente só está pronto depois de comparado com o Figma:
+Uma tela ou um componente só está pronto depois de comparado com a ferramenta de design:
 
 1. Suba a web (`AGENTS.md` da raiz, "Subir e derrubar") e abra a tela em 1440 × 900.
 2. Compare com o `get_screenshot` do frame correspondente, no tema claro e no escuro.
