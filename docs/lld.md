@@ -11,14 +11,14 @@
 | Escopo e público | [Product brief](product-brief.md) |
 | Vocabulário | `GLOSSARY.md` na raiz |
 | Linguagem visual (cores, componentes, microtexto) | [Figma](https://www.figma.com/design/plW17JDOoRHydUJIIi2u87/slack) |
-| Contrato REST da API do chat | `apps/chat-api/openapi.json`, gerado pelo `@nestjs/swagger` (planejado) |
+| Contrato REST da API do chat | `apps/chat-api/openapi.json`, gerado pelo `@nestjs/swagger` (`pnpm openapi`) |
 | Contrato REST do Serviço de agentes | `apps/agents/openapi.json`, gerado pelo FastAPI (planejado) |
 | Catálogo de códigos de erro | Os snapshots OpenAPI, como enum na resposta de erro de cada rota (planejado) |
 | Eventos do WebSocket | Tipos TypeScript em `packages/chat-events/` (planejado) |
-| Schema do Banco do chat | `apps/chat-api/migrations/`, migrações do TypeORM (planejado) |
+| Schema do Banco do chat | `apps/chat-api/migrations/`, migrações do TypeORM |
 | Schema do Banco dos agentes | A definir |
 | Schema do Banco de negócio | Script de carga em `apps/agents/scripts/` (planejado) |
-| Schema das variáveis de ambiente | Nos projetos TypeScript, o schema `zod` do módulo de configuração de cada um (o da web existe; o da API do chat, planejado); no `agents`, a definir |
+| Schema das variáveis de ambiente | Nos projetos TypeScript, o schema `zod` do módulo de configuração de cada um; no `agents`, a definir |
 | Práticas e comandos | `apps/*/AGENTS.md`, um por app, apontados pelo `AGENTS.md` da raiz (planejado) |
 
 Os snapshots OpenAPI ficam gravados no repositório, e a CI falha quando o código muda o contrato
@@ -37,7 +37,7 @@ apps/
   web/            Frontend/BFF (Next.js)                              existe
   chat-api/       API do chat (NestJS): REST, WebSocket e o comando   existe
                   de contas e permissões (HLD, seção 2)
-    migrations/   migrações do Banco do chat                          planejada
+    migrations/   migrações do Banco do chat                          existe
   agents/         Serviço de agentes e Worker (Python + ADK),         planejada
                   dois processos do mesmo projeto
     scripts/      script de carga do Banco de negócio                 planejada
@@ -192,7 +192,11 @@ depois do commit (publicação direta ou tabela de saída) estão a definir.
   `detail`. Só no `validation_failed` entra também `errors`, uma lista de `{ field, message }`.
 - Códigos que valem para qualquer rota da API do chat: `validation_failed` (400), `malformed_body`
   (400, corpo que não é JSON), `payload_too_large` (413), `not_found` (404, rota inexistente),
-  `unauthenticated` (401) e `internal_error` (500).
+  `unauthenticated` (401), `request_rejected` e `internal_error` (500).
+- Um `HttpException` 4xx lançado pelo Nest, pelo Express ou por uma biblioteca mantém o status
+  dele. Os que têm código próprio (400, 401, 404 e 413) saem com ele, e os outros 4xx, como 403,
+  405 e 415, saem como `request_rejected`. Só o que não é `HttpException` 4xx vira
+  `internal_error`, com log de erro.
 - O catálogo de códigos fica nos snapshots OpenAPI, como enum na resposta de erro de cada rota.
 - Na API do chat, o service e o guard lançam erros de domínio sem status HTTP, e só o exception
   filter global os traduz em resposta. O mapa de `code` para status mora nele. As peças estão na
@@ -551,10 +555,10 @@ falharia em produção.
   interno (`http://s3:8333`). São dois endereços configurados, com acesso por caminho
   (path-style).
 - O `compose.yaml` passa aos apps as variáveis de "Valores e configuração", e cada projeto tem um
-  `.env.example` (os da web existem; os da API do chat, planejados). Os nomes das variáveis dos dois endereços do S3 seguem em aberto, e
+  `.env.example`. Os nomes das variáveis dos dois endereços do S3 seguem em aberto, e
   as credenciais do S3 dos apps são as mesmas do serviço `s3`.
 - **Banco dos testes:** as suítes e2e e de integração da API do chat rodam no banco `chat_test`,
-  com o endereço montado a partir do `DATABASE_URL` (planejado).
+  com o endereço montado a partir do `DATABASE_URL`.
   - O banco nasce no script de inicialização do Postgres, com o `chat` como dono.
   - A cada execução, o `globalSetup` apaga e recria o schema `public` dele e roda as migrações.
     Ele não apaga o banco, porque o papel `chat` não tem `CREATEDB`.

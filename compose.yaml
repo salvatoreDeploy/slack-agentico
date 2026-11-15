@@ -49,6 +49,10 @@ services:
     init: true
     ports:
       - "3001:3000"
+    environment:
+      # Variáveis da API do chat (LLD, "Valores e configuração"); só locais.
+      DATABASE_URL: postgres://chat:chat@postgres:5432/chat
+      LOG_LEVEL: info
     volumes:
       - .:/home/node/app
     depends_on:
