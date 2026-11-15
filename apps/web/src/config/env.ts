@@ -8,13 +8,13 @@ const envSchema = z.object({
   SESSION_COOKIE_DOMAIN: z.string().default(""),
 });
 
-export type Env = z.infer<typeof envSchema>;
+type Env = z.infer<typeof envSchema>;
 
 /**
  * Valida as variáveis de ambiente. Uma variável ausente ou inválida derruba o processo com o
  * nome dela na mensagem (LLD, "Configuração").
  */
-export function validateEnv(env: Record<string, unknown>): Env {
+function validateEnv(env: Record<string, unknown>): Env {
   const result = envSchema.safeParse(env);
   if (result.success) {
     return result.data;
