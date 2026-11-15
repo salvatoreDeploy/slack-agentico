@@ -425,7 +425,8 @@ atualiza esse cache direto, sem nova requisição.
 
 **Sessão no cliente.**
 
-- O middleware do Next confere só se o cookie de sessão existe; sem ele, manda para
+- O `proxy` do Next (o antigo `middleware`, renomeado no Next 16) confere só se o cookie de sessão
+  existe; sem ele, manda para
   `/entrar?voltar=<caminho>`. A validação de verdade é da API do chat.
 - A ação Entrar só segue um `voltar` que começa com `/` e não com `//` nem `/\`, para não virar um
   redirecionamento aberto. Qualquer outro valor leva a `/`.

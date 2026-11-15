@@ -1,6 +1,6 @@
 # 02: Base da web e da suíte e2e
 
-**Status:** a fazer
+**Status:** em andamento
 
 **O que construir:** a base da web e da suíte de ponta a ponta, que as tarefas de tela usam. A web
 sobe com a configuração validada, os tokens do design system nos dois temas e a fonte do projeto.
