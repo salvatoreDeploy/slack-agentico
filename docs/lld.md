@@ -18,7 +18,7 @@
 | Schema do Banco do chat | `apps/chat-api/migrations/`, migrações do TypeORM (planejado) |
 | Schema do Banco dos agentes | A definir |
 | Schema do Banco de negócio | Script de carga em `apps/agents/scripts/` (planejado) |
-| Schema das variáveis de ambiente | Nos projetos TypeScript, o schema `zod` do módulo de configuração de cada um (planejado); no `agents`, a definir |
+| Schema das variáveis de ambiente | Nos projetos TypeScript, o schema `zod` do módulo de configuração de cada um (o da web existe; o da API do chat, planejado); no `agents`, a definir |
 | Práticas e comandos | `apps/*/AGENTS.md`, um por app, apontados pelo `AGENTS.md` da raiz (planejado) |
 
 Os snapshots OpenAPI ficam gravados no repositório, e a CI falha quando o código muda o contrato
@@ -551,7 +551,7 @@ falharia em produção.
   interno (`http://s3:8333`). São dois endereços configurados, com acesso por caminho
   (path-style).
 - O `compose.yaml` passa aos apps as variáveis de "Valores e configuração", e cada projeto tem um
-  `.env.example` (planejado). Os nomes das variáveis dos dois endereços do S3 seguem em aberto, e
+  `.env.example` (os da web existem; os da API do chat, planejados). Os nomes das variáveis dos dois endereços do S3 seguem em aberto, e
   as credenciais do S3 dos apps são as mesmas do serviço `s3`.
 - **Banco dos testes:** as suítes e2e e de integração da API do chat rodam no banco `chat_test`,
   com o endereço montado a partir do `DATABASE_URL` (planejado).
@@ -566,8 +566,8 @@ falharia em produção.
   base de testes (planejado).
 - **Serviço `e2e`:** o Playwright roda no próprio contêiner e encaminha `localhost:3000` para a
   web e `localhost:3001` para a API do chat. Assim, o navegador do teste usa os mesmos endereços
-  que o da máquina, e o cookie de sessão, só de host em `localhost`, vale também no WebSocket
-  (planejado).
+  que o da máquina, e o cookie de sessão, só de host em `localhost`, vale também no WebSocket.
+  O encaminhamento escuta no IPv4 e no IPv6 de `localhost`.
 - **Dados dos testes da web:** os testes do Playwright rodam contra o ambiente de desenvolvimento
   de pé, no banco `chat`, e não num banco separado. O contêiner `e2e` recebe um `DATABASE_URL` do
   banco `chat`.
