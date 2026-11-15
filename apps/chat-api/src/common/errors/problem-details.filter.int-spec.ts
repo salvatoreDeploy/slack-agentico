@@ -1,4 +1,12 @@
-import { Body, Controller, Get, INestApplication, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  INestApplication,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { IsInt, IsString } from 'class-validator';
 import request from 'supertest';
@@ -37,6 +45,16 @@ class ThingsController {
   @Post()
   create(@Body() body: CreateThingDto): CreateThingDto {
     return body;
+  }
+
+  @Get('forbidden')
+  forbidden(): never {
+    throw new ForbiddenException();
+  }
+
+  @Get('unauthorized')
+  unauthorized(): never {
+    throw new UnauthorizedException();
   }
 }
 
@@ -92,6 +110,20 @@ describe('ProblemDetailsFilter', () => {
         expect.objectContaining({ field: 'extra' }),
       ]),
     );
+  });
+
+  it('mantém o status de um HttpException 4xx sem código próprio, com request_rejected', async () => {
+    const response = await request(app.getHttpServer()).get('/things/forbidden');
+
+    expect(response.status).toBe(403);
+    expect(response.body).toMatchObject({ status: 403, code: 'request_rejected' });
+  });
+
+  it('responde 401 com unauthenticated a um UnauthorizedException', async () => {
+    const response = await request(app.getHttpServer()).get('/things/unauthorized');
+
+    expect(response.status).toBe(401);
+    expect(response.body.code).toBe('unauthenticated');
   });
 
   it('responde 400 com malformed_body quando o corpo não é JSON válido', async () => {

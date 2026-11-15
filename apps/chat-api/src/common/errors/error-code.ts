@@ -7,4 +7,6 @@ export type ErrorCode =
   | 'malformed_body'
   | 'payload_too_large'
   | 'not_found'
+  | 'unauthenticated'
+  | 'request_rejected'
   | 'internal_error';

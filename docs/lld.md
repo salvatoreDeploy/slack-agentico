@@ -192,7 +192,11 @@ depois do commit (publicação direta ou tabela de saída) estão a definir.
   `detail`. Só no `validation_failed` entra também `errors`, uma lista de `{ field, message }`.
 - Códigos que valem para qualquer rota da API do chat: `validation_failed` (400), `malformed_body`
   (400, corpo que não é JSON), `payload_too_large` (413), `not_found` (404, rota inexistente),
-  `unauthenticated` (401) e `internal_error` (500).
+  `unauthenticated` (401), `request_rejected` e `internal_error` (500).
+- Um `HttpException` 4xx lançado pelo Nest, pelo Express ou por uma biblioteca mantém o status
+  dele. Os que têm código próprio (400, 401, 404 e 413) saem com ele, e os outros 4xx, como 403,
+  405 e 415, saem como `request_rejected`. Só o que não é `HttpException` 4xx vira
+  `internal_error`, com log de erro.
 - O catálogo de códigos fica nos snapshots OpenAPI, como enum na resposta de erro de cada rota.
 - Na API do chat, o service e o guard lançam erros de domínio sem status HTTP, e só o exception
   filter global os traduz em resposta. O mapa de `code` para status mora nele. As peças estão na
