@@ -211,9 +211,9 @@ Se o Figma falhar, porque o arquivo está errado, os frames faltam ou o MCP não
 da F01 é feito no Pencil, pelo MCP dele, que já está configurado. Para isso, o arquivo do Pencil
 tem de estar aberto no aplicativo, porque o servidor do MCP só existe enquanto o Pencil roda.
 
-A escolha fica registrada no plano da tarefa de fundação da web. Se o Pencil for adotado, a
-mudança entra no `docs/design-system.md`, que é o dono do fluxo de trabalho com a ferramenta, e na
-seção "Design e Figma" do `AGENTS.md` da raiz.
+A escolha fica registrada no plano da tarefa de fundação da web. Decidido: o Pencil, com o arquivo
+`slack-ia.pen`. O fluxo de trabalho está no `docs/design-system.md`, "Fluxo com a ferramenta de
+design", e na seção "Design e Pencil" do `AGENTS.md` da raiz.
 
 ### Tempo real
 

@@ -12,10 +12,35 @@ services:
     init: true
     ports:
       - "3000:3000"
+    environment:
+      # Variáveis da web (LLD, "Valores e configuração"); só locais.
+      CHAT_API_URL: http://chat-api:3000
+      SESSION_COOKIE_DOMAIN: ""
     volumes:
       - .:/home/node/app
     depends_on:
       - chat-api
+
+  e2e:
+    # Playwright dos testes de ponta a ponta da web e do playwright-cli. A versão da imagem é a
+    # mesma, exata, do @playwright/test do package.json da web; uma muda junto com a outra.
+    image: mcr.microsoft.com/playwright:v1.65.1-noble
+    profiles: ["e2e"]
+    init: true
+    # O usuário do host, para os artefatos gravados no repositório montado terem o dono certo.
+    user: "1000:1000"
+    working_dir: /home/node/app/apps/web
+    environment:
+      HOME: /tmp
+      # As fixtures gravam e limpam os dados dos testes no banco chat (LLD, "Ambiente de
+      # desenvolvimento").
+      DATABASE_URL: postgres://chat:chat@postgres:5432/chat
+    volumes:
+      - .:/home/node/app
+    # Não roda os testes: só encaminha localhost:3000 e localhost:3001 para a web e a API do chat.
+    command: ["node", "/home/node/app/docker/e2e/forward-ports.mjs"]
+    depends_on:
+      - web
 
   chat-api:
     build:

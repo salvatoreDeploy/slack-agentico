@@ -18,7 +18,7 @@
 | Schema do Banco do chat | `apps/chat-api/migrations/`, migrações do TypeORM |
 | Schema do Banco dos agentes | A definir |
 | Schema do Banco de negócio | Script de carga em `apps/agents/scripts/` (planejado) |
-| Schema das variáveis de ambiente | Nos projetos TypeScript, o schema `zod` do módulo de configuração de cada um (o da API do chat existe; o da web, planejado); no `agents`, a definir |
+| Schema das variáveis de ambiente | Nos projetos TypeScript, o schema `zod` do módulo de configuração de cada um; no `agents`, a definir |
 | Práticas e comandos | `apps/*/AGENTS.md`, um por app, apontados pelo `AGENTS.md` da raiz (planejado) |
 
 Os snapshots OpenAPI ficam gravados no repositório, e a CI falha quando o código muda o contrato
@@ -429,7 +429,8 @@ atualiza esse cache direto, sem nova requisição.
 
 **Sessão no cliente.**
 
-- O middleware do Next confere só se o cookie de sessão existe; sem ele, manda para
+- O `proxy` do Next (o antigo `middleware`, renomeado no Next 16) confere só se o cookie de sessão
+  existe; sem ele, manda para
   `/entrar?voltar=<caminho>`. A validação de verdade é da API do chat.
 - A ação Entrar só segue um `voltar` que começa com `/` e não com `//` nem `/\`, para não virar um
   redirecionamento aberto. Qualquer outro valor leva a `/`.
@@ -554,7 +555,7 @@ falharia em produção.
   interno (`http://s3:8333`). São dois endereços configurados, com acesso por caminho
   (path-style).
 - O `compose.yaml` passa aos apps as variáveis de "Valores e configuração", e cada projeto tem um
-  `.env.example` (os da API do chat existem; os da web, planejados). Os nomes das variáveis dos dois endereços do S3 seguem em aberto, e
+  `.env.example`. Os nomes das variáveis dos dois endereços do S3 seguem em aberto, e
   as credenciais do S3 dos apps são as mesmas do serviço `s3`.
 - **Banco dos testes:** as suítes e2e e de integração da API do chat rodam no banco `chat_test`,
   com o endereço montado a partir do `DATABASE_URL`.
@@ -569,8 +570,8 @@ falharia em produção.
   base de testes (planejado).
 - **Serviço `e2e`:** o Playwright roda no próprio contêiner e encaminha `localhost:3000` para a
   web e `localhost:3001` para a API do chat. Assim, o navegador do teste usa os mesmos endereços
-  que o da máquina, e o cookie de sessão, só de host em `localhost`, vale também no WebSocket
-  (planejado).
+  que o da máquina, e o cookie de sessão, só de host em `localhost`, vale também no WebSocket.
+  O encaminhamento escuta no IPv4 e no IPv6 de `localhost`.
 - **Dados dos testes da web:** os testes do Playwright rodam contra o ambiente de desenvolvimento
   de pé, no banco `chat`, e não num banco separado. O contêiner `e2e` recebe um `DATABASE_URL` do
   banco `chat`.
