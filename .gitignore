@@ -1,0 +1,5 @@
+.history/
+.pnpm-store/
+.claude/settings.local.json
+*.tsbuildinfo
+.env

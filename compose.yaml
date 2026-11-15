@@ -1,0 +1,72 @@
+# Ambiente de desenvolvimento local (LLD, seção 10).
+# Os apps não sobem sozinhos: depois do `docker compose up -d`, rode
+#   docker compose exec chat-api pnpm start:dev
+#   docker compose exec web pnpm dev
+name: fullcycle-slack-ia
+
+services:
+  web:
+    build:
+      context: apps/web
+      dockerfile: Dockerfile.dev
+    init: true
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/home/node/app
+    depends_on:
+      - chat-api
+
+  chat-api:
+    build:
+      context: apps/chat-api
+      dockerfile: Dockerfile.dev
+    init: true
+    ports:
+      - "3001:3000"
+    volumes:
+      - .:/home/node/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  s3:
+    image: chrislusf/seaweedfs:4.52
+    command: ["mini", "-dir=/data", "-s3.autoCreateBucket=false"]
+    environment:
+      # Credenciais falsas, só locais. Com elas o S3 exige assinatura, como em produção.
+      AWS_ACCESS_KEY_ID: local-access-key
+      AWS_SECRET_ACCESS_KEY: local-secret-key
+      S3_BUCKET: reports
+    ports:
+      - "8333:8333"
+    volumes:
+      - s3-data:/data
+    healthcheck:
+      # Sem assinatura o S3 responde 403; qualquer resposta HTTP indica que está de pé.
+      test: ["CMD", "curl", "-s", "-o", "/dev/null", "http://localhost:8333/"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  postgres-data:
+  s3-data:

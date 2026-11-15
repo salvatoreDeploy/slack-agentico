@@ -1,0 +1,16 @@
+# Imagem de desenvolvimento (LLD, seção 10). Não leva dependências: o repositório
+# é montado em /home/node/app e o CMD instala na subida.
+FROM node:26
+
+# Mesma versão do "packageManager" do package.json. O Node 26 não traz corepack.
+ARG PNPM_VERSION=11.28.12
+RUN npm install -g pnpm@${PNPM_VERSION} && npm cache clean --force
+
+# Store compartilhado pelos apps, na raiz do repositório.
+ENV npm_config_store_dir=/home/node/app/.pnpm-store
+
+USER node
+WORKDIR /home/node/app/apps/chat-api
+
+# Se o install falha, o contêiner continua de pé e o erro fica em `docker compose logs`.
+CMD ["sh", "-c", "pnpm install --frozen-lockfile; exec sleep infinity"]
