@@ -11,8 +11,8 @@ export const envSchema = z.object({
 export type Env = z.infer<typeof envSchema>;
 
 /**
- * Valida as variáveis de ambiente uma vez, na subida. Uma variável ausente ou inválida
- * derruba o processo com o nome dela na mensagem (LLD, "Configuração").
+ * Valida as variáveis de ambiente. Uma variável ausente ou inválida derruba o processo com o
+ * nome dela na mensagem (LLD, "Configuração").
  */
 export function validateEnv(env: Record<string, unknown>): Env {
   const result = envSchema.safeParse(env);
@@ -23,4 +23,12 @@ export function validateEnv(env: Record<string, unknown>): Env {
     (issue) => `${issue.path.join('.')}: ${issue.message}`,
   );
   throw new Error(`Configuração inválida. ${problems.join('; ')}`);
+}
+
+let loaded: Env | undefined;
+
+/** As variáveis do processo, validadas uma vez só, no primeiro uso. */
+export function loadEnv(): Env {
+  loaded ??= validateEnv(process.env);
+  return loaded;
 }

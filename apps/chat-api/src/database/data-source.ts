@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { DataSource } from 'typeorm';
-import { validateEnv } from '../config/env.schema.js';
+import { loadEnv } from '../config/env.schema.js';
 import { BASE_DATA_SOURCE_OPTIONS } from './database-options.js';
 
 const PROJECT_ROOT = join(import.meta.dirname, '..', '..');
@@ -12,7 +12,7 @@ const PROJECT_ROOT = join(import.meta.dirname, '..', '..');
  */
 export default new DataSource({
   ...BASE_DATA_SOURCE_OPTIONS,
-  url: validateEnv(process.env).DATABASE_URL,
+  url: loadEnv().DATABASE_URL,
   entities: [join(PROJECT_ROOT, 'src/**/*.entity.ts')],
   migrations: [join(PROJECT_ROOT, 'migrations/*.ts')],
 });

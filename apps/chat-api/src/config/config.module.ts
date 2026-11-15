@@ -1,20 +1,19 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { databaseConfig } from './database.config.js';
-import { validateEnv } from './env.schema.js';
 import { httpConfig } from './http.config.js';
 import { logConfig } from './log.config.js';
 
 /**
- * O único ponto que lê as variáveis de ambiente. Uma variável ausente ou inválida derruba a
- * subida, com o nome dela na mensagem (LLD, "Configuração").
+ * A configuração de cada assunto, lida de `loadEnv`, o único ponto que valida as variáveis. Uma
+ * variável ausente ou inválida derruba a subida, com o nome dela na mensagem (LLD,
+ * "Configuração").
  */
 @Module({
   imports: [
     NestConfigModule.forRoot({
       isGlobal: true,
       ignoreEnvFile: true,
-      validate: validateEnv,
       load: [databaseConfig, httpConfig, logConfig],
     }),
   ],

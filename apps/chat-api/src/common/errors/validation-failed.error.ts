@@ -6,12 +6,14 @@ export interface FieldError {
   message: string;
 }
 
+export const VALIDATION_FAILED_DETAIL = 'A requisição tem campos inválidos.';
+
 /** A entrada não passou na validação do DTO. */
 export class ValidationFailedError extends DomainError {
   readonly code = 'validation_failed';
 
   constructor(readonly errors: FieldError[]) {
-    super('A requisição tem campos inválidos.');
+    super(VALIDATION_FAILED_DETAIL);
   }
 
   /** Achata os erros do `class-validator`, inclusive os aninhados, num item por campo. */
