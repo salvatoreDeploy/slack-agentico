@@ -44,11 +44,15 @@ export class ProblemDetailsFilter implements ExceptionFilter {
   private readonly logger = new Logger(ProblemDetailsFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost): void {
+    const response = host.switchToHttp().getResponse<Response>();
+    if (response.headersSent) {
+      // A resposta já começou a sair: não há como trocar o status, só registrar.
+      this.logUnexpected(exception);
+      return;
+    }
     const problem = this.toProblem(exception);
     const status = ERROR_STATUS[problem.code];
-    host
-      .switchToHttp()
-      .getResponse<Response>()
+    response
       .status(status)
       .type('application/problem+json')
       .json({
@@ -62,18 +66,28 @@ export class ProblemDetailsFilter implements ExceptionFilter {
   }
 
   private toProblem(exception: unknown): Problem {
-    if (exception instanceof ValidationFailedError) {
-      return { code: exception.code, detail: exception.message, errors: exception.errors };
-    }
     if (exception instanceof DomainError) {
-      return { code: exception.code, detail: exception.message };
+      const errors = exception instanceof ValidationFailedError ? exception.errors : undefined;
+      return { code: exception.code, detail: exception.message, errors };
     }
     const code = exception instanceof HttpException ? httpExceptionCode(exception) : undefined;
     if (code) {
       return { code, detail: DETAIL[code] };
     }
-    this.logger.error(exception);
+    this.logUnexpected(exception);
     return { code: 'internal_error', detail: DETAIL.internal_error };
+  }
+
+  /**
+   * Registra só o nome, a mensagem e a stack. O objeto inteiro pode levar dados gravados, como os
+   * parâmetros de um `QueryFailedError`, que nunca vão para o log (LLD, "Logs").
+   */
+  private logUnexpected(exception: unknown): void {
+    if (exception instanceof Error) {
+      this.logger.error(`${exception.name}: ${exception.message}`, exception.stack);
+      return;
+    }
+    this.logger.error('Erro inesperado sem a forma de Error.');
   }
 }
 
