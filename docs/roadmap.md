@@ -23,7 +23,7 @@ criado.
 
 | # | Funcionalidade | Ao final, a pessoa consegue… | Depende de | Status |
 | --- | --- | --- | --- | --- |
-| 01 | [Entrar e sair](funcionalidades/01-entrar-e-sair/) | entrar com e-mail e senha numa conta criada pela empresa e sair; a sessão vale no navegador todo | — | spec pronta |
+| 01 | [Entrar e sair](funcionalidades/01-entrar-e-sair/) | entrar com e-mail e senha numa conta criada pela empresa e sair; a sessão vale no navegador todo | — | em andamento |
 | 02 | Canais públicos | criar um canal público e conversar nele com todo o workspace | 01 | planejada |
 | 03 | Canais privados | criar um canal privado, convidar pessoas e conversar só com quem foi convidado | 02 | planejada |
 | 04 | Conversas diretas e perfis | buscar alguém por nome ou @usuário, ver o perfil e abrir uma Conversa direta | 02 | planejada |
