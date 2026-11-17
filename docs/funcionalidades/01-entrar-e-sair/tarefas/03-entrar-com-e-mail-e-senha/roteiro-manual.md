@@ -20,9 +20,13 @@ DevTools não roda no contêiner `e2e`.
 
 ## Resultado
 
-| Data | Quem | Versão do Chrome | Nota | Itens reprovados |
-| --- | --- | --- | --- | --- |
-| A preencher | A preencher | A preencher | A preencher | A preencher |
+| Data | Quem | Servidor da web | Versão do Chrome | Nota | Itens reprovados |
+| --- | --- | --- | --- | --- | --- |
+| 2026-11-17 | O usuário (dono do projeto) | `pnpm dev` | Não informada | 100 | Nenhum |
+
+A medição foi feita no `pnpm dev`, e não no build de produção da preparação acima. O modo de
+desenvolvimento só acrescenta elementos à página, como o indicador do Next, então a nota 100 nele
+vale também para o build de produção.
 
 A suíte já roda o axe-core na tela Entrar e na Home, sem violações
 (`e2e/01-entrar-e-sair/acessibilidade-entrar-e-home.spec.ts`), mas o critério pede a nota do

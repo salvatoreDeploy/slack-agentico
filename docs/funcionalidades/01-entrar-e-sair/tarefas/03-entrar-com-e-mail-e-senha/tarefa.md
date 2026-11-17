@@ -1,6 +1,6 @@
 # 03: Entrar com e-mail e senha
 
-**Status:** em andamento
+**Status:** concluída
 
 **O que construir:** a primeira fatia completa da F01. O Operador cria a conta de uma Pessoa pelo
 comando de contas. A Pessoa entra em `/entrar` com e-mail e senha e cai na Home, na casca vazia do
@@ -61,6 +61,6 @@ spec da F01, "Pessoas", "Sessões", "Comando de contas" (operação `create`), "
   - o axe-core sem violações em Entrar e na Home.
 
   As fixtures `person`, que limpa o que criou, e `loggedInPage` estão criadas.
-- [ ] **CA10** · Registros na pasta desta tarefa: a verificação do agente de "Erro de sessão" com o
+- [x] **CA10** · Registros na pasta desta tarefa: a verificação do agente de "Erro de sessão" com o
   `playwright-cli`, a validação visual das telas nos dois temas e o roteiro manual com a nota 100
   de Acessibilidade do Lighthouse na tela Entrar.
