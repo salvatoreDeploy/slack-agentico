@@ -14,7 +14,7 @@ interface RailProps {
 export function Rail({ person }: RailProps) {
   return (
     <nav aria-label="Seções" className="flex w-rail shrink-0 flex-col items-center gap-2 bg-chrome px-2 py-3">
-      <span className="mb-2 flex size-9 items-center justify-center rounded-card bg-surface text-small font-black text-chrome">
+      <span className="mb-2 flex size-9 items-center justify-center rounded-card bg-sidebar-fg-strong text-small font-black text-chrome">
         FC
       </span>
       <Link
