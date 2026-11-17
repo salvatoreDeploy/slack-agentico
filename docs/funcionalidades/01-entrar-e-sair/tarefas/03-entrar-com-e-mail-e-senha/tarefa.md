@@ -1,6 +1,6 @@
 # 03: Entrar com e-mail e senha
 
-**Status:** a fazer
+**Status:** em andamento
 
 **O que construir:** a primeira fatia completa da F01. O Operador cria a conta de uma Pessoa pelo
 comando de contas. A Pessoa entra em `/entrar` com e-mail e senha e cai na Home, na casca vazia do

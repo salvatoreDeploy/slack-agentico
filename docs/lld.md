@@ -58,6 +58,7 @@ docs/             HLD, LLD, ADRs, brief
 | Hash de senha | Argon2id, pelo `@node-rs/argon2` | Argon2id: primeira recomendação da OWASP para senhas; `@node-rs/argon2`: binários prontos, sem compilar no contêiner |
 | Mutações do navegador ao BFF | Server Actions | O Next confere a origem de cada Server Action, o que dispensa token CSRF ("Segurança") |
 | Leitura da senha no comando de contas | `@inquirer/password` | Lê do terminal sem eco |
+| Leitura do cookie de sessão na API do chat | `cookie` (só o `parse`, no guard) | Só o guard lê o cookie; um middleware global seria trabalho em toda requisição sem uso |
 | Validação de entrada na API do chat | `class-validator` e `class-transformer`, no `ValidationPipe` global | Caminho padrão do Nest, e o plugin do `@nestjs/swagger` lê os DTOs para gerar o contrato; o `zod` fica só na configuração |
 | Testes de ponta a ponta da web | Playwright (`@playwright/test`), só pelo navegador; sem component testing, sem a fixture `request` e, por enquanto, sem `@next/playwright` | O Next recomenda ponta a ponta para Server Components assíncronos, e o Playwright é um dos guias oficiais dele. Roda em modo headless no contêiner sem tela, guarda o `trace` na falha e tem a skill `playwright-cli`, com que o agente planeja, gera e corrige os testes. Descartado: Cypress, sem skill no projeto e com uma CLI menos ligada ao fluxo do agente. O `instant()` do `@next/playwright` entra quando uma funcionalidade precisar provar o estado logo após uma navegação |
 | Gerenciador dos projetos TypeScript | pnpm, um projeto por pasta, sem workspace | [ADR 0017](adr/0017-projetos-pnpm-independentes.md) |
@@ -435,6 +436,9 @@ atualiza esse cache direto, sem nova requisição.
 - A ação Entrar só segue um `voltar` que começa com `/` e não com `//` nem `/\`, para não virar um
   redirecionamento aberto. Qualquer outro valor leva a `/`.
 - Qualquer 401 vindo do BFF apaga o cookie e manda para "Entrar", com o `voltar` da página atual.
+  Numa Server Action, ela mesma apaga o cookie. Ao renderizar, um Server Component não grava
+  cookie, então redireciona para `GET /api/sessao/expirada?voltar=…`, um Route Handler do BFF que
+  apaga o cookie e manda para "Entrar".
 - Um 401 no WebSocket fecha a conexão e manda para "Entrar".
 - Sair apaga o cookie mesmo quando a API do chat falha por rede ou com um 5xx. A Sessão fica no
   banco até vencer ou ser revogada.
