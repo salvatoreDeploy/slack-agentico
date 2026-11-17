@@ -16,6 +16,9 @@ const ERROR_STATUS: Record<ErrorCode, number> = {
   payload_too_large: 413,
   not_found: 404,
   unauthenticated: 401,
+  invalid_credentials: 401,
+  email_taken: 409,
+  username_taken: 409,
   request_rejected: 400,
   internal_error: 500,
 };
@@ -34,6 +37,9 @@ const DETAIL: Record<ErrorCode, string> = {
   payload_too_large: 'O corpo da requisição é grande demais.',
   not_found: 'O recurso pedido não existe.',
   unauthenticated: 'É preciso entrar para continuar.',
+  invalid_credentials: 'E-mail ou senha incorretos.',
+  email_taken: 'Já existe uma conta com este e-mail.',
+  username_taken: 'Este @usuário já está em uso.',
   request_rejected: 'A requisição foi recusada.',
   internal_error: 'Erro inesperado no servidor.',
 };

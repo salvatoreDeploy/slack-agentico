@@ -1,0 +1,19 @@
+// spec: e2e/plans/01-entrar-e-sair.plan.md
+// seed: e2e/seed.spec.ts
+import { expect, test } from "../fixtures";
+
+test.describe("Entrar com e-mail e senha", () => {
+  test("entra só pelo teclado: Tab percorre os campos e o botão, e Enter envia", async ({ page, person }) => {
+    await page.goto("/entrar");
+    await page.keyboard.type(person.email);
+    await page.keyboard.press("Tab");
+    await expect(page.getByLabel("Senha")).toBeFocused();
+    await page.keyboard.type(person.password);
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "Entrar" })).toBeFocused();
+
+    await page.keyboard.press("Enter");
+
+    await expect(page).toHaveURL("/");
+  });
+});
