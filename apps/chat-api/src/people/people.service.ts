@@ -37,29 +37,37 @@ export class PeopleService {
   async create(input: NewPerson): Promise<Person> {
     const email = normalizeEmail(input.email);
     const name = input.name.trim();
-    const errors = validate({ ...input, email, name });
+    const errors = [
+      ...validatePersonFields({ email, name, username: input.username }),
+      ...validatePassword(input.password),
+    ];
     if (errors.length > 0) {
       throw new ValidationFailedError(errors);
     }
 
-    // O e-mail e o @usuário já usados são recusados pela única do banco, no insert, o que vale
-    // também sob concorrência.
     const person = new Person();
     person.id = uuidv7();
     person.name = name;
     person.email = email;
-    person.username =
-      input.username ?? (await deriveUsername(email, (u) => this.people.existsByUsername(u)));
     person.passwordHash = await this.passwords.hash(input.password);
 
-    const conflict = await this.people.insert(person);
-    if (conflict === 'email') {
-      throw new EmailTakenError();
+    // O e-mail e o @usuário já usados são recusados pela única do banco, no insert, o que vale
+    // também sob concorrência. Um @usuário derivado que outra criação simultânea pegou é derivado
+    // de novo, porque a Pessoa não o escolheu.
+    for (let attempt = 1; ; attempt++) {
+      person.username =
+        input.username ?? (await deriveUsername(email, (u) => this.people.existsByUsername(u)));
+      const conflict = await this.people.insert(person);
+      if (conflict === null) {
+        return person;
+      }
+      if (conflict === 'email') {
+        throw new EmailTakenError();
+      }
+      if (input.username || attempt >= DERIVED_USERNAME_ATTEMPTS) {
+        throw new UsernameTakenError();
+      }
     }
-    if (conflict === 'username') {
-      throw new UsernameTakenError();
-    }
-    return person;
   }
 
   findByEmail(email: string): Promise<Person | null> {
@@ -67,19 +75,20 @@ export class PeopleService {
   }
 }
 
-function validate(input: NewPerson): FieldError[] {
+/** Quantas vezes um @usuário derivado é tentado de novo quando outra criação o pega antes. */
+const DERIVED_USERNAME_ATTEMPTS = 3;
+
+/**
+ * Os erros dos campos de uma Pessoa nova, menos a senha. Função pura: o comando de contas a usa
+ * para recusar a entrada antes de pedir a senha.
+ */
+export function validatePersonFields(input: Omit<NewPerson, 'password'>): FieldError[] {
   const errors: FieldError[] = [];
   if (!isEmail(input.email) || input.email.length > EMAIL_MAX_LENGTH) {
     errors.push({ field: 'email', message: 'Informe um e-mail válido.' });
   }
   if (input.name.length < 1 || input.name.length > NAME_MAX_LENGTH) {
     errors.push({ field: 'name', message: `O nome tem de 1 a ${NAME_MAX_LENGTH} caracteres.` });
-  }
-  if (input.password.length < PASSWORD_MIN_LENGTH || input.password.length > PASSWORD_MAX_LENGTH) {
-    errors.push({
-      field: 'password',
-      message: `A senha tem de ${PASSWORD_MIN_LENGTH} a ${PASSWORD_MAX_LENGTH} caracteres.`,
-    });
   }
   if (input.username !== undefined && !USERNAME_PATTERN.test(input.username)) {
     errors.push({
@@ -88,4 +97,16 @@ function validate(input: NewPerson): FieldError[] {
     });
   }
   return errors;
+}
+
+function validatePassword(password: string): FieldError[] {
+  if (password.length >= PASSWORD_MIN_LENGTH && password.length <= PASSWORD_MAX_LENGTH) {
+    return [];
+  }
+  return [
+    {
+      field: 'password',
+      message: `A senha tem de ${PASSWORD_MIN_LENGTH} a ${PASSWORD_MAX_LENGTH} caracteres.`,
+    },
+  ];
 }

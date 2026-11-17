@@ -3,7 +3,8 @@ import { ClsService } from 'nestjs-cls';
 import { parseArgs } from 'node:util';
 import { DomainError } from '../common/errors/domain.error.js';
 import { ValidationFailedError } from '../common/errors/validation-failed.error.js';
-import { PeopleService } from '../people/people.service.js';
+import { normalizeEmail } from '../people/people-rules.js';
+import { PeopleService, validatePersonFields } from '../people/people.service.js';
 import { AccountsModule } from './accounts.module.js';
 
 /** A entrada e a saída do comando: o terminal no `cli.ts`, uma entrada dada no teste. */
@@ -41,6 +42,16 @@ async function create(args: string[], io: AccountsCommandIo): Promise<number> {
   const [email, name] = parsed.positionals;
   if (!email || name === undefined || parsed.positionals.length > 2) {
     io.error(USAGE);
+    return 1;
+  }
+  // Recusa a entrada antes de pedir a senha, para o Operador não digitá-la à toa.
+  const fieldErrors = validatePersonFields({
+    email: normalizeEmail(email),
+    name: name.trim(),
+    username: parsed.values.username,
+  });
+  if (fieldErrors.length > 0) {
+    io.error(`${describe(new ValidationFailedError(fieldErrors))} Nada foi criado.`);
     return 1;
   }
 

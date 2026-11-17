@@ -60,9 +60,10 @@ Expected: o passo 1 cai em `/entrar?voltar=%2F%3Faba%3Dconversas`; depois de ent
 **File:** `e2e/01-entrar-e-sair/ignora-voltar-externo.spec.ts`
 
 Steps:
-1. Abrir `/entrar?voltar=//outro-site.example` e entrar pelo formulário.
+1. Abrir `/entrar?voltar=<valor>` e entrar pelo formulário, com cada valor: `//outro-site.example`,
+   `/%09/outro-site.example` (o tab que o navegador remove) e `/%5Coutro-site.example`.
 
-Expected: a página é a Home.
+Expected: a página é a Home nos três casos.
 
 ## 3. Tela Entrar (F01-T03)
 
@@ -158,6 +159,16 @@ Steps:
 2. Abrir `/?aba=conversas`.
 
 Expected: a página cai em `/entrar?voltar=%2F%3Faba%3Dconversas`, e o cookie `session` some.
+
+### 5.4 sessao-valida-nao-sai-por-link
+
+**File:** `e2e/01-entrar-e-sair/sessao-valida-nao-sai-por-link.spec.ts`
+
+Steps:
+1. Com Sessão, abrir `/api/sessao/expirada?voltar=%2F%3Faba%3Dconversas`, como faria um link de
+   outro site.
+
+Expected: a página volta para `/?aba=conversas`, com a casca, e o cookie `session` continua.
 
 ## 6. Acessibilidade (F01-T03)
 

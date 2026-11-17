@@ -4,8 +4,7 @@ import { Rail } from "../../components/rail";
 import { Sidebar } from "../../components/sidebar";
 import { getMe } from "../../services/chat-api";
 import { HOME_PATH, signInPath } from "../../utils/return-path";
-import { SESSION_COOKIE } from "../../utils/session-cookie-name";
-import { RETURN_PATH_HEADER } from "../../../proxy";
+import { RETURN_PATH_HEADER, SESSION_COOKIE } from "../../utils/session-cookie-name";
 
 /**
  * A casca das telas com Sessão. Confere a Sessão de verdade na API do chat; um 401 passa pelo

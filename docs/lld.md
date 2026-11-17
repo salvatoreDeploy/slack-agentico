@@ -435,12 +435,16 @@ atualiza esse cache direto, sem nova requisição.
 - O `proxy` do Next (o antigo `middleware`, renomeado no Next 16) confere só se o cookie de sessão
   existe; sem ele, manda para
   `/entrar?voltar=<caminho>`. A validação de verdade é da API do chat.
-- A ação Entrar só segue um `voltar` que começa com `/` e não com `//` nem `/\`, para não virar um
-  redirecionamento aberto. Qualquer outro valor leva a `/`.
+- A ação Entrar só segue um `voltar` que é um caminho do produto, para não virar um
+  redirecionamento aberto. O valor é resolvido como o navegador o resolveria e precisa continuar
+  na mesma origem: `//outro-site`, `/\outro-site` e `/<tab>/outro-site`, que o navegador
+  transforma em `//outro-site`, caem fora. Qualquer outro valor leva a `/`.
 - Qualquer 401 vindo do BFF apaga o cookie e manda para "Entrar", com o `voltar` da página atual.
   Numa Server Action, ela mesma apaga o cookie. Ao renderizar, um Server Component não grava
   cookie, então redireciona para `GET /api/sessao/expirada?voltar=…`, um Route Handler do BFF que
-  apaga o cookie e manda para "Entrar".
+  apaga o cookie e manda para "Entrar". Antes de apagar, ele confere a Sessão de novo: se ela ainda
+  vale, ou se a API do chat não responde, só volta ao `voltar`, para um link de outro site não
+  tirar ninguém do chat.
 - Um 401 no WebSocket fecha a conexão e manda para "Entrar".
 - Sair apaga o cookie mesmo quando a API do chat falha por rede ou com um 5xx. A Sessão fica no
   banco até vencer ou ser revogada.
