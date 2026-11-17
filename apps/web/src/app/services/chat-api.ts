@@ -10,10 +10,10 @@ export interface Person {
   email: string;
 }
 
+/** `invalid_credentials` cobre também a entrada que a API recusa (400), como um e-mail longo demais. */
 export type CreateSessionResult =
-  | { status: "created"; token: string; person: Person }
+  | { status: "created"; token: string }
   | { status: "invalid_credentials" }
-  | { status: "invalid_input" }
   | { status: "unavailable" };
 
 export type MeResult = { status: "ok"; person: Person } | { status: "unauthenticated" };
@@ -43,14 +43,11 @@ export async function createSession(email: string, password: string): Promise<Cr
     return { status: "unavailable" };
   }
   if (response.status === 201) {
-    const body = (await response.json()) as { token: string; person: Person };
-    return { status: "created", token: body.token, person: body.person };
+    const body = (await response.json()) as { token: string };
+    return { status: "created", token: body.token };
   }
-  if (response.status === 401) {
+  if (response.status === 400 || response.status === 401) {
     return { status: "invalid_credentials" };
-  }
-  if (response.status === 400) {
-    return { status: "invalid_input" };
   }
   return { status: "unavailable" };
 }

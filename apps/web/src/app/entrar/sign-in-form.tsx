@@ -5,9 +5,9 @@ import { unstable_rethrow } from "next/navigation";
 import { useActionState, useEffect, useRef, useState, type FormEvent } from "react";
 import { signIn, type SignInState } from "../actions/sign-in";
 import { Button } from "../components/button";
-import { Field } from "../components/field";
+import { Field, fieldErrorId } from "../components/field";
 import { Input } from "../components/input";
-import { validateSignIn, type SignInFieldErrors } from "../utils/sign-in-validation";
+import { readSignInFields, validateSignIn, type SignInFieldErrors } from "../utils/sign-in-validation";
 
 const CREDENTIALS_MESSAGE = "E-mail ou senha incorretos.";
 const UNAVAILABLE_MESSAGE = "Não foi possível entrar agora. Tente de novo em instantes.";
@@ -24,11 +24,7 @@ async function submitSignIn(previous: SignInState, formData: FormData): Promise<
     return await signIn(previous, formData);
   } catch (error) {
     unstable_rethrow(error);
-    return {
-      email: String(formData.get("email") ?? "").trim(),
-      error: "unavailable",
-      attempt: previous.attempt + 1,
-    };
+    return { email: readSignInFields(formData).email, error: "unavailable", attempt: previous.attempt + 1 };
   }
 }
 
@@ -57,8 +53,10 @@ export function SignInForm({ returnPath }: SignInFormProps) {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
+  // A ação também confere os campos, como defesa; os avisos dela aparecem se o cliente deixar passar.
   const fieldErrors = clientErrors ?? state.fieldErrors;
   const credentialsError = state.error === "credentials";
+  const passwordError = fieldErrors?.password ?? (credentialsError ? CREDENTIALS_MESSAGE : undefined);
 
   useEffect(() => {
     if (state.attempt === 0) {
@@ -74,8 +72,7 @@ export function SignInForm({ returnPath }: SignInFormProps) {
   }, [state]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    const data = new FormData(event.currentTarget);
-    const errors = validateSignIn(String(data.get("email") ?? "").trim(), String(data.get("password") ?? ""));
+    const errors = validateSignIn(readSignInFields(new FormData(event.currentTarget)));
     setClientErrors(errors);
     if (errors) {
       event.preventDefault();
@@ -97,7 +94,7 @@ export function SignInForm({ returnPath }: SignInFormProps) {
 
       <form action={formAction} onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <input type="hidden" name="voltar" value={returnPath} />
-        <Field htmlFor="email" label="E-mail" errorId="email-error" error={fieldErrors?.email}>
+        <Field htmlFor="email" label="E-mail" error={fieldErrors?.email}>
           <Input
             ref={emailRef}
             id="email"
@@ -108,25 +105,20 @@ export function SignInForm({ returnPath }: SignInFormProps) {
             defaultValue={state.email}
             autoFocus
             aria-invalid={Boolean(fieldErrors?.email) || credentialsError || undefined}
-            aria-describedby={fieldErrors?.email ? "email-error" : credentialsError ? "credentials-error" : undefined}
+            aria-describedby={
+              fieldErrors?.email ? fieldErrorId("email") : credentialsError ? fieldErrorId("password") : undefined
+            }
           />
         </Field>
-        <Field
-          htmlFor="password"
-          label="Senha"
-          errorId={fieldErrors?.password ? "password-error" : "credentials-error"}
-          error={fieldErrors?.password ?? (credentialsError ? CREDENTIALS_MESSAGE : undefined)}
-        >
+        <Field htmlFor="password" label="Senha" error={passwordError}>
           <Input
             ref={passwordRef}
             id="password"
             name="password"
             type="password"
             autoComplete="current-password"
-            aria-invalid={Boolean(fieldErrors?.password) || credentialsError || undefined}
-            aria-describedby={
-              fieldErrors?.password ? "password-error" : credentialsError ? "credentials-error" : undefined
-            }
+            aria-invalid={Boolean(passwordError) || undefined}
+            aria-describedby={passwordError ? fieldErrorId("password") : undefined}
           />
         </Field>
         {state.error === "unavailable" && (

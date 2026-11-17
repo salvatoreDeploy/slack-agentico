@@ -21,10 +21,6 @@ export class PeopleRepository {
     return this.people.findOneBy({ email });
   }
 
-  findById(id: string): Promise<Person | null> {
-    return this.people.findOneBy({ id });
-  }
-
   async existsByUsername(username: string): Promise<boolean> {
     return this.people.existsBy({ username });
   }

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { safeReturnPath, signInPath } from "../../../utils/return-path";
-import { SESSION_COOKIE, sessionCookieOptions } from "../../../utils/session-cookie";
+import { SESSION_COOKIE } from "../../../utils/session-cookie-name";
+import { sessionCookieOptions } from "../../../utils/session-cookie";
 
 /**
  * Sessão inválida detectada ao renderizar: apaga o cookie e manda para Entrar com o `voltar`

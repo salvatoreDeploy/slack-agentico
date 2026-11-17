@@ -15,8 +15,9 @@ export class SessionsRepository {
     await this.sessions.insert(session);
   }
 
-  findByTokenHash(tokenHash: Buffer): Promise<Session | null> {
-    return this.sessions.findOneBy({ tokenHash });
+  /** A Sessão do token com a Pessoa dela, numa consulta só: é o caminho de toda requisição. */
+  findByTokenHashWithPerson(tokenHash: Buffer): Promise<Session | null> {
+    return this.sessions.findOne({ where: { tokenHash }, relations: { person: true } });
   }
 
   async deleteById(id: string): Promise<void> {

@@ -144,8 +144,10 @@ novas tentativas e idempotência").
   do login. O Banco do chat guarda apenas o SHA-256 dele, para quem lê o banco não conseguir se
   passar por ninguém.
 - **Senha:** guardada como hash Argon2id, com 19 MiB, 2 iterações e paralelismo 1 (parâmetros da
-  OWASP). Para e-mail inexistente, a API confere a senha contra um hash fixo, gerado na subida,
-  para o tempo de resposta não revelar se a conta existe.
+  OWASP). Para e-mail inexistente, a API confere a senha contra um hash fixo, com os mesmos
+  parâmetros, para o tempo de resposta não revelar se a conta existe. O hash é de uma senha
+  aleatória que ninguém conhece, calculado uma vez e guardado no código, para nenhuma subida pagar
+  um Argon2id.
 - **Limite de tentativas de login:** a chave é só o e-mail normalizado, exista ele ou não. O IP
   fica de fora, porque a origem dele atrás do proxy depende da PaaS (HLD, seção 12)
   ([ADR 0023](adr/0023-limite-de-login-por-email.md)). A regra está em "Sessão e login".

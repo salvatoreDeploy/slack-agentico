@@ -10,6 +10,8 @@ import {
   normalizeEmail,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
   USERNAME_PATTERN,
 } from './people-rules.js';
 import { PasswordHasher } from './password-hasher.js';
@@ -39,13 +41,9 @@ export class PeopleService {
     if (errors.length > 0) {
       throw new ValidationFailedError(errors);
     }
-    if (await this.people.findByEmail(email)) {
-      throw new EmailTakenError();
-    }
-    if (input.username && (await this.people.existsByUsername(input.username))) {
-      throw new UsernameTakenError();
-    }
 
+    // O e-mail e o @usuário já usados são recusados pela única do banco, no insert, o que vale
+    // também sob concorrência.
     const person = new Person();
     person.id = uuidv7();
     person.name = name;
@@ -62,10 +60,6 @@ export class PeopleService {
       throw new UsernameTakenError();
     }
     return person;
-  }
-
-  findById(id: string): Promise<Person | null> {
-    return this.people.findById(id);
   }
 
   findByEmail(email: string): Promise<Person | null> {
@@ -90,7 +84,7 @@ function validate(input: NewPerson): FieldError[] {
   if (input.username !== undefined && !USERNAME_PATTERN.test(input.username)) {
     errors.push({
       field: 'username',
-      message: 'O @usuário tem de 3 a 30 caracteres: minúsculas, dígitos, ".", "_" e "-", começando por letra.',
+      message: `O @usuário tem de ${USERNAME_MIN_LENGTH} a ${USERNAME_MAX_LENGTH} caracteres: minúsculas, dígitos, ".", "_" e "-", começando por letra.`,
     });
   }
   return errors;

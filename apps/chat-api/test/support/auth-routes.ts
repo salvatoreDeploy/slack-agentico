@@ -3,6 +3,7 @@ import { ClsService } from 'nestjs-cls';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { PeopleService } from '../../src/people/people.service.js';
+import { SESSION_COOKIE } from '../../src/sessions/session-rules.js';
 import { queryTestDatabase } from './test-database.js';
 import { uniqueEmail } from './unique-email.js';
 
@@ -42,7 +43,7 @@ export async function login(app: INestApplication<App>, person: TestPerson): Pro
 
 /** O cabeçalho com o cookie de sessão, como o BFF o repassa. */
 export function sessionCookie(token: string): string {
-  return `session=${token}`;
+  return `${SESSION_COOKIE}=${token}`;
 }
 
 /** Envelhece todas as Sessões da Pessoa até o passado, para o teste de Sessão vencida. */

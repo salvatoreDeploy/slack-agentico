@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Spinner } from "../components/spinner";
 import { getMe } from "../services/chat-api";
 import { HOME_PATH, safeReturnPath } from "../utils/return-path";
-import { SESSION_COOKIE } from "../utils/session-cookie";
+import { SESSION_COOKIE } from "../utils/session-cookie-name";
 import { SignInForm } from "./sign-in-form";
 
 export default function signInPage({ searchParams }: PageProps<"/entrar">) {

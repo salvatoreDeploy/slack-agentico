@@ -4,7 +4,7 @@ import { Rail } from "../../components/rail";
 import { Sidebar } from "../../components/sidebar";
 import { getMe } from "../../services/chat-api";
 import { HOME_PATH, signInPath } from "../../utils/return-path";
-import { SESSION_COOKIE } from "../../utils/session-cookie";
+import { SESSION_COOKIE } from "../../utils/session-cookie-name";
 import { RETURN_PATH_HEADER } from "../../../proxy";
 
 /**

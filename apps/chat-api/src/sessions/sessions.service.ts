@@ -52,18 +52,14 @@ export class SessionsService {
    * é apagada nessa hora. A renovação entra com a tarefa F01-T06.
    */
   async authenticate(token: string): Promise<Person> {
-    const session = await this.sessions.findByTokenHash(hashSessionToken(token));
-    if (!session) {
+    const session = await this.sessions.findByTokenHashWithPerson(hashSessionToken(token));
+    if (!session?.person) {
       throw new UnauthenticatedError();
     }
     if (session.expiresAt.getTime() <= Date.now()) {
       await this.sessions.deleteById(session.id);
       throw new UnauthenticatedError();
     }
-    const person = await this.people.findById(session.personId);
-    if (!person) {
-      throw new UnauthenticatedError();
-    }
-    return person;
+    return session.person;
   }
 }

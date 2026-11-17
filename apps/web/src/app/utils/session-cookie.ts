@@ -1,8 +1,5 @@
 import "server-only";
 import { loadEnv } from "../../config/env";
-import { SESSION_COOKIE } from "./session-cookie-name";
-
-export { SESSION_COOKIE };
 
 interface SessionCookieOptions {
   httpOnly: true;
