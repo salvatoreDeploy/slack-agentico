@@ -58,6 +58,7 @@ docs/             HLD, LLD, ADRs, brief
 | Hash de senha | Argon2id, pelo `@node-rs/argon2` | Argon2id: primeira recomendação da OWASP para senhas; `@node-rs/argon2`: binários prontos, sem compilar no contêiner |
 | Mutações do navegador ao BFF | Server Actions | O Next confere a origem de cada Server Action, o que dispensa token CSRF ("Segurança") |
 | Leitura da senha no comando de contas | `@inquirer/password` | Lê do terminal sem eco |
+| Leitura do cookie de sessão na API do chat | `cookie` (só o `parse`, no guard) | Só o guard lê o cookie; um middleware global seria trabalho em toda requisição sem uso |
 | Validação de entrada na API do chat | `class-validator` e `class-transformer`, no `ValidationPipe` global | Caminho padrão do Nest, e o plugin do `@nestjs/swagger` lê os DTOs para gerar o contrato; o `zod` fica só na configuração |
 | Testes de ponta a ponta da web | Playwright (`@playwright/test`), só pelo navegador; sem component testing, sem a fixture `request` e, por enquanto, sem `@next/playwright` | O Next recomenda ponta a ponta para Server Components assíncronos, e o Playwright é um dos guias oficiais dele. Roda em modo headless no contêiner sem tela, guarda o `trace` na falha e tem a skill `playwright-cli`, com que o agente planeja, gera e corrige os testes. Descartado: Cypress, sem skill no projeto e com uma CLI menos ligada ao fluxo do agente. O `instant()` do `@next/playwright` entra quando uma funcionalidade precisar provar o estado logo após uma navegação |
 | Gerenciador dos projetos TypeScript | pnpm, um projeto por pasta, sem workspace | [ADR 0017](adr/0017-projetos-pnpm-independentes.md) |
@@ -86,9 +87,9 @@ Os módulos das outras funcionalidades entram com elas.
 
 | Módulo | Responsabilidade | Situação |
 | --- | --- | --- |
-| `people` | Pessoas: criar, buscar por e-mail, trocar a senha | planejada |
-| `sessions` | Login, limite de tentativas, validação, renovação e revogação da Sessão ("Sessão e login"); o guard global que exige Sessão, com o decorator `@Public()` nas rotas abertas | planejada |
-| `accounts` | O comando de contas, fora do HTTP | planejada |
+| `people` | Pessoas: criar, buscar por e-mail, trocar a senha | existe; a troca de senha entra com a F01-T07 |
+| `sessions` | Login, limite de tentativas, validação, renovação e revogação da Sessão ("Sessão e login"); o guard global que exige Sessão, com o decorator `@Public()` nas rotas abertas | existe; o limite de tentativas, a renovação e a revogação entram com as F01-T05 e F01-T06 |
+| `accounts` | O comando de contas, fora do HTTP | existe, com a operação `create`; as outras entram com a F01-T06 |
 
 ### Integrações externas
 
@@ -143,8 +144,10 @@ novas tentativas e idempotência").
   do login. O Banco do chat guarda apenas o SHA-256 dele, para quem lê o banco não conseguir se
   passar por ninguém.
 - **Senha:** guardada como hash Argon2id, com 19 MiB, 2 iterações e paralelismo 1 (parâmetros da
-  OWASP). Para e-mail inexistente, a API confere a senha contra um hash fixo, gerado na subida,
-  para o tempo de resposta não revelar se a conta existe.
+  OWASP). Para e-mail inexistente, a API confere a senha contra um hash fixo, com os mesmos
+  parâmetros, para o tempo de resposta não revelar se a conta existe. O hash é de uma senha
+  aleatória que ninguém conhece, calculado uma vez e guardado no código, para nenhuma subida pagar
+  um Argon2id.
 - **Limite de tentativas de login:** a chave é só o e-mail normalizado, exista ele ou não. O IP
   fica de fora, porque a origem dele atrás do proxy depende da PaaS (HLD, seção 12)
   ([ADR 0023](adr/0023-limite-de-login-por-email.md)). A regra está em "Sessão e login".
@@ -259,8 +262,8 @@ exigem estão em "Conceitos transversais de implementação", seção "Concorrê
 
 | Banco | Entidade (HLD, seção 7) | Situação |
 | --- | --- | --- |
-| Chat | Pessoas (perfil, papel de administrador, permissão de dados) | planejada; as colunas da F01 estão na spec da F01, e o perfil, o papel e a permissão entram com as F09, F10 e F13 |
-| Chat | Sessões | planejada; forma na spec da F01 |
+| Chat | Pessoas (perfil, papel de administrador, permissão de dados) | existe, com as colunas da F01 (schema nas migrações); o perfil, o papel e a permissão entram com as F09, F10 e F13 |
+| Chat | Sessões | existe (schema nas migrações) |
 | Chat | Tentativas de login | planejada; forma na spec da F01 |
 | Chat | Canais e membros | a detalhar |
 | Chat | Conversas diretas | a detalhar |
@@ -307,14 +310,14 @@ de eventos do WebSocket estão a definir. O que já está decidido:
 | --- | --- | --- |
 | Envio de mensagem no BFF (caminho a definir) | a detalhar | Mensagem gravada e agente sem receber o pedido: "Conceitos transversais de implementação", seção "Erros" |
 
-**API do chat: Sessão e Pessoa** (para o BFF). Entrada, saída e erros estão na spec da F01, até
-o snapshot recebê-los.
+**API do chat: Sessão e Pessoa** (para o BFF). Das rotas que existem, a forma está no
+`openapi.json`; das planejadas, na spec da F01, até o snapshot recebê-las.
 
 | Método e caminho | Situação | Comportamento |
 | --- | --- | --- |
-| `POST /v1/sessions` | planejada | Entrar; única rota `@Public()` da F01 ("Sessão e login") |
+| `POST /v1/sessions` | existe | Entrar; única rota `@Public()` da F01 ("Sessão e login") |
 | `DELETE /v1/sessions/current` | planejada | Sair ("Sessão e login") |
-| `GET /v1/me` | planejada | A Pessoa da Sessão |
+| `GET /v1/me` | existe | A Pessoa da Sessão |
 | `PUT /v1/me/password` | planejada | Trocar a senha ("Sessão e login") |
 
 ## 6. Estados e regras
@@ -413,8 +416,8 @@ PDFs, perguntas pendentes vencidas) estão a definir.
 
 | Rota | Acesso | Lê | Ações | Situação |
 | --- | --- | --- | --- | --- |
-| `/entrar` | Público; quem tem Sessão vai para `/` | — | Entrar com e-mail e senha | planejada |
-| `/` | Sessão | A Pessoa da Sessão (`GET /v1/me`), na casca vazia | Trocar a senha (diálogo pelo menu do usuário); Sair | planejada |
+| `/entrar` | Público; quem tem Sessão vai para `/` | — | Entrar com e-mail e senha | existe |
+| `/` | Sessão | A Pessoa da Sessão (`GET /v1/me`), na casca vazia | Trocar a senha (diálogo pelo menu do usuário); Sair | existe; "Trocar a senha" e "Sair" entram com as F01-T07 e F01-T04 |
 | A definir | Sessão | Histórico da conversa | Enviar, editar, apagar, citar; "digitando"; botões de resposta pronta | a detalhar |
 | A definir (lateral) | Sessão | Conversas, com não lidas e menções | Abrir conversa | a detalhar |
 | A definir | Sessão | Atividade: Menções, DMs, Tarefas | Abrir a mensagem; concluir e reabrir tarefa | a detalhar |
@@ -432,9 +435,16 @@ atualiza esse cache direto, sem nova requisição.
 - O `proxy` do Next (o antigo `middleware`, renomeado no Next 16) confere só se o cookie de sessão
   existe; sem ele, manda para
   `/entrar?voltar=<caminho>`. A validação de verdade é da API do chat.
-- A ação Entrar só segue um `voltar` que começa com `/` e não com `//` nem `/\`, para não virar um
-  redirecionamento aberto. Qualquer outro valor leva a `/`.
+- A ação Entrar só segue um `voltar` que é um caminho do produto, para não virar um
+  redirecionamento aberto. O valor é resolvido como o navegador o resolveria e precisa continuar
+  na mesma origem: `//outro-site`, `/\outro-site` e `/<tab>/outro-site`, que o navegador
+  transforma em `//outro-site`, caem fora. Qualquer outro valor leva a `/`.
 - Qualquer 401 vindo do BFF apaga o cookie e manda para "Entrar", com o `voltar` da página atual.
+  Numa Server Action, ela mesma apaga o cookie. Ao renderizar, um Server Component não grava
+  cookie, então redireciona para `GET /api/sessao/expirada?voltar=…`, um Route Handler do BFF que
+  apaga o cookie e manda para "Entrar". Antes de apagar, ele confere a Sessão de novo: se ela ainda
+  vale, ou se a API do chat não responde, só volta ao `voltar`, para um link de outro site não
+  tirar ninguém do chat.
 - Um 401 no WebSocket fecha a conexão e manda para "Entrar".
 - Sair apaga o cookie mesmo quando a API do chat falha por rede ou com um 5xx. A Sessão fica no
   banco até vencer ou ser revogada.

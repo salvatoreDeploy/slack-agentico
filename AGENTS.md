@@ -139,7 +139,9 @@ docs/funcionalidades/<num-funcionalidade>-<titulo>/
 
 Os números têm dois dígitos e os títulos ficam em kebab-case sem acento (`01-entrar-e-sair`). As tarefas são numeradas a partir de `01` dentro de cada funcionalidade, na ordem de dependência.
 
-A pasta da tarefa só recebe, além da tarefa e do plano, registros da própria tarefa, como o roteiro de um teste manual, o resultado de uma medição ou as capturas de uma validação visual. Eles ficam em Markdown ou imagem, com nome em kebab-case (`roteiro-manual.md`, `medicao-p95.md`). Código, fixtures de teste e configuração nunca vão para essa pasta: ficam no projeto a que pertencem. Só o `plano.md` congela no commit de plano; os outros registros são escritos durante a implementação e entram no PR da tarefa.
+A pasta da tarefa só recebe, além da tarefa e do plano, registros da própria tarefa, como o roteiro de um teste manual, o resultado de uma medição ou a validação visual. Eles ficam em Markdown, com nome em kebab-case (`roteiro-manual.md`, `medicao-p95.md`). Código, fixtures de teste e configuração nunca vão para essa pasta: ficam no projeto a que pertencem. Só o `plano.md` congela no commit de plano; os outros registros são escritos durante a implementação e entram no PR da tarefa.
+
+**Capturas de tela não entram no git.** As capturas de uma validação visual ou de uma verificação são geradas na pasta da tarefa, e o usuário confere cada uma. Só depois do de acordo expresso dele elas são apagadas, antes do commit, e o registro em Markdown descreve o que foi comparado, como cada estado foi produzido e o resultado.
 
 **Status**
 

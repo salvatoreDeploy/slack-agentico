@@ -16,19 +16,34 @@ const ERROR_STATUS: Record<ErrorCode, number> = {
   payload_too_large: 413,
   not_found: 404,
   unauthenticated: 401,
+  invalid_credentials: 401,
+  email_taken: 409,
+  username_taken: 409,
   request_rejected: 400,
   internal_error: 500,
 };
 
+/** Os códigos que o filter dá sozinho, sem erro de domínio: o erro de domínio traz o próprio texto. */
+type GenericCode = Extract<
+  ErrorCode,
+  | 'validation_failed'
+  | 'malformed_body'
+  | 'payload_too_large'
+  | 'not_found'
+  | 'unauthenticated'
+  | 'request_rejected'
+  | 'internal_error'
+>;
+
 /** Os `HttpException` com código próprio, pelo status. Os outros 4xx são `request_rejected`. */
-const HTTP_STATUS_CODE: Partial<Record<number, ErrorCode>> = {
+const HTTP_STATUS_CODE: Partial<Record<number, GenericCode>> = {
   400: 'validation_failed',
   401: 'unauthenticated',
   404: 'not_found',
   413: 'payload_too_large',
 };
 
-const DETAIL: Record<ErrorCode, string> = {
+const DETAIL: Record<GenericCode, string> = {
   validation_failed: VALIDATION_FAILED_DETAIL,
   malformed_body: 'O corpo da requisição não é um JSON válido.',
   payload_too_large: 'O corpo da requisição é grande demais.',
@@ -109,7 +124,7 @@ export class ProblemDetailsFilter implements ExceptionFilter {
  * O código de um `HttpException` 4xx. O adaptador do Express embrulha o JSON malformado num 400,
  * com o `SyntaxError` do leitor do corpo em `cause`.
  */
-function httpExceptionCode(exception: HttpException): ErrorCode {
+function httpExceptionCode(exception: HttpException): GenericCode {
   if (exception.cause instanceof SyntaxError) {
     return 'malformed_body';
   }

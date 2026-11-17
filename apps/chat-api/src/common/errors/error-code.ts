@@ -8,5 +8,8 @@ export type ErrorCode =
   | 'payload_too_large'
   | 'not_found'
   | 'unauthenticated'
+  | 'invalid_credentials'
+  | 'email_taken'
+  | 'username_taken'
   | 'request_rejected'
   | 'internal_error';
