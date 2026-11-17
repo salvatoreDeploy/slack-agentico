@@ -87,9 +87,9 @@ Os módulos das outras funcionalidades entram com elas.
 
 | Módulo | Responsabilidade | Situação |
 | --- | --- | --- |
-| `people` | Pessoas: criar, buscar por e-mail, trocar a senha | planejada |
-| `sessions` | Login, limite de tentativas, validação, renovação e revogação da Sessão ("Sessão e login"); o guard global que exige Sessão, com o decorator `@Public()` nas rotas abertas | planejada |
-| `accounts` | O comando de contas, fora do HTTP | planejada |
+| `people` | Pessoas: criar, buscar por e-mail, trocar a senha | existe; a troca de senha entra com a F01-T07 |
+| `sessions` | Login, limite de tentativas, validação, renovação e revogação da Sessão ("Sessão e login"); o guard global que exige Sessão, com o decorator `@Public()` nas rotas abertas | existe; o limite de tentativas, a renovação e a revogação entram com as F01-T05 e F01-T06 |
+| `accounts` | O comando de contas, fora do HTTP | existe, com a operação `create`; as outras entram com a F01-T06 |
 
 ### Integrações externas
 
@@ -262,8 +262,8 @@ exigem estão em "Conceitos transversais de implementação", seção "Concorrê
 
 | Banco | Entidade (HLD, seção 7) | Situação |
 | --- | --- | --- |
-| Chat | Pessoas (perfil, papel de administrador, permissão de dados) | planejada; as colunas da F01 estão na spec da F01, e o perfil, o papel e a permissão entram com as F09, F10 e F13 |
-| Chat | Sessões | planejada; forma na spec da F01 |
+| Chat | Pessoas (perfil, papel de administrador, permissão de dados) | existe, com as colunas da F01 (schema nas migrações); o perfil, o papel e a permissão entram com as F09, F10 e F13 |
+| Chat | Sessões | existe (schema nas migrações) |
 | Chat | Tentativas de login | planejada; forma na spec da F01 |
 | Chat | Canais e membros | a detalhar |
 | Chat | Conversas diretas | a detalhar |
@@ -310,14 +310,14 @@ de eventos do WebSocket estão a definir. O que já está decidido:
 | --- | --- | --- |
 | Envio de mensagem no BFF (caminho a definir) | a detalhar | Mensagem gravada e agente sem receber o pedido: "Conceitos transversais de implementação", seção "Erros" |
 
-**API do chat: Sessão e Pessoa** (para o BFF). Entrada, saída e erros estão na spec da F01, até
-o snapshot recebê-los.
+**API do chat: Sessão e Pessoa** (para o BFF). Das rotas que existem, a forma está no
+`openapi.json`; das planejadas, na spec da F01, até o snapshot recebê-las.
 
 | Método e caminho | Situação | Comportamento |
 | --- | --- | --- |
-| `POST /v1/sessions` | planejada | Entrar; única rota `@Public()` da F01 ("Sessão e login") |
+| `POST /v1/sessions` | existe | Entrar; única rota `@Public()` da F01 ("Sessão e login") |
 | `DELETE /v1/sessions/current` | planejada | Sair ("Sessão e login") |
-| `GET /v1/me` | planejada | A Pessoa da Sessão |
+| `GET /v1/me` | existe | A Pessoa da Sessão |
 | `PUT /v1/me/password` | planejada | Trocar a senha ("Sessão e login") |
 
 ## 6. Estados e regras
@@ -416,8 +416,8 @@ PDFs, perguntas pendentes vencidas) estão a definir.
 
 | Rota | Acesso | Lê | Ações | Situação |
 | --- | --- | --- | --- | --- |
-| `/entrar` | Público; quem tem Sessão vai para `/` | — | Entrar com e-mail e senha | planejada |
-| `/` | Sessão | A Pessoa da Sessão (`GET /v1/me`), na casca vazia | Trocar a senha (diálogo pelo menu do usuário); Sair | planejada |
+| `/entrar` | Público; quem tem Sessão vai para `/` | — | Entrar com e-mail e senha | existe |
+| `/` | Sessão | A Pessoa da Sessão (`GET /v1/me`), na casca vazia | Trocar a senha (diálogo pelo menu do usuário); Sair | existe; "Trocar a senha" e "Sair" entram com as F01-T07 e F01-T04 |
 | A definir | Sessão | Histórico da conversa | Enviar, editar, apagar, citar; "digitando"; botões de resposta pronta | a detalhar |
 | A definir (lateral) | Sessão | Conversas, com não lidas e menções | Abrir conversa | a detalhar |
 | A definir | Sessão | Atividade: Menções, DMs, Tarefas | Abrir a mensagem; concluir e reabrir tarefa | a detalhar |
