@@ -220,7 +220,7 @@ Na API do chat:
 - O corpo da requisição nunca vai para o log.
 - Os campos `password`, `current_password`, `new_password`, `token`, `authorization` e `cookie`
   são mascarados.
-- O e-mail de uma tentativa de login bloqueada vai para o log como hash.
+- O e-mail de um bloqueio de login vai para o log como hash.
 
 A biblioteca e os campos de correlação dos outros projetos, e o resto da lista do que nunca vai
 para o log, estão a definir.
@@ -228,7 +228,7 @@ para o log, estão a definir.
 | Nível | Quando |
 | --- | --- |
 | info | Fim de cada requisição e de cada pedido a agente, com tempo de resposta e custo como campos |
-| warn | Resposta barrada pelo lastro; limite de pedidos ou teto de custo atingido; tentativa de login bloqueada |
+| warn | Resposta barrada pelo lastro; limite de pedidos ou teto de custo atingido; bloqueio de login, um por bloqueio, na falha que o causa, e não a cada tentativa recusada durante ele, para um ataque não encher o log |
 | error | Falha do modelo; tentativas do Worker esgotadas; exceção inesperada |
 
 ### Configuração

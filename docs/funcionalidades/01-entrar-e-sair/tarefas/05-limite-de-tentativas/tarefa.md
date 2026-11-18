@@ -1,6 +1,6 @@
 # 05: Limite de tentativas
 
-**Status:** a fazer
+**Status:** em andamento
 
 **O que construir:** quem erra a senha várias vezes seguidas para o mesmo e-mail é bloqueado por um
 tempo, mesmo com a senha certa, e a tela Entrar avisa. O bloqueio passa sozinho. Um e-mail
