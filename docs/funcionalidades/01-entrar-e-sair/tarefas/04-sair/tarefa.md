@@ -1,6 +1,6 @@
 # 04: Sair
 
-**Status:** a fazer
+**Status:** em andamento
 
 **O que construir:** a Pessoa sai pelo item "Sair" do menu do usuário e volta à tela Entrar. A
 Sessão deste navegador acaba, e as outras abas vão para Entrar na próxima ação. As Sessões da
