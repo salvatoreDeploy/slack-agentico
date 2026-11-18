@@ -1,6 +1,6 @@
 # 06: Vencimento, renovação e revogação de Sessões
 
-**Status:** a fazer
+**Status:** em andamento
 
 **O que construir:** a Sessão de quem usa o chat é renovada pelo uso, e a de quem fica sem usar
 vence. O Operador revoga as Sessões de uma Pessoa, redefine a senha dela e apaga as Sessões
