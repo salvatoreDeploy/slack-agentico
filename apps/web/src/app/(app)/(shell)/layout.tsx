@@ -11,7 +11,7 @@ import { RETURN_PATH_HEADER, SESSION_COOKIE } from "../../utils/session-cookie-n
  * Route Handler que apaga o cookie, porque um Server Component não grava cookie (LLD, "Sessão no
  * cliente"). Uma falha de rede ou um 5xx sobe para a porta "Erro de sessão".
  */
-export default async function shellLayout({ children }: LayoutProps<"/">) {
+export default async function ShellLayout({ children }: LayoutProps<"/">) {
   const returnPath = (await headers()).get(RETURN_PATH_HEADER) ?? HOME_PATH;
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) {

@@ -13,10 +13,10 @@ test.describe("Tela Entrar", () => {
 
     await page.getByRole("button", { name: "Entrar" }).click();
 
-    await expect(page.getByText("E-mail ou senha incorretos.")).toBeVisible();
+    await expect(page.getByText("E-mail ou senha incorretos. Confira os dados e tente de novo.")).toBeVisible();
     await expect(page.getByLabel("Senha")).toHaveValue("");
     await expect(page.getByLabel("Senha")).toBeFocused();
     await expect(page.getByLabel("E-mail")).toHaveValue(person.email);
-    await expect(page.getByLabel("Senha")).toHaveAccessibleDescription("E-mail ou senha incorretos.");
+    await expect(page.getByLabel("Senha")).toHaveAccessibleDescription("E-mail ou senha incorretos. Confira os dados e tente de novo.");
   });
 });

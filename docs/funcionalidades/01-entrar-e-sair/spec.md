@@ -157,16 +157,16 @@ chama os mesmos services de Pessoas e de Sessões.
 - **Verificação da Sessão:** o proxy do Next confere só se o cookie existe. A verificação de
   verdade é feita pelo layout das telas com Sessão e pela tela `/entrar`, chamando `GET /v1/me`.
   A reação a cada resposta está no LLD, "Cliente".
-- **Tela Entrar**, que reproduz a seção Login do design:
+- **Tela Entrar**, que reproduz a seção Login do design. Os textos de cada estado são os dos frames
+  `Login / <Estado>`, donos do microtexto (LLD, "Onde mora cada fato"):
   - **Padrão:** foco inicial no E-mail.
   - **Erro de validação:** a validação roda no cliente e na Server Action, e o foco vai para o
     primeiro campo inválido.
   - **Enviando:** o botão fica em `loading`, e o envio duplo é bloqueado.
-  - **Credenciais incorretas:** "E-mail ou senha incorretos." abaixo da Senha. A senha é limpa, o
-    foco vai para a Senha e o e-mail continua preenchido.
-  - **Tentativas demais:** "Muitas tentativas. Tente de novo em alguns minutos."
-  - **Falha no envio**, de rede ou do servidor: "Não foi possível entrar agora. Tente de novo em
-    instantes."
+  - **Credenciais incorretas:** a mensagem do frame, abaixo da Senha. A senha é limpa, o foco vai
+    para a Senha e o e-mail continua preenchido.
+  - **Tentativas demais:** a mensagem do frame.
+  - **Falha no envio**, de rede ou do servidor: a mensagem do frame.
 
   Nos dois últimos estados, a mensagem fica no formulário, entre a Senha e o botão, com
   `role="alert"`. O e-mail e a senha continuam preenchidos, e o foco não muda. Os campos com erro

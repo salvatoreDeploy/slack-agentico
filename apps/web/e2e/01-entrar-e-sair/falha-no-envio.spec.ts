@@ -18,7 +18,7 @@ test.describe("Tela Entrar", () => {
     await page.getByRole("button", { name: "Entrar" }).click();
 
     await expect(page.getByRole("alert").filter({ hasText: "Não foi possível" })).toHaveText(
-      "Não foi possível entrar agora. Tente de novo em instantes.",
+      "Não foi possível entrar agora. Confira sua conexão e tente de novo.",
     );
     await expect(page.getByLabel("E-mail")).toHaveValue(person.email);
     await expect(page).toHaveURL("/entrar");

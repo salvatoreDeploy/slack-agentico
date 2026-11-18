@@ -7,7 +7,7 @@ import { HOME_PATH, safeReturnPath } from "../utils/return-path";
 import { SESSION_COOKIE } from "../utils/session-cookie-name";
 import { SignInForm } from "./sign-in-form";
 
-export default function signInPage({ searchParams }: PageProps<"/entrar">) {
+export default function SignInPage({ searchParams }: PageProps<"/entrar">) {
   return (
     <main className="flex flex-1 items-center justify-center bg-surface-subtle p-6">
       <Suspense fallback={<Spinner label="Carregando" />}>

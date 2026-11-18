@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: "Chat de equipe com Agentes de IA dentro da conversa.",
 };
 
-export default function rootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="pt-BR" className={`${LATO.variable} h-full antialiased`}>
       <body className="flex h-full flex-col">{children}</body>

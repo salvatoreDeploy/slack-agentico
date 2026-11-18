@@ -47,8 +47,8 @@ consiga entrar sem que o produto tenha cadastro.
 - Com e-mail e senha corretos, a Pessoa entra e vê a página inicial: a casca vazia do chat, com o
   nome dela, "Trocar senha" e "Sair" no menu do usuário.
 - O e-mail é aceito sem distinção de maiúsculas e minúsculas e sem espaços nas pontas.
-- Com e-mail inexistente ou senha errada, a mensagem é sempre "E-mail ou senha incorretos.". A tela
-  não revela se o e-mail existe.
+- Com e-mail inexistente ou senha errada, a mensagem é sempre a mesma, a do frame "Login /
+  Credenciais incorretas" da ferramenta de design. A tela não revela se o e-mail existe.
 - Com algum campo vazio, a tela avisa qual é, sem enviar o formulário.
 - Quem já tem Sessão e abre a tela Entrar vai direto para a página inicial.
 - O fluxo inteiro funciona só com o teclado: Tab percorre os campos e o botão, e Enter envia.
@@ -94,8 +94,8 @@ acesso dela na hora, por exemplo quando alguém sai da empresa ou perde o notebo
 
 - Depois de 5 senhas erradas para o mesmo e-mail em 15 minutos, novas tentativas para esse e-mail
   ficam bloqueadas por 15 minutos, mesmo com a senha certa.
-- Durante o bloqueio, a mensagem é "Muitas tentativas. Tente de novo em alguns minutos.". Ela
-  aparece também para e-mail inexistente, para não revelar quais contas existem.
+- Durante o bloqueio, a mensagem é a do frame "Login / Tentativas demais" da ferramenta de design.
+  Ela aparece também para e-mail inexistente, para não revelar quais contas existem.
 - O bloqueio acaba sozinho, sem intervenção de ninguém.
 - Cada bloqueio fica registrado como aviso.
 

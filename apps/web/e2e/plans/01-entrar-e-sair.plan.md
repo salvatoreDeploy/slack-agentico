@@ -93,7 +93,7 @@ Expected: "Informe seu e-mail." e "Informe sua senha." aparecem; o E-mail tem o 
 Steps:
 1. Abrir `/entrar`, preencher o e-mail da Pessoa e uma senha errada e clicar em "Entrar".
 
-Expected: "E-mail ou senha incorretos." aparece abaixo da Senha e é a descrição acessível dela; a
+Expected: "E-mail ou senha incorretos. Confira os dados e tente de novo." aparece abaixo da Senha e é a descrição acessível dela; a
 Senha fica vazia e com o foco; o E-mail continua preenchido.
 
 ### 3.4 falha-no-envio
@@ -104,7 +104,7 @@ Steps:
 1. Abrir `/entrar` e fazer o envio da ação Entrar cair (a rota `POST` da página abortada).
 2. Preencher e-mail e senha e clicar em "Entrar".
 
-Expected: um `role="alert"` com "Não foi possível entrar agora. Tente de novo em instantes."; o
+Expected: um `role="alert"` com "Não foi possível entrar agora. Confira sua conexão e tente de novo."; o
 e-mail continua preenchido; a página continua em `/entrar`.
 
 ## 4. Home e menu do usuário (F01-T03)

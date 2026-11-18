@@ -8,7 +8,7 @@ import { EmptyState } from "../components/empty-state";
  * Porta "Erro de sessão": a conferência da Sessão falhou por rede ou servidor. Em tela cheia, sem a
  * casca; "Tentar de novo" busca e renderiza a rota de novo.
  */
-export default function sessionError({ retry }: { error: unknown; retry: () => void }) {
+export default function SessionError({ retry }: { error: unknown; retry: () => void }) {
   return (
     <div className="flex flex-1 items-center justify-center bg-surface">
       <EmptyState

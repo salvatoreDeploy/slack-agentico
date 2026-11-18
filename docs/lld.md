@@ -1,6 +1,6 @@
 # LLD — Full Cycle Chat
 
-2026-11-15 · Luiz Carlos · Status: rascunho · HLD: [hld.md](hld.md)
+2026-11-18 · Luiz Carlos · Status: rascunho · HLD: [hld.md](hld.md)
 
 **Onde mora cada fato**
 
@@ -170,8 +170,8 @@ novas tentativas e idempotência").
   o conflito: se o identificador já existe, a API devolve a mensagem já gravada, com o mesmo
   status de sucesso, e não gera de novo menções, notificações, contadores nem eventos.
 - **Ação de bot:** unicidade em (identificador de pedido, tipo de ação). Tipos: resposta, pergunta
-  ao usuário, aviso de início, entrega do PDF, criação de tarefa. A repetição devolve o que já foi
-  gravado, sem nova mensagem, tarefa ou notificação.
+  ao usuário, aviso de início, entrega do PDF, criação de tarefa delegada. A repetição devolve o que já foi
+  gravado, sem nova mensagem, tarefa delegada ou notificação.
 - **Contadores de não lidas e de menções:** um registro por pessoa e conversa, somado de forma
   atômica na transação da mensagem (incremento no próprio `UPDATE`, sem ler antes) e zerado quando
   a pessoa lê ([ADR 0021](adr/0021-contadores-gravados.md); depende de mudança no HLD).
@@ -182,7 +182,7 @@ novas tentativas e idempotência").
 ### Transações
 
 O que precisa ser atômico é do HLD (seção 7, "Regras que pesam no desenho"): a mensagem com as
-menções, as notificações e os contadores; a tarefa com a notificação dela. O evento só sai depois
+menções, as notificações e os contadores; a tarefa delegada com a notificação dela. O evento só sai depois
 do commit. Onde a transação começa, como passa de um módulo a outro e como o evento é publicado
 depois do commit (publicação direta ou tabela de saída) estão a definir.
 
@@ -271,7 +271,7 @@ exigem estão em "Conceitos transversais de implementação", seção "Concorrê
 | Chat | Menções | a detalhar |
 | Chat | Última leitura e contadores por pessoa e conversa | a detalhar |
 | Chat | Notificações | a detalhar |
-| Chat | Tarefas | a detalhar |
+| Chat | Tarefas delegadas | a detalhar |
 | Chat | Pedidos aos agentes e ações de bot | a detalhar |
 | Chat | Perguntas pendentes | a detalhar |
 | Chat | Referência ao PDF de uma mensagem | a detalhar |
@@ -326,14 +326,14 @@ As subseções que faltam nesta parte (pedido ao agente, pergunta pendente, mens
 dados de negócio, limite de pedidos e teto de custo) e as regras de cada uma estão a definir. As
 regras já decididas ficam abaixo.
 
-### 6.1 Tarefa
+### 6.1 Tarefa delegada
 
 Dois estados: aberta e concluída (HLD 6.6).
 
-- Só o responsável conclui e reabre a tarefa. Outra pessoa, inclusive quem delegou, recebe um
+- Só o responsável conclui e reabre a tarefa delegada. Outra pessoa, inclusive quem delegou, recebe um
   erro do catálogo.
 - Ao concluir ou reabrir, quem delegou é avisado (HLD 6.6).
-- Concluir uma tarefa já concluída, ou reabrir uma aberta: a definir.
+- Concluir uma tarefa delegada já concluída, ou reabrir uma aberta: a definir.
 
 ### 6.2 Sessão e login
 
@@ -420,7 +420,7 @@ PDFs, perguntas pendentes vencidas) estão a definir.
 | `/` | Sessão | A Pessoa da Sessão (`GET /v1/me`), na casca vazia | Trocar a senha (diálogo pelo menu do usuário); Sair | existe; "Trocar a senha" e "Sair" entram com as F01-T07 e F01-T04 |
 | A definir | Sessão | Histórico da conversa | Enviar, editar, apagar, citar; "digitando"; botões de resposta pronta | a detalhar |
 | A definir (lateral) | Sessão | Conversas, com não lidas e menções | Abrir conversa | a detalhar |
-| A definir | Sessão | Atividade: Menções, DMs, Tarefas | Abrir a mensagem; concluir e reabrir tarefa | a detalhar |
+| A definir | Sessão | Atividade: Menções, DMs, Tarefas | Abrir a mensagem; concluir e reabrir tarefa delegada | a detalhar |
 | A definir | Sessão | Perfil próprio e de outras pessoas | Editar o próprio perfil e a presença | a detalhar |
 | A definir | Sessão | Busca de pessoas | Abrir conversa direta | a detalhar |
 | A definir | Sessão | — | Criar canal; convidar para canal privado | a detalhar |
@@ -659,7 +659,7 @@ As decisões que mudam o desenho estão no HLD, seção 10.
       menções, notificações e contadores; edição que acrescenta menção), consulta
       a dados de negócio (comparação do lastro), limite de pedidos e teto de custo, presença e
       "digitando".
-- [ ] Tarefa: concluir uma já concluída, ou reabrir uma aberta.
+- [ ] Tarefa delegada: concluir uma já concluída, ou reabrir uma aberta.
 - [ ] Idempotência da tarefa do PDF (chave no S3, entrega única) e outras rotinas (retenção dos
       PDFs, perguntas pendentes vencidas).
 
