@@ -1,6 +1,6 @@
 # Full Cycle Chat
 
-Chat de equipe em que Agentes de IA entram como plugins para resumir Conversas, delegar Tarefas e
+Chat de equipe em que Agentes de IA entram como plugins para resumir Conversas, delegar trabalho e
 consultar os dados de negócio da empresa. Este glossário é o vocabulário do produto; os termos do
 planejamento (funcionalidade, PRD, spec, tarefa, plano) estão no `AGENTS.md`, "Planejamento".
 
@@ -117,28 +117,29 @@ O trecho da Conversa que um Resumo cobre: hoje, desde ontem, a semana, tudo, o q
 disse ou um assunto.
 _Evitar_: filtro, período
 
-## Tarefas e avisos
+## Tarefas delegadas e avisos
 
 **Delegação**:
-O Pedido a um Agente para passar um trabalho a uma Pessoa mencionada, que cria uma Tarefa.
+O Pedido a um Agente para passar um trabalho a uma Pessoa mencionada, que cria uma Tarefa delegada.
 _Evitar_: atribuição, encaminhamento
 
-**Tarefa**:
+**Tarefa delegada**:
 Trabalho criado por uma Delegação, com um Responsável, que fica aberta até ser concluída e pode ser
 reaberta. Não confundir com a tarefa do planejamento, definida no `AGENTS.md`.
-_Evitar_: to-do, ticket, item
+_Evitar_: tarefa (sozinha, porque é o termo do planejamento), to-do, ticket, item
 
 **Responsável**:
-A única Pessoa que recebe uma Tarefa e pode concluí-la ou reabri-la.
+A única Pessoa que recebe uma Tarefa delegada e pode concluí-la ou reabri-la.
 _Evitar_: dono, assignee
 
 **Notificação**:
-Aviso a uma Pessoa de uma Menção, de uma Mensagem em Conversa direta ou de uma Tarefa, que leva
-direto ao que a originou.
+Aviso a uma Pessoa de uma Menção, de uma Mensagem em Conversa direta ou de uma Tarefa delegada,
+que leva direto ao que a originou.
 _Evitar_: alerta (como termo), push
 
 **Atividade**:
-A tela que reúne as Notificações da Pessoa em Menções, DMs e Tarefas.
+A tela que reúne as Notificações da Pessoa nas abas Menções, DMs e Tarefas (o rótulo da aba das
+Tarefas delegadas).
 _Evitar_: caixa de entrada, inbox, feed
 
 ## Dados de negócio

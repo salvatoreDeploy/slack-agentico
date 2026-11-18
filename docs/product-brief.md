@@ -5,8 +5,8 @@
 ## Visão geral
 
 Full Cycle Chat é um chat de equipe no estilo Slack, com canais, conversas 1:1, menções, tarefas
-e notificações em tempo real, em que agentes de IA entram como plugins. Os agentes resumem
-conversas, delegam tarefas para outras pessoas e consolidam informações do negócio em linguagem
+delegadas e notificações em tempo real, em que agentes de IA entram como plugins. Os agentes resumem
+conversas, delegam trabalho a outras pessoas e consolidam informações do negócio em linguagem
 natural, gerando relatórios e contagens a partir do banco de dados da empresa. Hoje as três
 capacidades estão em um agente só, o `@assistente`, mas o produto pode ter um ou mais agentes,
 conforme fizer sentido.
@@ -15,8 +15,8 @@ O produto se apoia em cinco promessas:
 
 - A IA fica dentro da conversa: basta mencionar o agente em qualquer canal ou conversa direta, e
   o pedido e a resposta ficam públicos ali mesmo, sem trocar de ferramenta.
-- O agente executa ações: a delegação vira uma tarefa de verdade, com responsável e notificação,
-  e o relatório de dados chega como arquivo para baixar.
+- O agente executa ações: a delegação vira uma tarefa delegada de verdade, com responsável e
+  notificação, e o relatório de dados chega como arquivo para baixar.
 - Dados de negócio com permissão: o agente só consulta dados quando quem pediu tem acesso. Quem
   não tem vê a resposta bloqueada, e o agente nunca altera os dados da empresa.
 - O agente não inventa: todo número precisa estar no resultado de uma consulta. Quando não
@@ -42,7 +42,7 @@ Hipóteses em que a aposta se apoia, ainda não validadas:
 
 - As pessoas preferem pedir ao agente dentro da conversa a abrir outra ferramenta.
 - Um resumo com recorte ("só de hoje", "da semana") poupa tempo de quem volta à conversa.
-- Delegar pelo chat, com a tarefa registrada e notificada, reduz pedidos esquecidos.
+- Delegar pelo chat, com a tarefa delegada registrada e notificada, reduz pedidos esquecidos.
 - Empresas aceitam que uma IA consulte dados de negócio quando há permissão por pessoa e somente
   leitura.
 - Um número errado destrói a confiança no agente: é melhor dizer "não consegui" do que chutar.
@@ -86,8 +86,8 @@ Plataforma: web, no navegador de desktop.
    contagem de não lidas e de menções.
 5. Mencionar pessoas, responder citando uma mensagem, copiar texto, editar e apagar as próprias
    mensagens, com a mudança aparecendo para todos na hora.
-6. Receber notificações de menção, mensagem direta e tarefa, com alerta na tela e, se a pessoa
-   ligar, notificação do navegador; clicar leva direto à mensagem. A tela Atividade reúne
+6. Receber notificações de menção, mensagem direta e tarefa delegada, com alerta na tela e, se a
+   pessoa ligar, notificação do navegador; clicar leva direto à mensagem. A tela Atividade reúne
    Menções, DMs e Tarefas.
 7. Editar o próprio perfil (nome, cargo, telefone, status, presença) e escolher o tema claro ou
    escuro.
@@ -96,7 +96,7 @@ Plataforma: web, no navegador de desktop.
 9. Pedir a um agente um resumo da conversa com recorte (hoje, desde ontem, a semana, tudo, o
    que uma pessoa disse, um assunto). Sem recorte, o agente pergunta e oferece botões com a
    quantidade de mensagens de cada opção.
-10. Pedir a um agente para delegar uma tarefa a outra pessoa mencionada. A tarefa notifica
+10. Pedir a um agente para delegar um trabalho a outra pessoa mencionada. A tarefa delegada notifica
     quem recebe, aparece em Atividade → Tarefas e pode ser concluída ou reaberta, e quem delegou
     é avisado quando isso acontece.
 11. Consolidar informações do negócio em linguagem natural: contar, somar e comparar dados de
@@ -112,8 +112,8 @@ Plataforma: web, no navegador de desktop.
 ## Fora de escopo
 
 - Gráfico na conversa e relatório agendado. Candidatos ao roadmap: a definir.
-- Agente que age sem ser chamado (lembrete de tarefa parada, resumo automático do dia). Candidato
-  ao roadmap: a definir.
+- Agente que age sem ser chamado (lembrete de tarefa delegada parada, resumo automático do dia).
+  Candidato ao roadmap: a definir.
 - Cadastro, convite de pessoas e tela de papéis e permissões: hoje as contas e as permissões são
   criadas por script, fora do produto. Candidato à Fase 2.
 - Remover membros de canal privado, entrar e sair de canais. Candidato à Fase 2.
@@ -121,8 +121,8 @@ Plataforma: web, no navegador de desktop.
   Fase 2.
 - Threads, reações e anexos de arquivo: não testam a aposta, que é o agente dentro da conversa.
   Candidatos à Fase 2.
-- Criar tarefa à mão, prazo de tarefa e tarefa com vários responsáveis: no MVP a tarefa existe
-  para testar a delegação pelo agente.
+- Criar tarefa delegada à mão, prazo de tarefa delegada e tarefa delegada com vários
+  responsáveis: no MVP a tarefa delegada existe para testar a delegação pelo agente.
 - Agente que altera dados do negócio: decisão de segurança, a consulta é só leitura.
 - Outras fontes de dados além do banco da empresa (planilhas, ERP, outras APIs).
 - Vários workspaces ou várias empresas na mesma instalação.
@@ -190,8 +190,8 @@ A lista de funcionalidades, as dependências e o status de cada uma ficam no `do
 - [ ] Definir o prazo das metas: em quanto tempo após o lançamento são medidas e o que conta como
       lançamento.
 - [ ] Decidir se gráfico na conversa e relatório agendado entram no roadmap ou ficam fora.
-- [ ] Decidir se o agente que age sem ser chamado (lembretes de tarefa, resumo automático) entra
-      no roadmap ou fica fora.
+- [ ] Decidir se o agente que age sem ser chamado (lembretes de tarefa delegada, resumo
+      automático) entra no roadmap ou fica fora.
 
 ## Glossário
 

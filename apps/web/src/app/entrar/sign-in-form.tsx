@@ -9,8 +9,9 @@ import { Field, fieldErrorId } from "../components/field";
 import { Input } from "../components/input";
 import { readSignInFields, validateSignIn, type SignInFieldErrors } from "../utils/sign-in-validation";
 
-const CREDENTIALS_MESSAGE = "E-mail ou senha incorretos.";
-const UNAVAILABLE_MESSAGE = "Não foi possível entrar agora. Tente de novo em instantes.";
+// Textos dos frames "Login / Credenciais incorretas" e "Login / Falha no envio" do Pencil, donos do microtexto.
+const CREDENTIALS_MESSAGE = "E-mail ou senha incorretos. Confira os dados e tente de novo.";
+const UNAVAILABLE_MESSAGE = "Não foi possível entrar agora. Confira sua conexão e tente de novo.";
 
 const INITIAL_STATE: SignInState = { email: "", attempt: 0 };
 

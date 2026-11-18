@@ -30,11 +30,11 @@ criado.
 | 05 | Tempo real | ver as mensagens chegarem na hora, o aviso de "digitando", o histórico paginado e recuperar o que perdeu numa queda de conexão | 02 | planejada |
 | 06 | Não lidas e menções | mencionar pessoas e ver a contagem de não lidas e de menções em cada conversa | 05 | planejada |
 | 07 | Gestão de mensagens | responder citando, copiar, editar e apagar as próprias mensagens, com a mudança aparecendo para todos na hora | 05 | planejada |
-| 08 | Notificações e Atividade | receber alerta na tela e no navegador por Menção, Mensagem em Conversa direta e Tarefa, clicar para ir à mensagem e ver tudo na tela Atividade | 04, 06 | planejada |
+| 08 | Notificações e Atividade | receber alerta na tela e no navegador por Menção, Mensagem em Conversa direta e Tarefa delegada, clicar para ir à mensagem e ver tudo na tela Atividade | 04, 06 | planejada |
 | 09 | Perfil e tema | editar nome, cargo, telefone, status e presença e escolher o tema claro ou escuro | 04 | planejada |
 | 10 | Conexão de agentes | como administrador, conectar e desconectar um Agente; qualquer pessoa vê os Agentes e a quem pedir, menciona um e recebe a resposta na conversa | 05 | planejada |
 | 11 | Resumo de conversa | pedir um resumo com recorte e, sem recorte, escolher por botões; responder ao Agente sem mencioná-lo de novo | 10 | planejada |
-| 12 | Delegação de tarefa | pedir ao Agente que delegue uma tarefa; quem recebe é notificado, conclui ou reabre, e quem delegou é avisado | 08, 10 | planejada |
+| 12 | Delegação | pedir ao Agente uma Delegação, que cria uma Tarefa delegada; quem recebe é notificado, conclui ou reabre, e quem delegou é avisado | 08, 10 | planejada |
 | 13 | Consulta a dados de negócio | perguntar números de vendas em linguagem natural e receber a resposta na conversa; quem não tem Permissão de dados vê a resposta bloqueada | 10 | planejada |
 | 14 | Relatório em PDF | pedir o relatório em PDF, seguir conversando e baixar o arquivo quando o Agente entregar | 13 | planejada |
 
@@ -55,7 +55,7 @@ graph LR
   F04 --> F09[09 Perfil e tema]
   F05 --> F10[10 Conexão de agentes]
   F10 --> F11[11 Resumo de conversa]
-  F10 --> F12[12 Delegação de tarefa]
+  F10 --> F12[12 Delegação]
   F08 --> F12
   F10 --> F13[13 Consulta a dados de negócio]
   F13 --> F14[14 Relatório em PDF]

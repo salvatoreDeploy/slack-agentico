@@ -1,12 +1,12 @@
 # HLD — Full Cycle Chat
 
-2026-11-06 · Luiz Carlos · Status: rascunho · LLD: A definir
+2026-11-18 · Luiz Carlos · Status: rascunho · LLD: A definir
 
 ## 1. Contexto e objetivos
 
 Full Cycle Chat é um chat de equipe web, no estilo Slack, para empresas pequenas e médias que
-vendem para outras empresas: canais públicos e privados, conversas diretas, menções, tarefas e
-notificações em tempo real. Sobre esse chat, agentes de IA entram como plugins e atendem pedidos
+vendem para outras empresas: canais públicos e privados, conversas diretas, menções, tarefas
+delegadas e notificações em tempo real. Sobre esse chat, agentes de IA entram como plugins e atendem pedidos
 feitos na própria conversa. Este HLD cobre a Fase 1 (MVP).
 
 Funcionalidades que mais pesam no desenho:
@@ -16,12 +16,12 @@ Funcionalidades que mais pesam no desenho:
     todos na hora, e recuperação do que se perdeu numa queda de conexão.
   - Canal privado visível e acessível só para quem foi convidado.
   - Contagem de não lidas e de menções por conversa.
-  - Notificações de menção, DM e tarefa, na tela e do navegador, levando direto à mensagem.
+  - Notificações de menção, DM e tarefa delegada, na tela e do navegador, levando direto à mensagem.
   - Presença das pessoas (online, ausente).
 - **Agentes**
   - Pedido a um agente por menção, com resposta pública na conversa, botões de resposta pronta e
     continuação sem nova menção.
-  - Delegação que cria uma tarefa com responsável, notifica quem recebe e avisa quem delegou ao
+  - Delegação que cria uma tarefa delegada com responsável, notifica quem recebe e avisa quem delegou ao
     concluir ou reabrir.
   - Consulta a dados de vendas em linguagem natural, com permissão por pessoa, somente leitura e
     auditoria.
@@ -102,7 +102,7 @@ flowchart LR
   llm["Provedor de modelo de IA<br/>OpenAI, Gemini ou Anthropic"]
   neg[("Banco de negócio<br/>dados de vendas")]
 
-  membro -->|"mensagens, pedidos aos agentes, tarefas, perfil"| fcc
+  membro -->|"mensagens, pedidos aos agentes, tarefas delegadas, perfil"| fcc
   fcc -->|"mensagens, notificações e respostas dos agentes, em tempo real"| membro
   admin -->|"conecta e desconecta agentes"| fcc
   oper -->|"contas e permissões, por script"| fcc
@@ -155,9 +155,9 @@ flowchart LR
   pessoa -->|"páginas e REST · HTTPS + cookie de sessão"| bff
   pessoa <-->|"mensagens, digitando, presença, notificações · WSS + cookie de sessão"| api
   pessoa -->|"download do PDF · URL assinada"| s3
-  bff -->|"chat, canais, tarefas, perfil · REST"| api
+  bff -->|"chat, canais, tarefas delegadas, perfil · REST"| api
   bff -->|"pedido ao agente, registro de agentes · REST + credencial de serviço"| agentes
-  agentes -->|"lê mensagens, grava respostas, cria tarefas · REST + credencial de bot"| api
+  agentes -->|"lê mensagens, grava respostas, cria tarefas delegadas · REST + credencial de bot"| api
   agentes -->|"pedido demorado, contadores de limite e custo · Redis"| redis
   worker -->|"consome pedido demorado · Redis"| redis
   worker -->|"grava o PDF · API S3"| s3
@@ -178,7 +178,7 @@ negócio são três bancos na mesma instância de Postgres gerenciado.
 | Contêiner | Responsabilidade | Tecnologia |
 | --- | --- | --- |
 | Frontend/BFF | Interface web e ponto de entrada REST do navegador; encaminha à API do chat e ao Serviço de agentes; reconhece menção ou resposta a um agente e dispara o pedido | Next.js |
-| API do chat | Pessoas, sessões, canais, conversas, mensagens, tarefas, notificações e permissões; WebSocket de tempo real; entrega bloqueada de conteúdo de negócio; URL assinada do PDF; identificador de pedido | NestJS |
+| API do chat | Pessoas, sessões, canais, conversas, mensagens, tarefas delegadas, notificações e permissões; WebSocket de tempo real; entrega bloqueada de conteúdo de negócio; URL assinada do PDF; identificador de pedido | NestJS |
 | Serviço de agentes | Registro dos agentes conectados; roda os agentes em pedidos comuns; limite de pedidos e teto de custo; monta e confere consultas; põe pedidos demorados na fila | Python + Google ADK |
 | Worker de agentes | Executa pedidos demorados da fila: roda a consulta já conferida, confere o lastro, monta o PDF e o entrega na conversa; não chama o modelo | Python + Google ADK (mesmo projeto do Serviço de agentes, outro processo) |
 | Redis | Fila de pedidos demorados, eventos recentes por pessoa para a reconexão, contadores de limite e custo | Redis gerenciado |
@@ -255,21 +255,21 @@ quem clicou e gera uma URL assinada com validade curta. Se o Worker falha, o ped
 é tentado de novo algumas vezes; a entrega com o mesmo identificador de pedido acontece uma vez
 só. Esgotadas as tentativas, o Worker grava na conversa que não conseguiu.
 
-### 6.6 Delegação de tarefa
+### 6.6 Delegação
 
-Quem pede menciona o agente e a pessoa que vai receber a tarefa. O agente interpreta o pedido e
-cria a tarefa pela API do chat, com a pessoa mencionada como responsável e quem pediu como quem
+Quem pede menciona o agente e a pessoa que vai receber a tarefa delegada. O agente interpreta o pedido e
+cria a tarefa delegada pela API do chat, com a pessoa mencionada como responsável e quem pediu como quem
 delegou; a API do chat só aceita a ação ligada a um pedido real, em nome de quem fez aquele pedido
 ([ADR 0011](adr/0011-identificador-de-pedido.md)). Avisos e notificações são regra do chat, e não
-do agente: a API do chat notifica o responsável pelo WebSocket e põe a tarefa em Atividade →
-Tarefas. Quando o responsável conclui ou reabre a tarefa (Navegador → BFF → API do chat), a API do
+do agente: a API do chat notifica o responsável pelo WebSocket e põe a tarefa delegada em Atividade →
+Tarefas. Quando o responsável conclui ou reabre a tarefa delegada (Navegador → BFF → API do chat), a API do
 chat avisa quem delegou.
 
 ## 7. Dados
 
 | Onde | O que guarda |
 | --- | --- |
-| Banco do chat (Postgres) | Pessoas, com perfil, papel de administrador e permissão de dados; sessões; canais e membros; conversas diretas; mensagens, com autor pessoa ou bot, citação e a marca "dados de negócio"; menções; última leitura por pessoa e conversa (de onde saem as não lidas); notificações; tarefas; pedidos aos agentes, com o identificador; perguntas pendentes; referência ao PDF de uma mensagem |
+| Banco do chat (Postgres) | Pessoas, com perfil, papel de administrador e permissão de dados; sessões; canais e membros; conversas diretas; mensagens, com autor pessoa ou bot, citação e a marca "dados de negócio"; menções; última leitura por pessoa e conversa (de onde saem as não lidas); notificações; tarefas delegadas; pedidos aos agentes, com o identificador; perguntas pendentes; referência ao PDF de uma mensagem |
 | Banco dos agentes (Postgres, mesma instância) | Registro de agentes conectados; sessões do ADK |
 | Banco de negócio (Postgres, mesma instância) | Dados de vendas (pedidos, clientes, vendedores), carregados por script; o sistema só lê |
 | Redis | Fila de pedidos demorados; eventos recentes por pessoa para a reconexão; contadores de limite de pedidos e de custo |
@@ -278,7 +278,7 @@ chat avisa quem delegou.
 Regras que pesam no desenho:
 
 - Gravar uma mensagem e gerar as menções, as notificações e a contagem de não lidas que ela causa
-  é uma transação só no Banco do chat; o mesmo vale para criar, concluir e reabrir uma tarefa com a
+  é uma transação só no Banco do chat; o mesmo vale para criar, concluir e reabrir uma tarefa delegada com a
   notificação dela. Só depois de confirmada a transação o evento sai pelo WebSocket.
 - Apagar uma mensagem apaga o conteúdo de vez; fica só a marca "mensagem apagada".
 - Os agentes não acessam o Banco do chat: as mensagens de que precisam chegam pela API do chat.
@@ -321,7 +321,7 @@ alertas, e quem é avisado, estão a definir.
 - Não há troca automática de provedor do modelo: só roda o modelo configurado.
 - O envio de mensagem leva um identificador gerado no cliente; reenviar após falha de rede não
   duplica a mensagem.
-- Cada ação de bot (resposta, tarefa, entrega do PDF) vale uma vez por identificador de pedido.
+- Cada ação de bot (resposta, tarefa delegada, entrega do PDF) vale uma vez por identificador de pedido.
 - O Worker tenta de novo um número limitado de vezes e, esgotadas as tentativas, avisa que não
   conseguiu (6.5).
 - Na queda do WebSocket, a reconexão reenvia os eventos desde o último confirmado (6.2).

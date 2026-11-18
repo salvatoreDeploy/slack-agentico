@@ -27,6 +27,6 @@ paths:
 ## Componentes React
 
 - **Nome do componente** em `PascalCase` quando o componente é uma classe.
-- **Função de componente** em `camelCase`.
+- **Função de componente** em `PascalCase`, porque o JSX trata um nome em minúsculas como tag do HTML. Vale também para os exports default de página, layout, `loading` e `error` do App Router.
 - **Props** em `camelCase`.
 - **Hooks** em `camelCase`.
