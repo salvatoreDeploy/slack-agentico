@@ -9,6 +9,7 @@ test.describe("Sair", () => {
     await expect(page.getByRole("menu")).toBeVisible();
 
     await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
     await expect(page.getByRole("menuitem", { name: "Sair do Full Cycle" })).toBeFocused();
     await page.keyboard.press("Enter");
 

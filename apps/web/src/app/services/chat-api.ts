@@ -95,3 +95,57 @@ export async function deleteSession(token: string): Promise<void> {
     // A API fora não impede de sair deste navegador.
   }
 }
+
+export type ChangePasswordResult =
+  | { status: "changed" }
+  | { status: "wrong_current_password" }
+  | { status: "password_unchanged" }
+  /** A API recusou a entrada (400), como uma senha nova fora do `tamanho da senha`. */
+  | { status: "invalid" }
+  | { status: "too_many_attempts" }
+  | { status: "unauthenticated" }
+  | { status: "unavailable" };
+
+const CHANGE_PASSWORD_CODES: Record<string, ChangePasswordResult["status"]> = {
+  wrong_current_password: "wrong_current_password",
+  password_unchanged: "password_unchanged",
+};
+
+/**
+ * Trocar a senha: `PUT /v1/me/password`, com o cookie de sessão repassado. Nunca lança; a ação
+ * traduz cada resultado num estado do diálogo.
+ */
+export async function changePassword(
+  token: string,
+  currentPassword: string,
+  newPassword: string,
+): Promise<ChangePasswordResult> {
+  let response: Response;
+  try {
+    response = await fetch(url("/v1/me/password"), {
+      method: "PUT",
+      headers: { "content-type": "application/json", cookie: `${SESSION_COOKIE}=${token}` },
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+      cache: "no-store",
+    });
+  } catch {
+    return { status: "unavailable" };
+  }
+  switch (response.status) {
+    case 204:
+      return { status: "changed" };
+    case 400:
+      return { status: "invalid" };
+    case 401:
+      return { status: "unauthenticated" };
+    case 422: {
+      const body = (await response.json().catch(() => ({}))) as { code?: string };
+      const status = body.code ? CHANGE_PASSWORD_CODES[body.code] : undefined;
+      return status ? { status } : { status: "unavailable" };
+    }
+    case 429:
+      return { status: "too_many_attempts" };
+    default:
+      return { status: "unavailable" };
+  }
+}

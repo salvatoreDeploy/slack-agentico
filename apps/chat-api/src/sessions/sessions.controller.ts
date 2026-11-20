@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Post, Put, Req } from '@nestjs/common';
 import {
   ApiBody,
   ApiCookieAuth,
@@ -11,8 +11,16 @@ import { ApiProblemResponse } from '../common/errors/problem-response.decorator.
 import { Public } from './public.decorator.js';
 import type { AuthenticatedRequest } from './session.guard.js';
 import { SESSION_COOKIE } from './session-rules.js';
-import { LoginDto, LoginResponse, PersonResponse } from './sessions.dto.js';
+import { ChangePasswordDto, LoginDto, LoginResponse, PersonResponse } from './sessions.dto.js';
 import { SessionsService } from './sessions.service.js';
+
+/** O cabeçalho do 429 do limite de tentativas, no contrato. */
+const RETRY_AFTER_HEADER = {
+  'Retry-After': {
+    description: 'Segundos até o fim do bloqueio',
+    schema: { type: 'integer', minimum: 1 },
+  },
+};
 
 @ApiTags('Sessão')
 @Controller('v1')
@@ -26,12 +34,7 @@ export class SessionsController {
   @ApiCreatedResponse({ type: LoginResponse })
   @ApiProblemResponse(400, ['validation_failed'])
   @ApiProblemResponse(401, ['invalid_credentials'])
-  @ApiProblemResponse(429, ['too_many_attempts'], {
-    'Retry-After': {
-      description: 'Segundos até o fim do bloqueio',
-      schema: { type: 'integer', minimum: 1 },
-    },
-  })
+  @ApiProblemResponse(429, ['too_many_attempts'], RETRY_AFTER_HEADER)
   async login(@Body() body: LoginDto): Promise<LoginResponse> {
     const { token, person } = await this.sessions.login(body.email, body.password);
     return { token, person: PersonResponse.of(person) };
@@ -53,5 +56,26 @@ export class SessionsController {
   @ApiProblemResponse(401, ['unauthenticated'])
   async logout(@Req() request: AuthenticatedRequest): Promise<void> {
     await this.sessions.logout(request.sessionId);
+  }
+
+  /** Trocar a senha: as outras Sessões da Pessoa acabam, e a atual continua. */
+  @Put('me/password')
+  @HttpCode(204)
+  @ApiCookieAuth(SESSION_COOKIE)
+  @ApiBody({ type: ChangePasswordDto })
+  @ApiNoContentResponse()
+  @ApiProblemResponse(400, ['validation_failed'])
+  @ApiProblemResponse(401, ['unauthenticated'])
+  @ApiProblemResponse(422, ['wrong_current_password', 'password_unchanged'])
+  @ApiProblemResponse(429, ['too_many_attempts'], RETRY_AFTER_HEADER)
+  async changePassword(
+    @Req() request: AuthenticatedRequest,
+    @Body() body: ChangePasswordDto,
+  ): Promise<void> {
+    await this.sessions.changePassword(
+      { sessionId: request.sessionId, person: request.person },
+      body.current_password,
+      body.new_password,
+    );
   }
 }

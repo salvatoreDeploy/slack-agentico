@@ -126,3 +126,10 @@ export async function ageSessions(database: pg.Pool, person: TestPerson, byMs: n
     [person.id, byMs],
   );
 }
+
+/** Abre o diálogo "Trocar senha" pelo menu do usuário e espera o foco na Senha atual. */
+export async function openChangePassword(page: Page, person: TestPerson): Promise<void> {
+  await page.getByRole("button", { name: `Menu de ${person.name}` }).click();
+  await page.getByRole("menuitem", { name: "Trocar senha" }).click();
+  await expect(page.getByLabel("Senha atual")).toBeFocused();
+}

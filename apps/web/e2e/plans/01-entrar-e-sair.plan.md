@@ -265,3 +265,91 @@ Expected: um `role="alert"` com "Muitas tentativas de entrar. Aguarde alguns min
 novo.", entre a Senha e o botão; o E-mail e a Senha continuam preenchidos; o foco continua em
 "Entrar"; a página continua em `/entrar`. Depois do teste, a fixture apagou a linha de tentativas
 do e-mail.
+
+## 9. Trocar senha (F01-T07)
+
+Em todos: com Sessão, abrir o menu do usuário e escolher "Trocar senha" (`openChangePassword`).
+
+### 9.1 trocar-senha-com-sucesso
+
+**File:** `e2e/01-entrar-e-sair/trocar-senha-com-sucesso.spec.ts`
+
+Steps:
+1. Preencher a Senha atual e uma Senha nova válida e clicar em "Salvar".
+2. Sair e entrar de novo com a senha nova.
+
+Expected: no passo 1, o diálogo fecha, o toast "Senha trocada. Você saiu dos outros navegadores."
+aparece e o foco volta a "Menu de <nome>"; no passo 2, a página é a Home.
+
+### 9.2 trocar-senha-senha-atual-errada
+
+**File:** `e2e/01-entrar-e-sair/trocar-senha-senha-atual-errada.spec.ts`
+
+Steps:
+1. Preencher uma Senha atual errada e uma Senha nova válida e clicar em "Salvar".
+
+Expected: "Senha atual incorreta." abaixo da Senha atual, que fica com `aria-invalid` e o foco; o
+diálogo continua aberto.
+
+### 9.3 trocar-senha-senha-igual
+
+**File:** `e2e/01-entrar-e-sair/trocar-senha-senha-igual.spec.ts`
+
+Steps:
+1. Preencher a Senha atual e a mesma senha na Senha nova e clicar em "Salvar".
+
+Expected: "A senha nova tem de ser diferente da atual." abaixo da Senha nova, com `aria-invalid`.
+
+### 9.4 trocar-senha-senha-curta
+
+**File:** `e2e/01-entrar-e-sair/trocar-senha-senha-curta.spec.ts`
+
+Steps:
+1. Preencher a Senha atual e "curta" na Senha nova e clicar em "Salvar".
+
+Expected: "A senha nova tem de ter de 8 a 128 caracteres." abaixo da Senha nova, sem enviar nada
+ao BFF.
+
+### 9.5 trocar-senha-tentativas-demais
+
+**File:** `e2e/01-entrar-e-sair/trocar-senha-tentativas-demais.spec.ts`
+
+Steps:
+1. Gravar no banco o e-mail da Pessoa como bloqueado.
+2. Preencher a Senha atual e uma Senha nova válida e clicar em "Salvar".
+
+Expected: um `role="alert"` com "Muitas tentativas. Aguarde alguns minutos e tente de novo." no
+corpo do diálogo; os campos continuam preenchidos.
+
+### 9.6 trocar-senha-falha-no-envio
+
+**File:** `e2e/01-entrar-e-sair/trocar-senha-falha-no-envio.spec.ts`
+
+Steps:
+1. Fazer o envio da ação cair (a rota `POST` da página abortada).
+2. Preencher a Senha atual e uma Senha nova válida e clicar em "Salvar".
+
+Expected: um `role="alert"` com "Não foi possível trocar a senha agora. Tente de novo em
+instantes."; os dois campos continuam preenchidos.
+
+### 9.7 trocar-senha-pelo-teclado
+
+**File:** `e2e/01-entrar-e-sair/trocar-senha-pelo-teclado.spec.ts`
+
+Steps:
+1. Pôr o foco em "Menu de <nome>", Enter, Home até "Trocar senha", Enter.
+2. Tab e Shift+Tab a partir do último e do primeiro controle do diálogo.
+3. Esc.
+4. Abrir de novo pelo teclado, digitar as senhas, Tab até "Salvar" e Enter.
+
+Expected: o foco começa na Senha atual e não sai do diálogo; o Esc fecha com o foco em "Menu de
+<nome>"; no passo 4, o toast de sucesso aparece.
+
+### 9.8 acessibilidade-dialogo-trocar-senha
+
+**File:** `e2e/01-entrar-e-sair/acessibilidade-dialogo-trocar-senha.spec.ts`
+
+Steps:
+1. Abrir o diálogo e rodar o axe-core no diálogo.
+
+Expected: nenhuma violação.
