@@ -83,3 +83,15 @@ export async function signIn(page: Page, person: TestPerson): Promise<void> {
 export async function deleteSessions(database: pg.Pool, person: TestPerson): Promise<void> {
   await database.query("DELETE FROM sessions WHERE person_id = $1", [person.id]);
 }
+
+/** As Sessões da Pessoa no banco, para o teste conferir o que a ação apagou. */
+export async function findSessions(database: pg.Pool, person: TestPerson): Promise<unknown[]> {
+  const result = await database.query("SELECT id FROM sessions WHERE person_id = $1", [person.id]);
+  return result.rows;
+}
+
+/** Sai pelo menu do usuário: o único lugar da suíte que faz isso. */
+export async function signOut(page: Page, person: TestPerson): Promise<void> {
+  await page.getByRole("button", { name: `Menu de ${person.name}` }).click();
+  await page.getByRole("menuitem", { name: "Sair do Full Cycle" }).click();
+}

@@ -8,9 +8,10 @@ import { SESSION_COOKIE } from './session-rules.js';
 import { UnauthenticatedError } from './sessions.errors.js';
 import { SessionsService } from './sessions.service.js';
 
-/** A requisição depois do guard, com a Pessoa da Sessão. */
+/** A requisição depois do guard, com a Pessoa e o id da Sessão. */
 export interface AuthenticatedRequest extends Request {
   person: Person;
+  sessionId: string;
 }
 
 /**
@@ -37,7 +38,9 @@ export class SessionGuard implements CanActivate {
     if (!token) {
       throw new UnauthenticatedError();
     }
-    request.person = await this.sessions.authenticate(token);
+    const { sessionId, person } = await this.sessions.authenticate(token);
+    request.person = person;
+    request.sessionId = sessionId;
     return true;
   }
 }

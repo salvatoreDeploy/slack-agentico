@@ -181,3 +181,58 @@ Steps:
 2. Com Sessão, rodar o axe-core na Home.
 
 Expected: nenhuma violação nas duas.
+
+## 7. Sair (F01-T04)
+
+### 7.1 sair-leva-a-entrar
+
+**File:** `e2e/01-entrar-e-sair/sair-leva-a-entrar.spec.ts`
+
+Steps:
+1. Com Sessão, clicar em "Menu de <nome>".
+2. Clicar no item "Sair do Full Cycle".
+
+Expected: a página é `/entrar`; o cookie `session` some do navegador; a Sessão some do banco.
+
+### 7.2 voltar-pelo-historico-nao-mostra-o-chat
+
+**File:** `e2e/01-entrar-e-sair/voltar-pelo-historico-nao-mostra-o-chat.spec.ts`
+
+Steps:
+1. Com Sessão, abrir a Home e guardar a resposta do documento.
+2. Sair pelo menu do usuário.
+3. Voltar pelo histórico do navegador.
+
+Expected: a resposta do passo 1 tem `Cache-Control` com `no-store`; depois do passo 3, a página é
+`/entrar`, sem o botão "Menu de <nome>" nem a navegação "Seções".
+
+### 7.3 outra-aba-vai-para-entrar
+
+**File:** `e2e/01-entrar-e-sair/outra-aba-vai-para-entrar.spec.ts`
+
+Steps:
+1. Com Sessão, abrir uma segunda aba no mesmo contexto, na Home.
+2. Sair pela primeira aba.
+3. Recarregar a segunda aba.
+
+Expected: a segunda aba cai em `/entrar`.
+
+### 7.4 sai-pelo-teclado
+
+**File:** `e2e/01-entrar-e-sair/sai-pelo-teclado.spec.ts`
+
+Steps:
+1. Com Sessão, pôr o foco em "Menu de <nome>" e apertar Enter.
+2. Descer com a seta até "Sair do Full Cycle" e apertar Enter.
+
+Expected: a página é `/entrar`.
+
+### 7.5 acessibilidade-menu-do-usuario
+
+**File:** `e2e/01-entrar-e-sair/acessibilidade-menu-do-usuario.spec.ts`
+
+Steps:
+1. Com Sessão, abrir o menu do usuário.
+2. Rodar o axe-core.
+
+Expected: nenhuma violação.
