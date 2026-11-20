@@ -9,6 +9,7 @@ export type ErrorCode =
   | 'not_found'
   | 'unauthenticated'
   | 'invalid_credentials'
+  | 'too_many_attempts'
   | 'email_taken'
   | 'username_taken'
   | 'request_rejected'

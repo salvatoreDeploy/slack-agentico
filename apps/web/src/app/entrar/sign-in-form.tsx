@@ -2,16 +2,21 @@
 
 import { MessageSquare } from "lucide-react";
 import { unstable_rethrow } from "next/navigation";
-import { useActionState, useEffect, useRef, useState, type FormEvent } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState, type FormEvent } from "react";
 import { signIn, type SignInState } from "../actions/sign-in";
 import { Button } from "../components/button";
 import { Field, fieldErrorId } from "../components/field";
 import { Input } from "../components/input";
 import { readSignInFields, validateSignIn, type SignInFieldErrors } from "../utils/sign-in-validation";
 
-// Textos dos frames "Login / Credenciais incorretas" e "Login / Falha no envio" do Pencil, donos do microtexto.
+// Textos dos frames "Login / Credenciais incorretas", "Login / Tentativas demais" e "Login / Falha
+// no envio" do Pencil, donos do microtexto.
 const CREDENTIALS_MESSAGE = "E-mail ou senha incorretos. Confira os dados e tente de novo.";
-const UNAVAILABLE_MESSAGE = "Não foi possível entrar agora. Confira sua conexão e tente de novo.";
+/** As mensagens que ficam no formulário, entre a Senha e o botão, com `role="alert"`. */
+const FORM_MESSAGES = {
+  too_many_attempts: "Muitas tentativas de entrar. Aguarde alguns minutos e tente de novo.",
+  unavailable: "Não foi possível entrar agora. Confira sua conexão e tente de novo.",
+} as const;
 
 const INITIAL_STATE: SignInState = { email: "", attempt: 0 };
 
@@ -46,7 +51,7 @@ interface SignInFormProps {
 /**
  * O cartão da tela Entrar, com os estados do frame "Login" (spec da F01, "BFF e telas"): foco
  * inicial no E-mail, aviso de campo vazio sem enviar, envio duplo bloqueado, credenciais
- * incorretas abaixo da Senha e falha no envio entre a Senha e o botão.
+ * incorretas abaixo da Senha, e tentativas demais e falha no envio entre a Senha e o botão.
  */
 export function SignInForm({ returnPath }: SignInFormProps) {
   const [state, formAction, isPending] = useActionState(submitSignIn, INITIAL_STATE);
@@ -58,6 +63,8 @@ export function SignInForm({ returnPath }: SignInFormProps) {
   const fieldErrors = clientErrors ?? state.fieldErrors;
   const credentialsError = state.error === "credentials";
   const passwordError = fieldErrors?.password ?? (credentialsError ? CREDENTIALS_MESSAGE : undefined);
+  const formMessage =
+    state.error === "too_many_attempts" || state.error === "unavailable" ? FORM_MESSAGES[state.error] : undefined;
 
   useEffect(() => {
     if (state.attempt === 0) {
@@ -72,13 +79,24 @@ export function SignInForm({ returnPath }: SignInFormProps) {
     // Reage a cada resposta da ação, inclusive quando o erro se repete.
   }, [state]);
 
+  /**
+   * Envia pela ação numa transição, e não pelo `action` do formulário, porque o React limpa os
+   * campos quando a ação de um `<form action>` termina, e a spec quer o e-mail e a senha
+   * preenchidos depois de "Tentativas demais" e de "Falha no envio".
+   */
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    const errors = validateSignIn(readSignInFields(new FormData(event.currentTarget)));
+    event.preventDefault();
+    if (isPending) {
+      return;
+    }
+    const formData = new FormData(event.currentTarget);
+    const errors = validateSignIn(readSignInFields(formData));
     setClientErrors(errors);
     if (errors) {
-      event.preventDefault();
       focusFirstInvalid(errors, emailRef.current, passwordRef.current);
+      return;
     }
+    startTransition(() => formAction(formData));
   }
 
   return (
@@ -93,7 +111,7 @@ export function SignInForm({ returnPath }: SignInFormProps) {
         </div>
       </header>
 
-      <form action={formAction} onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <input type="hidden" name="voltar" value={returnPath} />
         <Field htmlFor="email" label="E-mail" error={fieldErrors?.email}>
           <Input
@@ -122,9 +140,9 @@ export function SignInForm({ returnPath }: SignInFormProps) {
             aria-describedby={passwordError ? fieldErrorId("password") : undefined}
           />
         </Field>
-        {state.error === "unavailable" && (
+        {formMessage && (
           <p role="alert" className="text-small text-danger-fg">
-            {UNAVAILABLE_MESSAGE}
+            {formMessage}
           </p>
         )}
         <Button type="submit" size="lg" loading={isPending}>

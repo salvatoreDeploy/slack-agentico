@@ -26,6 +26,12 @@ export class SessionsController {
   @ApiCreatedResponse({ type: LoginResponse })
   @ApiProblemResponse(400, ['validation_failed'])
   @ApiProblemResponse(401, ['invalid_credentials'])
+  @ApiProblemResponse(429, ['too_many_attempts'], {
+    'Retry-After': {
+      description: 'Segundos até o fim do bloqueio',
+      schema: { type: 'integer', minimum: 1 },
+    },
+  })
   async login(@Body() body: LoginDto): Promise<LoginResponse> {
     const { token, person } = await this.sessions.login(body.email, body.password);
     return { token, person: PersonResponse.of(person) };

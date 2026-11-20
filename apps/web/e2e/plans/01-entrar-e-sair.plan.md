@@ -105,7 +105,7 @@ Steps:
 2. Preencher e-mail e senha e clicar em "Entrar".
 
 Expected: um `role="alert"` com "Não foi possível entrar agora. Confira sua conexão e tente de novo."; o
-e-mail continua preenchido; a página continua em `/entrar`.
+e-mail e a senha continuam preenchidos; a página continua em `/entrar`.
 
 ## 4. Home e menu do usuário (F01-T03)
 
@@ -236,3 +236,18 @@ Steps:
 2. Rodar o axe-core.
 
 Expected: nenhuma violação.
+
+## 8. Limite de tentativas (F01-T05)
+
+### 8.1 tentativas-demais
+
+**File:** `e2e/01-entrar-e-sair/tentativas-demais.spec.ts`
+
+Steps:
+1. Gravar no banco o e-mail da Pessoa da fixture como bloqueado.
+2. Abrir `/entrar`, preencher o e-mail e a senha certa e clicar em "Entrar".
+
+Expected: um `role="alert"` com "Muitas tentativas de entrar. Aguarde alguns minutos e tente de
+novo.", entre a Senha e o botão; o E-mail e a Senha continuam preenchidos; o foco continua em
+"Entrar"; a página continua em `/entrar`. Depois do teste, a fixture apagou a linha de tentativas
+do e-mail.

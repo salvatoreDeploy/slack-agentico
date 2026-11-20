@@ -8,6 +8,11 @@ import { ErrorCode } from './error-code.js';
 export abstract class DomainError extends Error {
   abstract readonly code: ErrorCode;
 
+  /** Cabeçalhos que o filter grava na resposta, como o `Retry-After` de um limite. */
+  get headers(): Record<string, string> | undefined {
+    return undefined;
+  }
+
   constructor(detail: string) {
     super(detail);
     this.name = new.target.name;

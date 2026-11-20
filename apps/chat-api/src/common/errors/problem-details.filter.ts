@@ -17,6 +17,7 @@ const ERROR_STATUS: Record<ErrorCode, number> = {
   not_found: 404,
   unauthenticated: 401,
   invalid_credentials: 401,
+  too_many_attempts: 429,
   email_taken: 409,
   username_taken: 409,
   request_rejected: 400,
@@ -58,6 +59,7 @@ interface Problem {
   code: ErrorCode;
   detail: string;
   errors?: ValidationFailedError['errors'];
+  headers?: Record<string, string>;
 }
 
 /**
@@ -76,6 +78,9 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       return;
     }
     const problem = this.toProblem(exception);
+    if (problem.headers) {
+      response.set(problem.headers);
+    }
     response
       .status(problem.status)
       .type('application/problem+json')
@@ -97,6 +102,7 @@ export class ProblemDetailsFilter implements ExceptionFilter {
         code: exception.code,
         detail: exception.message,
         errors,
+        headers: exception.headers,
       };
     }
     if (exception instanceof HttpException && exception.getStatus() < 500) {

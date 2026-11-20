@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { v7 as uuidv7 } from 'uuid';
+import { normalizeEmail } from '../people/people-rules.js';
 import { PasswordHasher } from '../people/password-hasher.js';
 import { PeopleService } from '../people/people.service.js';
 import { Person } from '../people/person.entity.js';
 import { hashSessionToken, newSessionToken, SESSION_DURATION_MS } from './session-rules.js';
 import { Session } from './session.entity.js';
 import { InvalidCredentialsError, UnauthenticatedError } from './sessions.errors.js';
+import { LoginAttemptsService } from './login-attempts.service.js';
 import { SessionsRepository } from './sessions.repository.js';
 
 export interface LoginResult {
@@ -26,21 +28,28 @@ export class SessionsService {
     private readonly sessions: SessionsRepository,
     private readonly people: PeopleService,
     private readonly passwords: PasswordHasher,
+    private readonly attempts: LoginAttemptsService,
   ) {}
 
   /**
-   * Confere a senha e cria a Sessão. Para e-mail inexistente, confere contra o hash fixo, para o
-   * tempo de resposta não revelar se a conta existe.
+   * Confere o limite de tentativas e a senha e cria a Sessão (LLD, "Sessão e login", "Login").
+   * Para e-mail inexistente, confere contra o hash fixo, para o tempo de resposta não revelar se a
+   * conta existe, e conta a falha do mesmo jeito.
    */
-  async login(email: string, password: string): Promise<LoginResult> {
+  async login(rawEmail: string, password: string): Promise<LoginResult> {
+    const email = normalizeEmail(rawEmail);
+    await this.attempts.assertNotBlocked(email);
+
     const person = await this.people.findByEmail(email);
     const valid = person
       ? await this.passwords.verify(person.passwordHash, password)
       : await this.passwords.verifyAgainstDummy(password);
     if (!person || !valid) {
+      await this.attempts.registerFailure(email);
       throw new InvalidCredentialsError();
     }
 
+    await this.attempts.clear(email);
     const token = newSessionToken();
     const now = new Date();
     const session = new Session();
