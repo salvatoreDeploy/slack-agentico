@@ -43,6 +43,11 @@ _Evitar_: acesso a dados, permissão de BI
 Qualquer lugar onde se trocam Mensagens: um Canal público, um Canal privado ou uma Conversa direta.
 _Evitar_: chat, sala
 
+**Canal**:
+Um Canal público ou um Canal privado: uma Conversa com nome, que aparece como #nome e cujo nome é
+único entre todos os Canais do Workspace.
+_Evitar_: sala, grupo
+
 **Canal público**:
 Conversa aberta a todas as Pessoas do Workspace.
 _Evitar_: grupo, canal aberto
@@ -86,7 +91,8 @@ A IA plugável que atende Pedidos dentro das Conversas, como o `@assistente`.
 _Evitar_: bot, assistente (como termo genérico), IA
 
 **Bot**:
-A conta pela qual um Agente aparece e escreve nas Conversas, que reserva o @usuário dele.
+A conta pela qual um Agente aparece e escreve nas Conversas, que reserva o @usuário dele. Não
+participa de Canais: escreve numa Conversa só ao atender um Pedido feito nela.
 _Evitar_: agente, usuário de sistema
 
 **Conexão de agente**:
