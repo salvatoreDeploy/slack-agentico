@@ -41,6 +41,14 @@ export async function login(app: INestApplication<App>, person: TestPerson): Pro
   return (response.body as { token: string }).token;
 }
 
+/** Sai pela rota; falha sozinho se a saída não der certo. */
+export async function logout(app: INestApplication<App>, token: string): Promise<void> {
+  await request(app.getHttpServer())
+    .delete('/v1/sessions/current')
+    .set('Cookie', sessionCookie(token))
+    .expect(204);
+}
+
 /** O cabeçalho com o cookie de sessão, como o BFF o repassa. */
 export function sessionCookie(token: string): string {
   return `${SESSION_COOKIE}=${token}`;

@@ -74,3 +74,20 @@ export async function getMe(token: string): Promise<MeResult> {
   }
   throw new ChatApiUnavailableError(response.status);
 }
+
+/**
+ * Sair: `DELETE /v1/sessions/current`, com o cookie de sessão repassado. Nunca lança: a falha de
+ * rede, o 5xx e o 401 terminam do mesmo jeito, com o cookie apagado pela ação Sair, e a Sessão
+ * fica no banco até vencer ou ser revogada (LLD, "Sessão no cliente").
+ */
+export async function deleteSession(token: string): Promise<void> {
+  try {
+    await fetch(url("/v1/sessions/current"), {
+      method: "DELETE",
+      headers: { cookie: `${SESSION_COOKIE}=${token}` },
+      cache: "no-store",
+    });
+  } catch {
+    // A API fora não impede de sair deste navegador.
+  }
+}

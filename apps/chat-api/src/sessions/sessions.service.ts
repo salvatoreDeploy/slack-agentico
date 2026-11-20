@@ -13,6 +13,12 @@ export interface LoginResult {
   person: Person;
 }
 
+/** A Sessão que o guard aceitou: o id dela e a Pessoa. */
+export interface AuthenticatedSession {
+  sessionId: string;
+  person: Person;
+}
+
 /** Login e validação da Sessão (LLD, "Estados e regras", seção "Sessão e login"). */
 @Injectable()
 export class SessionsService {
@@ -48,10 +54,10 @@ export class SessionsService {
   }
 
   /**
-   * A Pessoa da Sessão do token. Token desconhecido ou Sessão vencida respondem igual, e a vencida
-   * é apagada nessa hora. A renovação entra com a tarefa F01-T06.
+   * A Sessão do token, com a Pessoa dela. Token desconhecido ou Sessão vencida respondem igual, e
+   * a vencida é apagada nessa hora. A renovação entra com a tarefa F01-T06.
    */
-  async authenticate(token: string): Promise<Person> {
+  async authenticate(token: string): Promise<AuthenticatedSession> {
     const session = await this.sessions.findByTokenHashWithPerson(hashSessionToken(token));
     if (!session?.person) {
       throw new UnauthenticatedError();
@@ -60,6 +66,11 @@ export class SessionsService {
       await this.sessions.deleteById(session.id);
       throw new UnauthenticatedError();
     }
-    return session.person;
+    return { sessionId: session.id, person: session.person };
+  }
+
+  /** Sair: apaga a Sessão da requisição; as outras Sessões da Pessoa continuam. */
+  async logout(sessionId: string): Promise<void> {
+    await this.sessions.deleteById(sessionId);
   }
 }
