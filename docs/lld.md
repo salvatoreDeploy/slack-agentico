@@ -316,7 +316,7 @@ de eventos do WebSocket estão a definir. O que já está decidido:
 | Método e caminho | Situação | Comportamento |
 | --- | --- | --- |
 | `POST /v1/sessions` | existe | Entrar; única rota `@Public()` da F01 ("Sessão e login") |
-| `DELETE /v1/sessions/current` | planejada | Sair ("Sessão e login") |
+| `DELETE /v1/sessions/current` | existe | Sair ("Sessão e login") |
 | `GET /v1/me` | existe | A Pessoa da Sessão |
 | `PUT /v1/me/password` | planejada | Trocar a senha ("Sessão e login") |
 
@@ -417,7 +417,7 @@ PDFs, perguntas pendentes vencidas) estão a definir.
 | Rota | Acesso | Lê | Ações | Situação |
 | --- | --- | --- | --- | --- |
 | `/entrar` | Público; quem tem Sessão vai para `/` | — | Entrar com e-mail e senha | existe |
-| `/` | Sessão | A Pessoa da Sessão (`GET /v1/me`), na casca vazia | Trocar a senha (diálogo pelo menu do usuário); Sair | existe; "Trocar a senha" e "Sair" entram com as F01-T07 e F01-T04 |
+| `/` | Sessão | A Pessoa da Sessão (`GET /v1/me`), na casca vazia | Trocar a senha (diálogo pelo menu do usuário); Sair | existe; "Trocar a senha" entra com a F01-T07 |
 | A definir | Sessão | Histórico da conversa | Enviar, editar, apagar, citar; "digitando"; botões de resposta pronta | a detalhar |
 | A definir (lateral) | Sessão | Conversas, com não lidas e menções | Abrir conversa | a detalhar |
 | A definir | Sessão | Atividade: Menções, DMs, Tarefas | Abrir a mensagem; concluir e reabrir tarefa delegada | a detalhar |
