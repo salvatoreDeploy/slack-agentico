@@ -1,6 +1,6 @@
 # LLD — Full Cycle Chat
 
-2026-11-18 · Luiz Carlos · Status: rascunho · HLD: [hld.md](hld.md)
+2026-11-20 · Luiz Carlos · Status: rascunho · HLD: [hld.md](hld.md)
 
 **Onde mora cada fato**
 
@@ -152,7 +152,8 @@ novas tentativas e idempotência").
   fica de fora, porque a origem dele atrás do proxy depende da PaaS (HLD, seção 12)
   ([ADR 0023](adr/0023-limite-de-login-por-email.md)). A regra está em "Sessão e login".
 - **Participação em canal privado e conversa direta:** o lugar no código onde a API do chat a
-  confere está a definir.
+  confere está a definir. Id malformado, Conversa inexistente e Conversa sem participação de quem
+  pede respondem igual, 404 `not_found`, e nunca 403, para não revelar que a Conversa existe.
 - **Credenciais de bot e de serviço:** a forma (um segredo por processo ou por agente) está a
   definir. Toda ação de bot leva o identificador de pedido
   ([ADR 0011](adr/0011-identificador-de-pedido.md)).
@@ -265,8 +266,8 @@ exigem estão em "Conceitos transversais de implementação", seção "Concorrê
 | Chat | Pessoas (perfil, papel de administrador, permissão de dados) | existe, com as colunas da F01 (schema nas migrações); o perfil, o papel e a permissão entram com as F09, F10 e F13 |
 | Chat | Sessões | existe (schema nas migrações) |
 | Chat | Tentativas de login | planejada; forma na spec da F01 |
-| Chat | Canais e membros | a detalhar |
-| Chat | Conversas diretas | a detalhar |
+| Chat | Conversas (Canal público, Canal privado, Conversa direta), numa tabela com tipo ([ADR 0025](adr/0025-conversas-numa-tabela-com-tipo.md)) | a detalhar |
+| Chat | Participação de Pessoa em Conversa | a detalhar |
 | Chat | Mensagens (autor pessoa ou bot, citação, marca "dados de negócio") | a detalhar |
 | Chat | Menções | a detalhar |
 | Chat | Última leitura e contadores por pessoa e conversa | a detalhar |
@@ -284,6 +285,11 @@ tentativas por e-mail normalizado, sem ligação com a Pessoa, porque o e-mail p
 token da Sessão guardado só como hash; e apagar a Pessoa apaga as Sessões dela. O resto está em
 "Estados e regras", seção "Sessão e login".
 
+Regras de Conversas e participação que o schema não mostra: todo Canal público tem a participação
+gravada de todas as Pessoas, e criar um Canal público ou uma conta grava as participações na mesma
+transação ([ADR 0024](adr/0024-participacao-gravada-em-canal-publico.md)); o nome do Canal é
+único entre os Canais; um Bot não tem participação.
+
 ## 5. Interfaces
 
 **Convenções**
@@ -297,7 +303,10 @@ token da Sessão guardado só como hash; e apagar a Pessoa apaga as Sessões del
   `@Public()`. O BFF chama o Serviço de agentes com a credencial de serviço; os bots chamam a API
   do chat com a credencial de bot e o identificador de pedido (forma em "Segurança").
 - Campos do JSON em `snake_case`, nas três APIs.
-- Paginação: a definir.
+- Paginação do histórico: por cursor, com o id da Mensagem mais antiga recebida no parâmetro
+  `before`. A rota devolve as Mensagens anteriores a esse id, na ordem do id (UUID v7, a ordem de
+  criação), até o "Tamanho da página do histórico", e o campo `has_more`. A paginação das outras
+  listas está a definir.
 - Erros: "Conceitos transversais de implementação", seção "Erros".
 - Eventos do WebSocket: tipos em `packages/chat-events/`, consumidos por `chat-api` e `web`.
 
@@ -427,6 +436,9 @@ PDFs, perguntas pendentes vencidas) estão a definir.
 | A definir | Sessão | — | Criar canal; convidar para canal privado | a detalhar |
 | A definir | Sessão; conectar e desconectar só para administrador | Agentes e estado de conexão | Conectar e desconectar agente | a detalhar |
 
+O endereço de uma Conversa leva o id dela, e não o nome, para o nome de um Canal privado não
+aparecer no endereço.
+
 **Leituras e tempo real.** A página carrega pelos Server Components. No cliente, o SWR guarda as
 leituras que o tempo real altera (mensagens, não lidas, notificações), e cada evento do WebSocket
 atualiza esse cache direto, sem nova requisição.
@@ -490,7 +502,10 @@ atualiza esse cache direto, sem nova requisição.
 | Validade do identificador de pedido | A definir | API do chat | A definir |
 | Retenção dos eventos de reconexão | A definir | API do chat (Redis) | A definir |
 | Tempo limite da consulta ao Banco de negócio | A definir | Serviço de agentes e Worker | A definir |
-| Tamanho da página do histórico | A definir | API do chat | A definir |
+| Tamanho da página do histórico | 50 Mensagens | API do chat | Constante |
+| Tamanho do nome do Canal | De 1 a 80 caracteres, depois da normalização | API do chat | Constante |
+| Tamanho da descrição do Canal | Até 250 caracteres | API do chat | Constante |
+| Tamanho da Mensagem | De 1 a 4.000 caracteres, depois do corte das pontas | API do chat | Constante |
 
 **Variáveis de ambiente**
 
@@ -606,6 +621,8 @@ falharia em produção.
 | [0021](adr/0021-contadores-gravados.md) | Contadores de não lidas e de menções gravados na transação | aceita |
 | [0022](adr/0022-uuid-v7.md) | UUID v7 como id, gerado na aplicação | aceita |
 | [0023](adr/0023-limite-de-login-por-email.md) | Limite de tentativas de login só pelo e-mail | aceita |
+| [0024](adr/0024-participacao-gravada-em-canal-publico.md) | Participação gravada de todas as Pessoas em cada Canal público | aceita |
+| [0025](adr/0025-conversas-numa-tabela-com-tipo.md) | Canais e Conversas diretas numa tabela só, com tipo | aceita |
 
 As decisões que mudam o desenho estão no HLD, seção 10.
 
@@ -646,10 +663,9 @@ As decisões que mudam o desenho estão no HLD, seção 10.
 
 **Dados e interfaces**
 
-- [ ] Canais e conversas diretas: uma tabela com tipo, ou tabelas separadas.
 - [ ] Bots na mesma tabela das pessoas, ou não.
 - [ ] Diagrama de entidades e relações; forma das tabelas.
-- [ ] Paginação do histórico e das listas.
+- [ ] Paginação das listas.
 - [ ] Índice das rotas (BFF, API do chat para o BFF e para os bots, Serviço de agentes) e lista
       de eventos do WebSocket.
 
