@@ -1,15 +1,16 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiResponse, type ApiResponseOptions } from '@nestjs/swagger';
 import { ErrorCode } from './error-code.js';
 
 /**
  * Documenta no contrato uma resposta de erro `problem+json` de uma rota, com os códigos que ela
- * pode devolver naquele status como enum (LLD, "Erros").
+ * pode devolver naquele status como enum (LLD, "Erros"), e os cabeçalhos da resposta, se houver.
  */
-export function ApiProblemResponse(status: number, codes: ErrorCode[]) {
+export function ApiProblemResponse(status: number, codes: ErrorCode[], headers?: ApiResponseOptions['headers']) {
   return applyDecorators(
     ApiResponse({
       status,
+      headers,
       content: {
         'application/problem+json': {
           schema: {

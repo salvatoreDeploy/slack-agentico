@@ -17,3 +17,17 @@ export class UnauthenticatedError extends DomainError {
     super('É preciso entrar para continuar.');
   }
 }
+
+/** E-mail bloqueado pelo limite de tentativas; leva os segundos que faltam no `Retry-After`. */
+export class TooManyAttemptsError extends DomainError {
+  readonly code = 'too_many_attempts';
+
+  constructor(readonly retryAfterSeconds: number) {
+    super('Muitas tentativas de entrar. Aguarde alguns minutos e tente de novo.');
+  }
+
+  /** Ao menos 1 s: um bloqueio que acaba neste instante ainda recusou este pedido. */
+  override get headers(): Record<string, string> {
+    return { 'Retry-After': String(Math.max(1, this.retryAfterSeconds)) };
+  }
+}

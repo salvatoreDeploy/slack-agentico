@@ -56,7 +56,9 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
       [person.id, person.name, person.username, person.email, TEST_PASSWORD_HASH],
     );
     await provide(person);
-    // Apagar a Pessoa leva as Sessões dela junto (ON DELETE CASCADE).
+    // As tentativas de login não referenciam a Pessoa e saem à parte; apagar a Pessoa leva as
+    // Sessões dela junto (ON DELETE CASCADE).
+    await database.query("DELETE FROM login_attempts WHERE email = $1", [person.email]);
     await database.query("DELETE FROM people WHERE id = $1", [person.id]);
   },
 
@@ -94,4 +96,19 @@ export async function findSessions(database: pg.Pool, person: TestPerson): Promi
 export async function signOut(page: Page, person: TestPerson): Promise<void> {
   await page.getByRole("button", { name: `Menu de ${person.name}` }).click();
   await page.getByRole("menuitem", { name: "Sair do Full Cycle" }).click();
+}
+
+/** Bloqueia o e-mail pelo limite de tentativas, com a linha gravada direto no banco. */
+export async function blockLogin(database: pg.Pool, email: string): Promise<void> {
+  await database.query(
+    `INSERT INTO login_attempts (email, failures, window_started_at, blocked_until)
+     VALUES ($1, 0, now(), now() + interval '15 minutes')`,
+    [email],
+  );
+}
+
+/** A linha de tentativas de login do e-mail, ou `undefined`. */
+export async function findLoginAttempt(database: pg.Pool, email: string): Promise<unknown> {
+  const result = await database.query("SELECT email FROM login_attempts WHERE email = $1", [email]);
+  return result.rows[0];
 }

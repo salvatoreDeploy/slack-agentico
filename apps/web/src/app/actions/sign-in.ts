@@ -8,15 +8,26 @@ import { sessionCookieOptions } from "../utils/session-cookie";
 import { SESSION_COOKIE } from "../utils/session-cookie-name";
 import { readSignInFields, validateSignIn, type SignInFieldErrors } from "../utils/sign-in-validation";
 
+export type SignInError = "credentials" | "too_many_attempts" | "unavailable";
+
 export interface SignInState {
   /** O e-mail digitado, que continua preenchido depois de um erro. */
   email: string;
   fieldErrors?: SignInFieldErrors;
-  /** `credentials`: e-mail ou senha errados. `unavailable`: o envio ou a API do chat falhou. */
-  error?: "credentials" | "unavailable";
+  /**
+   * `credentials`: e-mail ou senha errados. `too_many_attempts`: o e-mail está bloqueado pelo
+   * limite de tentativas. `unavailable`: o envio ou a API do chat falhou.
+   */
+  error?: SignInError;
   /** Muda a cada envio respondido, para a tela reagir mesmo quando o erro se repete. */
   attempt: number;
 }
+
+const SIGN_IN_ERRORS = {
+  invalid_credentials: "credentials",
+  too_many_attempts: "too_many_attempts",
+  unavailable: "unavailable",
+} as const satisfies Record<string, SignInError>;
 
 /**
  * A ação Entrar (spec da F01, "BFF e telas"): confere os campos, cria a Sessão na API do chat,
@@ -33,8 +44,7 @@ export async function signIn(previous: SignInState, formData: FormData): Promise
 
   const result = await createSession(fields.email, fields.password);
   if (result.status !== "created") {
-    const error = result.status === "invalid_credentials" ? "credentials" : "unavailable";
-    return { email: fields.email, error, attempt };
+    return { email: fields.email, error: SIGN_IN_ERRORS[result.status], attempt };
   }
 
   (await cookies()).set(SESSION_COOKIE, result.token, sessionCookieOptions());

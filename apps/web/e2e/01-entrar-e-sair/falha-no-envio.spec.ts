@@ -21,6 +21,7 @@ test.describe("Tela Entrar", () => {
       "Não foi possível entrar agora. Confira sua conexão e tente de novo.",
     );
     await expect(page.getByLabel("E-mail")).toHaveValue(person.email);
+    await expect(page.getByLabel("Senha")).toHaveValue(person.password);
     await expect(page).toHaveURL("/entrar");
   });
 });

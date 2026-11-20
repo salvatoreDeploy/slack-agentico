@@ -15,3 +15,12 @@ export function newSessionToken(): string {
 export function hashSessionToken(token: string): Buffer {
   return createHash('sha256').update(token).digest();
 }
+
+/** `tentativas de login`: falhas por e-mail que bloqueiam (LLD, "Valores e configuração"). */
+export const LOGIN_MAX_FAILURES = 5;
+
+/** `janela das tentativas de login`: 15 min. */
+export const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+
+/** `duração do bloqueio de login`: 15 min. */
+export const LOGIN_BLOCK_MS = 15 * 60 * 1000;

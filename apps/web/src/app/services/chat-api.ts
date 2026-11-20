@@ -14,6 +14,7 @@ export interface Person {
 export type CreateSessionResult =
   | { status: "created"; token: string }
   | { status: "invalid_credentials" }
+  | { status: "too_many_attempts" }
   | { status: "unavailable" };
 
 export type MeResult = { status: "ok"; person: Person } | { status: "unauthenticated" };
@@ -48,6 +49,9 @@ export async function createSession(email: string, password: string): Promise<Cr
   }
   if (response.status === 400 || response.status === 401) {
     return { status: "invalid_credentials" };
+  }
+  if (response.status === 429) {
+    return { status: "too_many_attempts" };
   }
   return { status: "unavailable" };
 }
