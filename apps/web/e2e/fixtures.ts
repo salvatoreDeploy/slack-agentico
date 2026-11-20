@@ -112,3 +112,17 @@ export async function findLoginAttempt(database: pg.Pool, email: string): Promis
   const result = await database.query("SELECT email FROM login_attempts WHERE email = $1", [email]);
   return result.rows[0];
 }
+
+/**
+ * Envelhece as Sessões da Pessoa no banco em `byMs`: o `last_used_at` e o `expires_at` recuam
+ * juntos, como se o tempo passasse sem uso.
+ */
+export async function ageSessions(database: pg.Pool, person: TestPerson, byMs: number): Promise<void> {
+  await database.query(
+    `UPDATE sessions
+     SET last_used_at = last_used_at - $2::bigint * interval '1 millisecond',
+         expires_at = expires_at - $2::bigint * interval '1 millisecond'
+     WHERE person_id = $1`,
+    [person.id, byMs],
+  );
+}

@@ -70,6 +70,15 @@ export class PeopleService {
     }
   }
 
+  /** Troca a senha, dentro do `tamanho da senha`. Quem chama decide o que fazer com as Sessões. */
+  async setPassword(personId: string, password: string): Promise<void> {
+    const errors = validatePassword(password);
+    if (errors.length > 0) {
+      throw new ValidationFailedError(errors);
+    }
+    await this.people.updatePasswordHash(personId, await this.passwords.hash(password));
+  }
+
   findByEmail(email: string): Promise<Person | null> {
     return this.people.findByEmail(normalizeEmail(email));
   }

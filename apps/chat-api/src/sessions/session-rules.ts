@@ -6,6 +6,12 @@ export const SESSION_COOKIE = 'session';
 /** `duração da sessão`: 30 dias desde a última atividade (LLD, "Valores e configuração"). */
 export const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 
+/**
+ * `intervalo de renovação da sessão`: 24 h. O uso grava a renovação no máximo uma vez por
+ * intervalo, e o vencimento erra em no máximo um intervalo (LLD, "Sessão e login").
+ */
+export const SESSION_RENEWAL_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
 /** Token de 32 bytes aleatórios em base64url, entregue só na resposta do login. */
 export function newSessionToken(): string {
   return randomBytes(32).toString('base64url');

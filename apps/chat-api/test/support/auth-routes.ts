@@ -54,10 +54,16 @@ export function sessionCookie(token: string): string {
   return `${SESSION_COOKIE}=${token}`;
 }
 
-/** Envelhece todas as Sessões da Pessoa até o passado, para o teste de Sessão vencida. */
-export async function expireSessions(person: TestPerson): Promise<void> {
+/**
+ * Envelhece todas as Sessões da Pessoa em `byMs`: o `last_used_at` e o `expires_at` recuam juntos,
+ * como se o tempo passasse sem uso.
+ */
+export async function ageSessions(person: TestPerson, byMs: number): Promise<void> {
   await queryTestDatabase(
-    "UPDATE sessions SET expires_at = now() - interval '1 minute' WHERE person_id = $1",
-    [person.id],
+    `UPDATE sessions
+     SET last_used_at = last_used_at - $2::bigint * interval '1 millisecond',
+         expires_at = expires_at - $2::bigint * interval '1 millisecond'
+     WHERE person_id = $1`,
+    [person.id, byMs],
   );
 }

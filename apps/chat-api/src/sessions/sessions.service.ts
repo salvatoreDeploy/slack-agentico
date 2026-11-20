@@ -4,7 +4,12 @@ import { normalizeEmail } from '../people/people-rules.js';
 import { PasswordHasher } from '../people/password-hasher.js';
 import { PeopleService } from '../people/people.service.js';
 import { Person } from '../people/person.entity.js';
-import { hashSessionToken, newSessionToken, SESSION_DURATION_MS } from './session-rules.js';
+import {
+  hashSessionToken,
+  newSessionToken,
+  SESSION_DURATION_MS,
+  SESSION_RENEWAL_INTERVAL_MS,
+} from './session-rules.js';
 import { Session } from './session.entity.js';
 import { InvalidCredentialsError, UnauthenticatedError } from './sessions.errors.js';
 import { LoginAttemptsService } from './login-attempts.service.js';
@@ -63,8 +68,9 @@ export class SessionsService {
   }
 
   /**
-   * A Sessão do token, com a Pessoa dela. Token desconhecido ou Sessão vencida respondem igual, e
-   * a vencida é apagada nessa hora. A renovação entra com a tarefa F01-T06.
+   * A Sessão do token, com a Pessoa dela (LLD, "Sessão e login", "Validação de cada requisição").
+   * Token desconhecido ou Sessão vencida respondem igual, e a vencida é apagada nessa hora. Com o
+   * último uso a um intervalo de renovação ou mais, a validade é renovada.
    */
   async authenticate(token: string): Promise<AuthenticatedSession> {
     const session = await this.sessions.findByTokenHashWithPerson(hashSessionToken(token));
@@ -75,11 +81,27 @@ export class SessionsService {
       await this.sessions.deleteById(session.id);
       throw new UnauthenticatedError();
     }
+    if (session.lastUsedAt.getTime() <= Date.now() - SESSION_RENEWAL_INTERVAL_MS) {
+      await this.sessions.renew(session.id);
+    }
     return { sessionId: session.id, person: session.person };
   }
 
   /** Sair: apaga a Sessão da requisição; as outras Sessões da Pessoa continuam. */
   async logout(sessionId: string): Promise<void> {
     await this.sessions.deleteById(sessionId);
+  }
+
+  /**
+   * Revoga as Sessões da Pessoa: todas, ou todas menos `except` (a atual, na troca de senha). Diz
+   * quantas apagou. A Sessão revogada é recusada na próxima requisição.
+   */
+  revokeAll(personId: string, options: { except?: string } = {}): Promise<number> {
+    return this.sessions.deleteByPerson(personId, options.except);
+  }
+
+  /** Apaga as Sessões vencidas e diz quantas eram (LLD, "Processos de segundo plano"). */
+  purgeExpired(): Promise<number> {
+    return this.sessions.deleteExpired();
   }
 }

@@ -25,6 +25,10 @@ export class PeopleRepository {
     return this.people.existsBy({ username });
   }
 
+  async updatePasswordHash(id: string, passwordHash: string): Promise<void> {
+    await this.people.update({ id }, { passwordHash });
+  }
+
   /** Grava a Pessoa; a única do banco decide os conflitos, inclusive sob concorrência. */
   async insert(person: Person): Promise<PersonConflict> {
     try {
