@@ -87,7 +87,7 @@ Os módulos das outras funcionalidades entram com elas.
 
 | Módulo | Responsabilidade | Situação |
 | --- | --- | --- |
-| `people` | Pessoas: criar, buscar por e-mail, trocar a senha | existe; a troca de senha entra com a F01-T07 |
+| `people` | Pessoas: criar, buscar por e-mail, trocar a senha | existe |
 | `sessions` | Login, limite de tentativas, validação, renovação e revogação da Sessão ("Sessão e login"); o guard global que exige Sessão, com o decorator `@Public()` nas rotas abertas | existe |
 | `accounts` | O comando de contas, fora do HTTP | existe, com as operações `create`, `reset-password`, `revoke-sessions` e `purge-expired-sessions` |
 
@@ -318,7 +318,7 @@ de eventos do WebSocket estão a definir. O que já está decidido:
 | `POST /v1/sessions` | existe | Entrar; única rota `@Public()` da F01 ("Sessão e login") |
 | `DELETE /v1/sessions/current` | existe | Sair ("Sessão e login") |
 | `GET /v1/me` | existe | A Pessoa da Sessão |
-| `PUT /v1/me/password` | planejada | Trocar a senha ("Sessão e login") |
+| `PUT /v1/me/password` | existe | Trocar a senha ("Sessão e login") |
 
 ## 6. Estados e regras
 
@@ -382,7 +382,8 @@ terminaria cedo.
 - **Sair** apaga a Sessão da requisição. As outras Sessões da Pessoa continuam.
 - **Trocar a senha** exige a senha atual. Uma senha atual errada conta como falha do e-mail da
   Pessoa, no mesmo registro do login, e com o e-mail bloqueado a troca responde
-  `too_many_attempts`. A senha nova respeita o `tamanho da senha` e tem de ser diferente da atual.
+  `too_many_attempts`. A senha atual certa apaga as falhas do e-mail, como o login certo, porque
+  prova o mesmo. A senha nova respeita o `tamanho da senha` e tem de ser diferente da atual.
   Na mesma transação, a API grava o hash novo e apaga as outras Sessões da Pessoa; a atual
   continua.
 - **No comando de contas**, `reset-password` troca a senha e apaga todas as Sessões da Pessoa, e
@@ -417,7 +418,7 @@ PDFs, perguntas pendentes vencidas) estão a definir.
 | Rota | Acesso | Lê | Ações | Situação |
 | --- | --- | --- | --- | --- |
 | `/entrar` | Público; quem tem Sessão vai para `/` | — | Entrar com e-mail e senha | existe |
-| `/` | Sessão | A Pessoa da Sessão (`GET /v1/me`), na casca vazia | Trocar a senha (diálogo pelo menu do usuário); Sair | existe; "Trocar a senha" entra com a F01-T07 |
+| `/` | Sessão | A Pessoa da Sessão (`GET /v1/me`), na casca vazia | Trocar a senha (diálogo pelo menu do usuário); Sair | existe |
 | A definir | Sessão | Histórico da conversa | Enviar, editar, apagar, citar; "digitando"; botões de resposta pronta | a detalhar |
 | A definir (lateral) | Sessão | Conversas, com não lidas e menções | Abrir conversa | a detalhar |
 | A definir | Sessão | Atividade: Menções, DMs, Tarefas | Abrir a mensagem; concluir e reabrir tarefa delegada | a detalhar |

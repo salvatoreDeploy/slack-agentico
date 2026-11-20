@@ -18,6 +18,8 @@ const ERROR_STATUS: Record<ErrorCode, number> = {
   unauthenticated: 401,
   invalid_credentials: 401,
   too_many_attempts: 429,
+  wrong_current_password: 422,
+  password_unchanged: 422,
   email_taken: 409,
   username_taken: 409,
   request_rejected: 400,

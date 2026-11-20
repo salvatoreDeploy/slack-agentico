@@ -10,6 +10,8 @@ export type ErrorCode =
   | 'unauthenticated'
   | 'invalid_credentials'
   | 'too_many_attempts'
+  | 'wrong_current_password'
+  | 'password_unchanged'
   | 'email_taken'
   | 'username_taken'
   | 'request_rejected'

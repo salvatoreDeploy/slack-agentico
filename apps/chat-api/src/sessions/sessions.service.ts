@@ -1,3 +1,4 @@
+import { Transactional } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
 import { v7 as uuidv7 } from 'uuid';
 import { normalizeEmail } from '../people/people-rules.js';
@@ -11,7 +12,12 @@ import {
   SESSION_RENEWAL_INTERVAL_MS,
 } from './session-rules.js';
 import { Session } from './session.entity.js';
-import { InvalidCredentialsError, UnauthenticatedError } from './sessions.errors.js';
+import {
+  InvalidCredentialsError,
+  PasswordUnchangedError,
+  UnauthenticatedError,
+  WrongCurrentPasswordError,
+} from './sessions.errors.js';
 import { LoginAttemptsService } from './login-attempts.service.js';
 import { SessionsRepository } from './sessions.repository.js';
 
@@ -103,5 +109,35 @@ export class SessionsService {
   /** Apaga as Sessões vencidas e diz quantas eram (LLD, "Processos de segundo plano"). */
   purgeExpired(): Promise<number> {
     return this.sessions.deleteExpired();
+  }
+
+  /**
+   * Troca a senha da Pessoa da Sessão (LLD, "Sessão e login", "Sair, trocar a senha e revogar").
+   * A senha atual entra no mesmo limite de tentativas do login: errada, conta como falha; certa,
+   * apaga as falhas. O hash novo e a revogação das outras Sessões vão numa transação só; a Sessão
+   * da requisição continua.
+   */
+  async changePassword(
+    session: AuthenticatedSession,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const { person } = session;
+    await this.attempts.assertNotBlocked(person.email);
+    if (!(await this.passwords.verify(person.passwordHash, currentPassword))) {
+      await this.attempts.registerFailure(person.email);
+      throw new WrongCurrentPasswordError();
+    }
+    await this.attempts.clear(person.email);
+    if (newPassword === currentPassword) {
+      throw new PasswordUnchangedError();
+    }
+    await this.replacePassword(session, newPassword);
+  }
+
+  @Transactional()
+  private async replacePassword(session: AuthenticatedSession, newPassword: string): Promise<void> {
+    await this.people.setPassword(session.person.id, newPassword);
+    await this.revokeAll(session.person.id, { except: session.sessionId });
   }
 }

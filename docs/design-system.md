@@ -31,10 +31,10 @@ No Pencil, o comportamento de cada componente se lê pelos frames das seções d
 | Framework | Next.js 16 (App Router, `src/app`), React 19 | Instalado |
 | Estilo | Tailwind CSS 4, configurado só em CSS (`@theme`), sem `tailwind.config` | Instalado |
 | Build | Turbopack, com o loader `@tailwindcss/turbopack` no `next.config.ts` | Instalado |
-| Ícones | `lucide-react` | A instalar com o primeiro componente que usa |
-| Primitivos acessíveis | `radix-ui` (Dialog, AlertDialog, DropdownMenu, Tooltip, Switch, Tabs) | A instalar com o primeiro componente que usa |
-| Variantes | `class-variance-authority`, com `clsx` e `tailwind-merge` num helper `cn` em `src/app/utils/cn.ts` | A instalar com o primeiro componente que usa |
-| Toasts | `sonner` | A instalar com o primeiro componente que usa |
+| Ícones | `lucide-react` | Instalado |
+| Primitivos acessíveis | `radix-ui` (Dialog, AlertDialog, DropdownMenu, Tooltip, Switch, Tabs) | Instalado |
+| Variantes | `class-variance-authority`, com `clsx` e `tailwind-merge` num helper `cn` em `src/app/utils/cn.ts` | Instalado |
+| Toasts | `sonner` | Instalado |
 | Fonte | Lato pelo `next/font/google` | Instalada |
 
 Instale uma biblioteca quando o primeiro componente precisar dela, sempre dentro do contêiner (`docker compose -f compose.yaml exec web pnpm add <pacote>`). O arquivo do Figma tem kits da comunidade ligados (Material 3, Simple Design System, kits da Apple): **não use nenhum deles**. O produto usa só as variables e os componentes locais do arquivo.

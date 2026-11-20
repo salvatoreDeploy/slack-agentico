@@ -2,6 +2,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Rail } from "../../components/rail";
 import { Sidebar } from "../../components/sidebar";
+import { Toaster } from "../../components/toaster";
 import { getMe } from "../../services/chat-api";
 import { HOME_PATH, signInPath } from "../../utils/return-path";
 import { RETURN_PATH_HEADER, SESSION_COOKIE } from "../../utils/session-cookie-name";
@@ -27,6 +28,7 @@ export default async function ShellLayout({ children }: LayoutProps<"/">) {
       <Rail person={me.person} />
       <Sidebar />
       <main className="flex flex-1 flex-col bg-surface">{children}</main>
+      <Toaster />
     </div>
   );
 }

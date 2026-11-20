@@ -31,3 +31,21 @@ export class TooManyAttemptsError extends DomainError {
     return { 'Retry-After': String(Math.max(1, this.retryAfterSeconds)) };
   }
 }
+
+/** Na troca de senha, a senha atual não confere; conta como falha do e-mail da Pessoa. */
+export class WrongCurrentPasswordError extends DomainError {
+  readonly code = 'wrong_current_password';
+
+  constructor() {
+    super('A senha atual não confere.');
+  }
+}
+
+/** Na troca de senha, a senha nova é igual à atual. */
+export class PasswordUnchangedError extends DomainError {
+  readonly code = 'password_unchanged';
+
+  constructor() {
+    super('A senha nova tem de ser diferente da atual.');
+  }
+}
