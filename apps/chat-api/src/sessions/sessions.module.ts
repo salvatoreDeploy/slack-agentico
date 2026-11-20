@@ -22,5 +22,6 @@ import { SessionsService } from './sessions.service.js';
     // Toda rota exige Sessão, salvo as marcadas com @Public() (LLD, "Interfaces").
     { provide: APP_GUARD, useClass: SessionGuard },
   ],
+  exports: [SessionsService],
 })
 export class SessionsModule {}

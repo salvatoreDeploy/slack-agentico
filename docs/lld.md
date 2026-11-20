@@ -88,8 +88,8 @@ Os módulos das outras funcionalidades entram com elas.
 | Módulo | Responsabilidade | Situação |
 | --- | --- | --- |
 | `people` | Pessoas: criar, buscar por e-mail, trocar a senha | existe; a troca de senha entra com a F01-T07 |
-| `sessions` | Login, limite de tentativas, validação, renovação e revogação da Sessão ("Sessão e login"); o guard global que exige Sessão, com o decorator `@Public()` nas rotas abertas | existe; a renovação e a revogação entram com a F01-T06 |
-| `accounts` | O comando de contas, fora do HTTP | existe, com a operação `create`; as outras entram com a F01-T06 |
+| `sessions` | Login, limite de tentativas, validação, renovação e revogação da Sessão ("Sessão e login"); o guard global que exige Sessão, com o decorator `@Public()` nas rotas abertas | existe |
+| `accounts` | O comando de contas, fora do HTTP | existe, com as operações `create`, `reset-password`, `revoke-sessions` e `purge-expired-sessions` |
 
 ### Integrações externas
 
@@ -404,7 +404,7 @@ terminaria cedo.
 | Tarefa | Disparo | O que faz | Na falha | Situação |
 | --- | --- | --- | --- | --- |
 | Relatório em PDF (Worker) | Pedido na fila (HLD 6.5) | HLD 6.5 | Nova tentativa até `tentativas do Worker`; esgotadas, grava "não consegui" (HLD 6.5) | a detalhar |
-| Apagar Sessões vencidas | O Operador, à mão, pelo `purge-expired-sessions` do comando de contas; não há agendamento | Apaga as Sessões com `expires_at` no passado e diz quantas eram. Rodar de novo não muda nada | O comando sai com erro e pode ser rodado de novo | planejada |
+| Apagar Sessões vencidas | O Operador, à mão, pelo `purge-expired-sessions` do comando de contas; não há agendamento | Apaga as Sessões com `expires_at` no passado e diz quantas eram. Rodar de novo não muda nada | O comando sai com erro e pode ser rodado de novo | existe |
 
 As Sessões vencidas também são apagadas quando uma requisição as encontra ("Sessão e login"). A
 idempotência da tarefa do PDF (chave no S3 e entrega única) e as outras rotinas (retenção dos

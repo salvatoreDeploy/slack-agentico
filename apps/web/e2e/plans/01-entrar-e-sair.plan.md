@@ -152,6 +152,9 @@ Expected: a casca aparece, com o menu da Pessoa.
 
 ### 5.3 sessao-invalida-volta-para-entrar
 
+Também prova a revogação (F01-T06): as Sessões apagadas no banco são o estado que o
+`revoke-sessions` deixa.
+
 **File:** `e2e/01-entrar-e-sair/sessao-invalida-volta-para-entrar.spec.ts`
 
 Steps:
@@ -169,6 +172,17 @@ Steps:
    outro site.
 
 Expected: a página volta para `/?aba=conversas`, com a casca, e o cookie `session` continua.
+
+### 5.5 sessao-vencida-volta-para-entrar (F01-T06)
+
+**File:** `e2e/01-entrar-e-sair/sessao-vencida-volta-para-entrar.spec.ts`
+
+Steps:
+1. Com Sessão, envelhecer as Sessões da Pessoa no banco 30 dias e 1 minuto (o `last_used_at` e o
+   `expires_at` recuam juntos).
+2. Abrir `/?aba=conversas`.
+
+Expected: a página cai em `/entrar?voltar=%2F%3Faba%3Dconversas`, e o cookie `session` some.
 
 ## 6. Acessibilidade (F01-T03)
 

@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
-import { createPerson, expireSessions, login, sessionCookie } from './support/auth-routes.js';
+import { ageSessions, createPerson, login, sessionCookie } from './support/auth-routes.js';
 import { createTestApp } from './support/create-test-app.js';
 import { closeTestDatabase, queryTestDatabase } from './support/test-database.js';
 
@@ -50,10 +50,39 @@ describe('GET /v1/me (e2e)', () => {
     expect(response.body).toMatchObject({ code: 'unauthenticated' });
   });
 
-  it('responde 401 e apaga a Sessão vencida', async () => {
+  it('renova a validade quando passou o intervalo de renovação', async () => {
     const person = await createPerson(app);
     const token = await login(app, person);
-    await expireSessions(person);
+    await ageSessions(person, 25 * HOUR_MS);
+
+    const response = await request(app.getHttpServer())
+      .get('/v1/me')
+      .set('Cookie', sessionCookie(token));
+
+    expect(response.status).toBe(200);
+    const [session] = await findSessions(person.id);
+    expect(Date.now() - session.last_used_at.getTime()).toBeLessThan(5_000);
+    expect(session.expires_at.getTime() - session.last_used_at.getTime()).toBe(THIRTY_DAYS_MS);
+  });
+
+  it('não renova antes do intervalo de renovação', async () => {
+    const person = await createPerson(app);
+    const token = await login(app, person);
+    await ageSessions(person, 23 * HOUR_MS);
+    const [before] = await findSessions(person.id);
+
+    const response = await request(app.getHttpServer())
+      .get('/v1/me')
+      .set('Cookie', sessionCookie(token));
+
+    expect(response.status).toBe(200);
+    expect(await findSessions(person.id)).toEqual([before]);
+  });
+
+  it('responde 401 e apaga a Sessão sem uso pela duração da sessão', async () => {
+    const person = await createPerson(app);
+    const token = await login(app, person);
+    await ageSessions(person, THIRTY_DAYS_MS + 60_000);
 
     const response = await request(app.getHttpServer())
       .get('/v1/me')
@@ -61,9 +90,21 @@ describe('GET /v1/me (e2e)', () => {
 
     expect(response.status).toBe(401);
     expect(response.body).toMatchObject({ code: 'unauthenticated' });
-    const remaining = await queryTestDatabase('SELECT 1 FROM sessions WHERE person_id = $1', [
-      person.id,
-    ]);
-    expect(remaining).toHaveLength(0);
+    expect(await findSessions(person.id)).toHaveLength(0);
   });
 });
+
+const HOUR_MS = 60 * 60 * 1000;
+const THIRTY_DAYS_MS = 30 * 24 * HOUR_MS;
+
+interface SessionRow {
+  last_used_at: Date;
+  expires_at: Date;
+}
+
+function findSessions(personId: string): Promise<SessionRow[]> {
+  return queryTestDatabase<SessionRow>(
+    'SELECT last_used_at, expires_at FROM sessions WHERE person_id = $1',
+    [personId],
+  );
+}
