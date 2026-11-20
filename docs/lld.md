@@ -88,7 +88,7 @@ Os módulos das outras funcionalidades entram com elas.
 | Módulo | Responsabilidade | Situação |
 | --- | --- | --- |
 | `people` | Pessoas: criar, buscar por e-mail, trocar a senha | existe; a troca de senha entra com a F01-T07 |
-| `sessions` | Login, limite de tentativas, validação, renovação e revogação da Sessão ("Sessão e login"); o guard global que exige Sessão, com o decorator `@Public()` nas rotas abertas | existe; o limite de tentativas, a renovação e a revogação entram com as F01-T05 e F01-T06 |
+| `sessions` | Login, limite de tentativas, validação, renovação e revogação da Sessão ("Sessão e login"); o guard global que exige Sessão, com o decorator `@Public()` nas rotas abertas | existe; a renovação e a revogação entram com a F01-T06 |
 | `accounts` | O comando de contas, fora do HTTP | existe, com a operação `create`; as outras entram com a F01-T06 |
 
 ### Integrações externas
