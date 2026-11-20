@@ -1,6 +1,6 @@
 # 07: Trocar senha
 
-**Status:** a fazer
+**Status:** em andamento
 
 **O que construir:** a Pessoa troca a própria senha pelo diálogo "Trocar senha", aberto pelo menu
 do usuário, informando a senha atual e a nova. Depois da troca, as outras Sessões dela são

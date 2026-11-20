@@ -382,7 +382,8 @@ terminaria cedo.
 - **Sair** apaga a Sessão da requisição. As outras Sessões da Pessoa continuam.
 - **Trocar a senha** exige a senha atual. Uma senha atual errada conta como falha do e-mail da
   Pessoa, no mesmo registro do login, e com o e-mail bloqueado a troca responde
-  `too_many_attempts`. A senha nova respeita o `tamanho da senha` e tem de ser diferente da atual.
+  `too_many_attempts`. A senha atual certa apaga as falhas do e-mail, como o login certo, porque
+  prova o mesmo. A senha nova respeita o `tamanho da senha` e tem de ser diferente da atual.
   Na mesma transação, a API grava o hash novo e apaga as outras Sessões da Pessoa; a atual
   continua.
 - **No comando de contas**, `reset-password` troca a senha e apaga todas as Sessões da Pessoa, e
