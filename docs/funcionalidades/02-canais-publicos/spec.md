@@ -207,6 +207,8 @@ Todas `planejadas`, com Sessão e com o corpo de erro do LLD ("Erros"):
   - Com nome vazio ou longo demais, o aviso aparece no campo, sem enviar.
   - No `channel_name_taken`, o aviso aparece no campo do nome, e o diálogo continua aberto com o
     que a Pessoa digitou.
+  - Numa falha de rede ou do servidor ao criar, a mensagem do frame aparece no corpo do diálogo,
+    com `role="alert"`, e os campos continuam preenchidos.
   - No sucesso, a Pessoa vai para `/canais/<id>`, e a barra lateral já tem o Canal novo.
 - **Canal:**
   - **Cabeçalho:** o ConversationHeader, com o `#nome` e a descrição.
@@ -249,14 +251,16 @@ Todas `planejadas`, com Sessão e com o corpo de erro do LLD ("Erros"):
 
 A primeira tarefa da F02 confere, no `slack-ia.pen`, os frames de:
 - seção Canais na barra lateral, com a linha ativa;
-- diálogo "Criar Canal", nos estados padrão, nome inválido, nome já usado e enviando;
+- diálogo "Criar Canal", nos estados padrão, nome inválido, nome já usado, enviando e falha ao
+  criar;
 - Canal com histórico e separador de dia;
 - Canal vazio, comum e `#geral`;
 - Mensagem `sending` e `failed`;
 - composer perto do limite e acima dele;
 - Canal não encontrado.
 
-Ela desenha os que faltarem antes de qualquer tarefa de tela, seguindo o `docs/design-system.md`,
+Ela reaproveita os que já existem, ajustando o que diverge desta spec, e desenha os que faltarem
+antes de qualquer tarefa de tela, seguindo o `docs/design-system.md`,
 "Fluxo com a ferramenta de design". O Pencil precisa estar aberto no aplicativo para o MCP
 responder.
 
