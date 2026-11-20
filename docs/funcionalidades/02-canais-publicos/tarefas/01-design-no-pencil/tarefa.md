@@ -1,6 +1,6 @@
 # 01: Design da F02 no Pencil
 
-**Status:** a fazer
+**Status:** em andamento
 
 **O que construir:** os frames das telas da F02 no `slack-ia.pen`, para as tarefas de tela terem o
 desenho e o microtexto de cada estado antes do código. A tarefa confere o que já existe e desenha

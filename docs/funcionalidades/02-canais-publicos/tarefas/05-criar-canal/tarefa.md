@@ -32,6 +32,8 @@ telas" e "Decisões de teste"; LLD, "Dados" e "Valores e configuração"; ADR 00
   - abre pela SidebarAction, com o foco no nome, e mostra a prévia do nome normalizado;
   - avisa no campo o nome vazio ou longo demais, sem enviar;
   - avisa o `channel_name_taken` no campo do nome e continua aberto com o que foi digitado;
+  - numa falha de rede ou do servidor, mostra a mensagem do frame `Diálogos / Criar canal / Falha
+    ao criar` no corpo do diálogo, com os campos preenchidos;
   - fecha pelo Esc, com o foco de volta à SidebarAction;
   - no sucesso, leva a Pessoa ao Canal novo, já na barra lateral.
 - [ ] **CA5** · O Canal vazio mostra o ConversationIntro com o criador e a data.
@@ -39,6 +41,7 @@ telas" e "Decisões de teste"; LLD, "Dados" e "Valores e configuração"; ADR 00
   - a prévia do nome;
   - o sucesso, com o Canal novo na barra lateral;
   - o nome já usado e o nome vazio;
+  - a falha ao criar, com o envio bloqueado no navegador;
   - o Canal vazio com o criador;
   - o diálogo só pelo teclado;
   - o axe-core sem violações no diálogo.
