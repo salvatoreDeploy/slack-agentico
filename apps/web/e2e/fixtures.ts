@@ -55,21 +55,44 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
       "INSERT INTO people (id, name, username, email, password_hash) VALUES ($1, $2, $3, $4, $5)",
       [person.id, person.name, person.username, person.email, TEST_PASSWORD_HASH],
     );
+    // Como o `create` do comando de contas: a Pessoa nova participa de todos os Canais públicos
+    // (spec da F02, "Conversas e participação").
+    await database.query(
+      `INSERT INTO participations (conversation_id, person_id)
+       SELECT id, $1 FROM conversations WHERE type = 'public_channel'
+       ON CONFLICT DO NOTHING`,
+      [person.id],
+    );
     await provide(person);
     // As tentativas de login não referenciam a Pessoa e saem à parte; apagar a Pessoa leva as
-    // Sessões dela junto (ON DELETE CASCADE).
+    // Sessões e as participações dela junto (ON DELETE CASCADE).
     await database.query("DELETE FROM login_attempts WHERE email = $1", [person.email]);
     await database.query("DELETE FROM people WHERE id = $1", [person.id]);
   },
 
   loggedInPage: async ({ page, person }, provide) => {
     await signIn(page, person);
-    await expect(page).toHaveURL("/");
+    await expectGeral(page);
     await provide(page);
   },
 });
 
 export { expect };
+
+/** O endereço de um Canal: `/canais/<id>`. */
+export const CHANNEL_URL = /\/canais\/[0-9a-f-]{36}$/;
+
+/** Confere que a página está no `#geral`, para onde `/` e a entrada sem `voltar` levam. */
+export async function expectGeral(page: Page): Promise<void> {
+  await expect(page).toHaveURL(CHANNEL_URL);
+  await expect(page.getByRole("heading", { level: 1, name: "geral" })).toBeVisible();
+}
+
+/** O id do `#geral`, que a migração grava (spec da F02, "Conversas e participação"). */
+export async function findGeneralChannelId(database: pg.Pool): Promise<string> {
+  const result = await database.query<{ id: string }>("SELECT id FROM conversations WHERE name = 'geral'");
+  return result.rows[0].id;
+}
 
 /** Entra pelo formulário da tela Entrar: o único lugar da suíte que faz isso. */
 export async function signIn(page: Page, person: TestPerson): Promise<void> {

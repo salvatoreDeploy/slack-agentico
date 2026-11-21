@@ -37,7 +37,7 @@ docker compose -f compose.yaml exec chat-api <comando>
 | `pnpm migration:generate migrations/<Nome>` | Gera uma migração a partir da diferença entre as entidades e o Banco do chat |
 | `pnpm migration:run` | Roda as migrações pendentes no Banco do chat |
 | `pnpm migration:revert` | Reverte a última migração rodada |
-| `pnpm accounts create <e-mail> "<nome>" [--username <u>] [--title "<cargo>"] [--phone "<tel>"]` | Comando de contas: cria a conta de uma Pessoa, já Membro de todos os Canais públicos. A senha é lida do terminal, sem eco, e nunca de argumento nem de variável. Sem `--username`, o @usuário vem do e-mail (`docs/lld.md`, "Sessão e login"). O `--title` e o `--phone` entram com a F09 |
+| `pnpm accounts create <e-mail> "<nome>" [--username <u>] [--title "<cargo>"] [--phone "<tel>"]` | Comando de contas: cria a conta de uma Pessoa, com participação em todos os Canais públicos. A senha é lida do terminal, sem eco, e nunca de argumento nem de variável. Sem `--username`, o @usuário vem do e-mail (`docs/lld.md`, "Sessão e login"). O `--title` e o `--phone` entram com a F09 |
 | `pnpm openapi` | Regrava o `openapi.json` a partir do código; o teste de snapshot da suíte e2e falha quando ele está desatualizado |
 | `pnpm accounts update-profile <e-mail> [--title "<cargo>"] [--phone "<tel>"]` | Troca o cargo e o telefone; `""` apaga. O @usuário não muda |
 | `pnpm accounts reset-password <e-mail>` | Troca a senha, lida do terminal duas vezes e sem eco, e revoga todas as Sessões da Pessoa, numa transação só; diz quantas Sessões revogou. Recusa o e-mail sem Pessoa antes de pedir a senha |
@@ -46,10 +46,6 @@ docker compose -f compose.yaml exec chat-api <comando>
 | `pnpm accounts set-admin <e-mail\|@usuário> on\|off` | Dá ou tira o papel de administrador; vale na próxima ação da Pessoa, sem sair e entrar (spec da F10, "Comando de contas") |
 | `pnpm accounts set-data-access <e-mail\|@usuário> on\|off` | Liga ou desliga a Permissão de dados; vale no próximo Pedido e na próxima leitura de cada Mensagem (spec da F13, "Permissão de dados") |
 | `pnpm accounts create-bot <@usuário> "<nome>"` | Cria o bot de um Agente, que reserva o @usuário dele: nenhuma Pessoa nova pode tê-lo, e o `create` deriva outro do e-mail (spec da F10, "Comando de contas") |
-| `pnpm channels create <nome> ["<tópico>"]` | Comando de canais: cria um Canal público, com todas as Pessoas como Membros |
-| `pnpm channels set-topic <nome> "<tópico>"` | Troca o Tópico do Canal; `""` apaga |
-| `pnpm channels list` | Lista os Canais públicos, com o número de Membros e o Tópico |
-| `pnpm channels remove-member <nome> <e-mail>` | Tira a Pessoa de um Canal privado (spec da F04, "Comando de canais") |
 
 Exemplos das operações de Sessão, a partir da raiz do repositório:
 
@@ -67,7 +63,7 @@ docker compose -f compose.yaml exec chat-api pnpm accounts purge-expired-session
 # Sessões vencidas apagadas: 12.
 ```
 
-O comando de contas precisa do terminal para ler a senha: rode com `docker compose -f compose.yaml exec chat-api ...`, que abre um TTY. As operações estão nas specs da F01, da F05 e da F10, "Comando de contas", e da F13, "Permissão de dados". As do comando de canais estão nas specs da F02 e da F04, "Comando de canais".
+O comando de contas precisa do terminal para ler a senha: rode com `docker compose -f compose.yaml exec chat-api ...`, que abre um TTY. As operações estão nas specs da F01, da F05 e da F10, "Comando de contas", e da F13, "Permissão de dados".
 
 O `pnpm lint` roda com `--fix`: corrige o que dá e aponta o resto. O `pnpm format` reescreve os arquivos com o Prettier.
 

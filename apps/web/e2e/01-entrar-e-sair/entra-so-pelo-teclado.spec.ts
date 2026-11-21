@@ -1,6 +1,6 @@
 // spec: e2e/plans/01-entrar-e-sair.plan.md
 // seed: e2e/seed.spec.ts
-import { expect, test } from "../fixtures";
+import { expect, expectGeral, test } from "../fixtures";
 
 test.describe("Entrar com e-mail e senha", () => {
   test("entra só pelo teclado: Tab percorre os campos e o botão, e Enter envia", async ({ page, person }) => {
@@ -14,6 +14,6 @@ test.describe("Entrar com e-mail e senha", () => {
 
     await page.keyboard.press("Enter");
 
-    await expect(page).toHaveURL("/");
+    await expectGeral(page);
   });
 });

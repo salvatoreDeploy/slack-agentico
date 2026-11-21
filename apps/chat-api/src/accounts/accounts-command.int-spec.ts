@@ -1,5 +1,6 @@
 import { verify } from '@node-rs/argon2';
 import { randomUUID } from 'node:crypto';
+import { insertChannel } from '../../test/support/conversation-rows.js';
 import { findSessionIds, insertSession } from '../../test/support/session-rows.js';
 import { closeTestDatabase, queryTestDatabase } from '../../test/support/test-database.js';
 import { uniqueEmail } from '../../test/support/unique-email.js';
@@ -67,6 +68,23 @@ describe('comando de contas: create', () => {
     expect(person?.password_hash).toMatch(/^\$argon2id\$/);
     expect(terminal.lines.join('\n')).not.toContain(PASSWORD);
     expect(terminal.lines.join('\n')).not.toContain(person?.password_hash);
+  });
+
+  it('grava a participação da Pessoa nova em todos os Canais públicos', async () => {
+    const other = await insertChannel();
+    const email = uniqueEmail();
+
+    const exitCode = await runAccountsCommand(['create', email, 'Pessoa'], fakeTerminal([PASSWORD, PASSWORD]).io);
+
+    expect(exitCode).toBe(0);
+    const rows = await queryTestDatabase<{ name: string }>(
+      `SELECT c.name FROM participations pa
+       JOIN conversations c ON c.id = pa.conversation_id
+       JOIN people p ON p.id = pa.person_id
+       WHERE p.email = $1`,
+      [email],
+    );
+    expect(rows.map((row) => row.name)).toEqual(expect.arrayContaining(['geral', other.name]));
   });
 
   describe('sem --username, deriva o @usuário do e-mail', () => {

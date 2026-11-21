@@ -30,3 +30,11 @@ export function safeReturnPath(value: unknown): string {
 export function signInPath(returnPath: string): string {
   return returnPath === HOME_PATH ? "/entrar" : `/entrar?voltar=${encodeURIComponent(returnPath)}`;
 }
+
+/**
+ * O Route Handler que apaga o cookie de uma Sessão que a API recusou e manda para Entrar, porque
+ * um Server Component não grava cookie (LLD, "Sessão no cliente").
+ */
+export function expiredSessionPath(returnPath: string): string {
+  return `/api/sessao/expirada?voltar=${encodeURIComponent(returnPath)}`;
+}

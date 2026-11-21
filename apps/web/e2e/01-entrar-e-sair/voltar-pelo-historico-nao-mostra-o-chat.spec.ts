@@ -11,7 +11,8 @@ test.describe("Sair", () => {
 
     await page.goBack();
 
-    await expect(page).toHaveURL("/entrar");
+    // A página anterior é o #geral, que sem Sessão vai para Entrar com o voltar dele.
+    await expect(page).toHaveURL(/\/entrar(\?voltar=%2Fcanais%2F[0-9a-f-]{36})?$/);
     await expect(page.getByRole("heading", { name: "Entrar no Full Cycle" })).toBeVisible();
     await expect(page.getByRole("button", { name: `Menu de ${person.name}` })).toHaveCount(0);
     await expect(page.getByRole("navigation", { name: "Seções" })).toHaveCount(0);

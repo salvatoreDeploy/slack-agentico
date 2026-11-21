@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { loadEnv } from "../../config/env";
 import { SESSION_COOKIE } from "../utils/session-cookie-name";
 
@@ -147,5 +148,81 @@ export async function changePassword(
       return { status: "too_many_attempts" };
     default:
       return { status: "unavailable" };
+  }
+}
+
+/** Um Canal da barra lateral, como `GET /v1/channels` o devolve. */
+export interface Channel {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+export type ChannelsResult = { status: "ok"; channels: Channel[] } | { status: "unauthenticated" };
+
+/**
+ * Os Canais de que a Pessoa participa, em ordem de nome: `GET /v1/channels`. O `cache()` do React
+ * faz uma chamada só por requisição, dividida entre o layout da casca e a página `/`. Lança
+ * `ChatApiUnavailableError` numa falha de rede ou num 5xx.
+ */
+export const listChannels = cache(async (token: string): Promise<ChannelsResult> => {
+  let response: Response;
+  try {
+    response = await fetch(url("/v1/channels"), {
+      headers: { cookie: `${SESSION_COOKIE}=${token}` },
+      cache: "no-store",
+    });
+  } catch (error) {
+    throw new ChatApiUnavailableError(error);
+  }
+  if (response.status === 200) {
+    const body = (await response.json()) as { channels: Channel[] };
+    return { status: "ok", channels: body.channels };
+  }
+  if (response.status === 401) {
+    return { status: "unauthenticated" };
+  }
+  throw new ChatApiUnavailableError(response.status);
+});
+
+/** Uma Conversa, como `GET /v1/conversations/:id` a devolve. Na F02, só Canal público. */
+export interface Conversation {
+  id: string;
+  type: "public_channel";
+  name: string;
+  description: string | null;
+  created_at: string;
+  created_by: Pick<Person, "id" | "name" | "username"> | null;
+}
+
+export type ConversationResult =
+  | { status: "ok"; conversation: Conversation }
+  | { status: "not_found" }
+  | { status: "unauthenticated" };
+
+/**
+ * A Conversa, se a Pessoa participa dela: `GET /v1/conversations/:id`. O 404 cobre o id
+ * malformado, a Conversa inexistente e a sem participação (LLD, "Segurança"). Lança
+ * `ChatApiUnavailableError` numa falha de rede ou num 5xx.
+ */
+export async function getConversation(token: string, id: string): Promise<ConversationResult> {
+  let response: Response;
+  try {
+    response = await fetch(url(`/v1/conversations/${encodeURIComponent(id)}`), {
+      headers: { cookie: `${SESSION_COOKIE}=${token}` },
+      cache: "no-store",
+    });
+  } catch (error) {
+    throw new ChatApiUnavailableError(error);
+  }
+  switch (response.status) {
+    case 200:
+      return { status: "ok", conversation: (await response.json()) as Conversation };
+    case 404:
+      return { status: "not_found" };
+    case 401:
+      return { status: "unauthenticated" };
+    default:
+      throw new ChatApiUnavailableError(response.status);
   }
 }
