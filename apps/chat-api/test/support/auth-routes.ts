@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
-import { PeopleService } from '../../src/people/people.service.js';
+import { createAccount } from '../../src/accounts/create-account.js';
 import { SESSION_COOKIE } from '../../src/sessions/session-rules.js';
 import { queryTestDatabase } from './test-database.js';
 import { uniqueEmail } from './unique-email.js';
@@ -17,7 +17,10 @@ export interface TestPerson {
   password: string;
 }
 
-/** Cria uma Pessoa direto pelo service, com e-mail único e a senha de teste. */
+/**
+ * Cria uma Pessoa pela criação de conta, como o Operador, com e-mail único e a senha de teste: ela
+ * já participa dos Canais públicos.
+ */
 export async function createPerson(
   app: INestApplication<App>,
   overrides: Partial<Pick<TestPerson, 'name' | 'email' | 'password'>> = {},
@@ -26,9 +29,7 @@ export async function createPerson(
   const password = overrides.password ?? TEST_PASSWORD;
   const person = await app
     .get(ClsService)
-    .run(() =>
-      app.get(PeopleService).create({ email, name: overrides.name ?? 'Pessoa de Teste', password }),
-    );
+    .run(() => createAccount(app, { email, name: overrides.name ?? 'Pessoa de Teste', password }));
   return { id: person.id, name: person.name, username: person.username, email, password };
 }
 

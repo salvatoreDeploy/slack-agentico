@@ -1,6 +1,6 @@
 // spec: e2e/plans/01-entrar-e-sair.plan.md
 // seed: e2e/seed.spec.ts
-import { expect, openChangePassword, signIn, signOut, test } from "../fixtures";
+import { expect, expectGeral, openChangePassword, signIn, signOut, test } from "../fixtures";
 
 const NEW_PASSWORD = "senha-nova-segura-1";
 
@@ -21,6 +21,6 @@ test.describe("Trocar senha", () => {
     await signOut(page, person);
     await expect(page).toHaveURL("/entrar");
     await signIn(page, { ...person, password: NEW_PASSWORD });
-    await expect(page).toHaveURL("/");
+    await expectGeral(page);
   });
 });

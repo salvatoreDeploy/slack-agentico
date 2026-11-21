@@ -1,7 +1,7 @@
 // spec: e2e/plans/01-entrar-e-sair.plan.md
 // seed: e2e/seed.spec.ts
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "../fixtures";
+import { expect, expectGeral, test } from "../fixtures";
 
 test.describe("Acessibilidade", () => {
   test("a tela Entrar não tem violações do axe-core", async ({ page }) => {
@@ -13,8 +13,8 @@ test.describe("Acessibilidade", () => {
     expect(results.violations).toEqual([]);
   });
 
-  test("a Home não tem violações do axe-core", async ({ loggedInPage: page }) => {
-    await expect(page.getByRole("heading", { name: "Nenhuma conversa ainda" })).toBeVisible();
+  test("a Home, que leva ao #geral, não tem violações do axe-core", async ({ loggedInPage: page }) => {
+    await expectGeral(page);
 
     const results = await new AxeBuilder({ page }).analyze();
 

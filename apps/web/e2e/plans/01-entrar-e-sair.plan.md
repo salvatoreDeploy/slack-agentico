@@ -19,7 +19,7 @@ Steps:
 1. Abrir `/entrar` e preencher E-mail e Senha com a Pessoa da fixture.
 2. Clicar em "Entrar".
 
-Expected: a página é a Home (`/`), com o botão "Menu de <nome>"; o cookie `session` tem
+Expected: a página é a Home, que leva ao `#geral` (`/canais/<id>`) desde a F02-T02, com o botão "Menu de <nome>"; o cookie `session` tem
 `httpOnly`, `secure`, `SameSite=Lax` e `Path=/`, e `document.cookie` não o mostra.
 
 ### 1.2 com-sessao-abre-entrar-e-vai-para-home
@@ -29,7 +29,7 @@ Expected: a página é a Home (`/`), com o botão "Menu de <nome>"; o cookie `se
 Steps:
 1. Com Sessão (`loggedInPage`), abrir `/entrar`.
 
-Expected: a página volta para a Home.
+Expected: a página volta para a Home, que leva ao `#geral`.
 
 ### 1.3 entra-so-pelo-teclado
 
@@ -40,7 +40,7 @@ Steps:
 2. Tab: o foco vai para a Senha; digitar a senha.
 3. Tab: o foco vai para "Entrar"; Enter.
 
-Expected: a página é a Home.
+Expected: a página é a Home, que leva ao `#geral`.
 
 ## 2. Volta à página pedida (F01-T03)
 
@@ -49,11 +49,12 @@ Expected: a página é a Home.
 **File:** `e2e/01-entrar-e-sair/volta-a-pagina-pedida.spec.ts`
 
 Steps:
-1. Sem Sessão, abrir `/?aba=conversas`.
+1. Sem Sessão, abrir o endereço do `#geral` com `?aba=conversas` (`/canais/<id>?aba=conversas`;
+   desde a F02-T02, `/` redireciona e descarta a consulta).
 2. Entrar pelo formulário.
 
-Expected: o passo 1 cai em `/entrar?voltar=%2F%3Faba%3Dconversas`; depois de entrar, a página é
-`/?aba=conversas`.
+Expected: o passo 1 cai em `/entrar?voltar=<o endereço do passo 1, codificado>`; depois de entrar,
+a página é o endereço do passo 1.
 
 ### 2.2 ignora-voltar-externo
 
@@ -63,7 +64,7 @@ Steps:
 1. Abrir `/entrar?voltar=<valor>` e entrar pelo formulário, com cada valor: `//outro-site.example`,
    `/%09/outro-site.example` (o tab que o navegador remove) e `/%5Coutro-site.example`.
 
-Expected: a página é a Home nos três casos.
+Expected: a página é a Home, que leva ao `#geral`, nos três casos.
 
 ## 3. Tela Entrar (F01-T03)
 
@@ -117,7 +118,8 @@ Steps:
 1. Com Sessão, olhar a Home.
 
 Expected: o Rail ("Seções") tem "FC" e o link "Início" com `aria-current="page"`; a Sidebar
-("Conversas") tem o cabeçalho "Full Cycle"; a área principal mostra "Nenhuma conversa ainda".
+("Conversas") tem o cabeçalho "Full Cycle"; a página é o `#geral` (desde a F02-T02, a Home leva a
+ele).
 
 ### 4.2 menu-do-usuario-abre-pelo-teclado
 
@@ -168,10 +170,10 @@ Expected: a página cai em `/entrar?voltar=%2F%3Faba%3Dconversas`, e o cookie `s
 **File:** `e2e/01-entrar-e-sair/sessao-valida-nao-sai-por-link.spec.ts`
 
 Steps:
-1. Com Sessão, abrir `/api/sessao/expirada?voltar=%2F%3Faba%3Dconversas`, como faria um link de
-   outro site.
+1. Com Sessão, abrir `/api/sessao/expirada?voltar=<o endereço do #geral com ?aba=conversas>`,
+   como faria um link de outro site.
 
-Expected: a página volta para `/?aba=conversas`, com a casca, e o cookie `session` continua.
+Expected: a página volta para o endereço do `voltar`, com a casca, e o cookie `session` continua.
 
 ### 5.5 sessao-vencida-volta-para-entrar (F01-T06)
 
@@ -218,7 +220,7 @@ Steps:
 3. Voltar pelo histórico do navegador.
 
 Expected: a resposta do passo 1 tem `Cache-Control` com `no-store`; depois do passo 3, a página é
-`/entrar`, sem o botão "Menu de <nome>" nem a navegação "Seções".
+`/entrar`, com o `voltar` do `#geral` desde a F02-T02 (a Home leva a ele), sem o botão "Menu de <nome>" nem a navegação "Seções".
 
 ### 7.3 outra-aba-vai-para-entrar
 

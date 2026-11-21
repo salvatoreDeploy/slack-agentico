@@ -10,6 +10,7 @@ import { PeopleService, validatePersonFields } from '../people/people.service.js
 import { Person } from '../people/person.entity.js';
 import { SessionsService } from '../sessions/sessions.service.js';
 import { AccountsModule } from './accounts.module.js';
+import { createAccount } from './create-account.js';
 
 /** A entrada e a saída do comando: o terminal no `cli.ts`, uma entrada dada no teste. */
 export interface AccountsCommandIo {
@@ -164,9 +165,7 @@ async function create(args: string[], io: AccountsCommandIo): Promise<number> {
 
   return withContext(async (app) => {
     try {
-      const person = await app
-        .get(PeopleService)
-        .create({ email, name, password, username: parsed.values.username });
+      const person = await createAccount(app, { email, name, password, username: parsed.values.username });
       io.log(`Pessoa criada: ${person.name} (@${person.username}), ${person.email}.`);
       return 0;
     } catch (error) {

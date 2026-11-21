@@ -1,6 +1,6 @@
 // spec: e2e/plans/01-entrar-e-sair.plan.md
 // seed: e2e/seed.spec.ts
-import { expect, signOut, test } from "../fixtures";
+import { CHANNEL_ID_PATTERN, expect, signOut, test } from "../fixtures";
 
 test.describe("Sair", () => {
   test("voltar pelo histórico depois de sair não mostra o chat", async ({ loggedInPage: page, person }) => {
@@ -11,7 +11,8 @@ test.describe("Sair", () => {
 
     await page.goBack();
 
-    await expect(page).toHaveURL("/entrar");
+    // A página anterior é o #geral, que sem Sessão vai para Entrar com o voltar dele.
+    await expect(page).toHaveURL(new RegExp(`/entrar\\?voltar=%2Fcanais%2F${CHANNEL_ID_PATTERN}$`));
     await expect(page.getByRole("heading", { name: "Entrar no Full Cycle" })).toBeVisible();
     await expect(page.getByRole("button", { name: `Menu de ${person.name}` })).toHaveCount(0);
     await expect(page.getByRole("navigation", { name: "Seções" })).toHaveCount(0);
