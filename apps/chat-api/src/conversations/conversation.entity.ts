@@ -13,9 +13,9 @@ import { Person } from '../people/person.entity.js';
  * O tipo da Conversa (GLOSSARY.md). O Canal privado e a Conversa direta entram com a F03 e a F04,
  * com `ALTER TYPE` no enum do banco.
  */
-export type ConversationType = 'public_channel';
+export const CONVERSATION_TYPES = ['public_channel'] as const;
 
-export const CONVERSATION_TYPES: ConversationType[] = ['public_channel'];
+export type ConversationType = (typeof CONVERSATION_TYPES)[number];
 
 /**
  * Conversa: Canal ou Conversa direta, numa tabela só, com o tipo (ADR 0025). O nome e a descrição
@@ -27,7 +27,7 @@ export class Conversation {
   @PrimaryColumn({ type: 'uuid', primaryKeyConstraintName: 'conversations_pkey' })
   id: string;
 
-  @Column({ type: 'enum', enum: CONVERSATION_TYPES, enumName: 'conversations_type_enum' })
+  @Column({ type: 'enum', enum: [...CONVERSATION_TYPES], enumName: 'conversations_type_enum' })
   type: ConversationType;
 
   @Column({ type: 'text', nullable: true })

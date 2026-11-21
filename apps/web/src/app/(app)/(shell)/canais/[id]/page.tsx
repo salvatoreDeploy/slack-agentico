@@ -2,23 +2,19 @@ import { SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { ConversationHeader } from "../../../../components/conversation-header";
 import { ConversationIntro } from "../../../../components/conversation-intro";
 import { EmptyState } from "../../../../components/empty-state";
 import { getConversation } from "../../../../services/chat-api";
-import { channelPath } from "../../../../utils/conversation-path";
-import { expiredSessionPath, HOME_PATH } from "../../../../utils/return-path";
+import { HOME_PATH } from "../../../../utils/return-path";
 import { SESSION_COOKIE } from "../../../../utils/session-cookie-name";
-
-/** O título do layout raiz, que vem depois do nome da Conversa na aba. */
-const PRODUCT_NAME = "Full Cycle Chat";
+import { redirectToExpiredSession } from "../../../../utils/session-redirect";
 
 async function loadConversation(id: string) {
   const token = (await cookies()).get(SESSION_COOKIE)?.value ?? "";
   const result = await getConversation(token, id);
   if (result.status === "unauthenticated") {
-    redirect(expiredSessionPath(channelPath(id)));
+    return redirectToExpiredSession();
   }
   return result;
 }
@@ -26,10 +22,7 @@ async function loadConversation(id: string) {
 export async function generateMetadata({ params }: PageProps<"/canais/[id]">): Promise<Metadata> {
   const result = await loadConversation((await params).id);
   return {
-    title:
-      result.status === "ok"
-        ? `#${result.conversation.name} · ${PRODUCT_NAME}`
-        : `Conversa não encontrada · ${PRODUCT_NAME}`,
+    title: result.status === "ok" ? `#${result.conversation.name}` : "Conversa não encontrada",
   };
 }
 

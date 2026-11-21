@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Person } from '../people/person.entity.js';
+import { PersonResponse } from '../sessions/sessions.dto.js';
 import { Conversation, CONVERSATION_TYPES, type ConversationType } from './conversation.entity.js';
 
 /**
@@ -31,17 +32,8 @@ export class ChannelListResponse {
   channels: ChannelResponse[];
 }
 
-/** Quem criou o Canal. */
-export class ConversationCreatorResponse {
-  @ApiProperty({ type: String, format: 'uuid' })
-  id: string;
-
-  @ApiProperty({ type: String })
-  name: string;
-
-  @ApiProperty({ type: String, description: 'O @usuário, sem o @' })
-  username: string;
-
+/** Quem criou o Canal: a Pessoa como a API a mostra, sem o e-mail. */
+export class ConversationCreatorResponse extends PickType(PersonResponse, ['id', 'name', 'username'] as const) {
   static of(person: Person): ConversationCreatorResponse {
     return { id: person.id, name: person.name, username: person.username };
   }
@@ -52,7 +44,7 @@ export class ConversationResponse {
   @ApiProperty({ type: String, format: 'uuid' })
   id: string;
 
-  @ApiProperty({ type: String, enum: CONVERSATION_TYPES })
+  @ApiProperty({ type: String, enum: [...CONVERSATION_TYPES] })
   type: ConversationType;
 
   @ApiProperty({ type: String, example: 'geral' })

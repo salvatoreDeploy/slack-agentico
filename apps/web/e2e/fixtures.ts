@@ -56,7 +56,8 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
       [person.id, person.name, person.username, person.email, TEST_PASSWORD_HASH],
     );
     // Como o `create` do comando de contas: a Pessoa nova participa de todos os Canais públicos
-    // (spec da F02, "Conversas e participação").
+    // (spec da F02, "Conversas e participação"). Cópia do `joinPublicChannels` do
+    // `ConversationsRepository` da API, que é a fonte da regra; mude os dois juntos.
     await database.query(
       `INSERT INTO participations (conversation_id, person_id)
        SELECT id, $1 FROM conversations WHERE type = 'public_channel'
@@ -79,13 +80,21 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
 
 export { expect };
 
-/** O endereço de um Canal: `/canais/<id>`. */
-export const CHANNEL_URL = /\/canais\/[0-9a-f-]{36}$/;
+/** O id de um Canal, para conferir endereços. */
+export const CHANNEL_ID_PATTERN = "[0-9a-f-]{36}";
 
 /** Confere que a página está no `#geral`, para onde `/` e a entrada sem `voltar` levam. */
 export async function expectGeral(page: Page): Promise<void> {
-  await expect(page).toHaveURL(CHANNEL_URL);
+  await expect(page).toHaveURL(new RegExp(`/canais/${CHANNEL_ID_PATTERN}$`));
   await expect(page.getByRole("heading", { level: 1, name: "geral" })).toBeVisible();
+}
+
+/** Confere o estado "Conversa não encontrada", dentro da casca (frame de mesmo nome). */
+export async function expectNotFound(page: Page): Promise<void> {
+  await expect(page.getByRole("complementary", { name: "Conversas" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Conversa não encontrada" })).toBeVisible();
+  await expect(page.getByText("Ela não existe ou você não participa dela.")).toBeVisible();
+  await expect(page).toHaveTitle("Conversa não encontrada · Full Cycle Chat");
 }
 
 /** O id do `#geral`, que a migração grava (spec da F02, "Conversas e participação"). */

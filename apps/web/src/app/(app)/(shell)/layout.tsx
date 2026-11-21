@@ -1,11 +1,12 @@
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Rail } from "../../components/rail";
 import { Sidebar } from "../../components/sidebar";
 import { Toaster } from "../../components/toaster";
 import { getMe, listChannels } from "../../services/chat-api";
-import { expiredSessionPath, HOME_PATH, signInPath } from "../../utils/return-path";
-import { RETURN_PATH_HEADER, SESSION_COOKIE } from "../../utils/session-cookie-name";
+import { signInPath } from "../../utils/return-path";
+import { SESSION_COOKIE } from "../../utils/session-cookie-name";
+import { redirectToExpiredSession, requestedPath } from "../../utils/session-redirect";
 
 /**
  * A casca das telas com Sessão. Confere a Sessão de verdade na API do chat; um 401 passa pelo
@@ -14,14 +15,13 @@ import { RETURN_PATH_HEADER, SESSION_COOKIE } from "../../utils/session-cookie-n
  * Canais da barra lateral.
  */
 export default async function ShellLayout({ children }: LayoutProps<"/">) {
-  const returnPath = (await headers()).get(RETURN_PATH_HEADER) ?? HOME_PATH;
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) {
-    redirect(signInPath(returnPath));
+    redirect(signInPath(await requestedPath()));
   }
   const [me, channels] = await Promise.all([getMe(token), listChannels(token)]);
   if (me.status === "unauthenticated" || channels.status === "unauthenticated") {
-    redirect(expiredSessionPath(returnPath));
+    return redirectToExpiredSession();
   }
 
   return (

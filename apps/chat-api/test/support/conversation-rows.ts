@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { v7 as uuidv7 } from 'uuid';
 import { queryTestDatabase } from './test-database.js';
 
 export interface ChannelRow {
@@ -13,8 +13,8 @@ export interface ChannelRow {
 export async function insertChannel(
   options: { prefix?: string; createdBy?: string; participants?: string[] } = {},
 ): Promise<ChannelRow> {
-  const id = randomUUID();
-  const name = `${options.prefix ?? 'canal'}-${id.slice(0, 8)}`;
+  const id = uuidv7();
+  const name = `${options.prefix ?? 'canal'}-${id.slice(-12)}`;
   await queryTestDatabase(
     `INSERT INTO conversations (id, type, name, description, created_by)
      VALUES ($1, 'public_channel', $2, 'Canal de teste', $3)`,

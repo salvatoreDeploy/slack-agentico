@@ -10,7 +10,8 @@ const LATO = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "Full Cycle Chat",
+  // As páginas dão só o próprio nome, e o template acrescenta o do produto.
+  title: { default: "Full Cycle Chat", template: "%s · Full Cycle Chat" },
   description: "Chat de equipe com Agentes de IA dentro da conversa.",
 };
 
