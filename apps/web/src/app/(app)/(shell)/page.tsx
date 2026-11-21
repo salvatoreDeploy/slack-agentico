@@ -7,9 +7,9 @@ import { channelPath, GENERAL_CHANNEL_NAME } from "../../utils/conversation-path
 import { SESSION_COOKIE } from "../../utils/session-cookie-name";
 
 /**
- * A página inicial leva ao `#geral` (spec da F02, "BFF e telas"). Sem ele, como num banco que
- * ainda não foi migrado, mostra o estado "Home / Vazio". O layout já conferiu a Sessão, e a lista
- * de Canais vem da mesma chamada dele.
+ * A página inicial leva ao `#geral` (spec da F02, "BFF e telas"). Se a Pessoa não participa dele,
+ * como uma conta gravada à mão sem as participações, mostra o estado "Home / Vazio" (LLD,
+ * "Cliente"). O layout já conferiu a Sessão, e a lista de Canais vem da mesma chamada dele.
  */
 export default async function HomePage() {
   const token = (await cookies()).get(SESSION_COOKIE)?.value ?? "";

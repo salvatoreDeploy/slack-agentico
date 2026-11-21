@@ -1,10 +1,7 @@
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Injectable } from '@nestjs/common';
-import { QueryFailedError } from 'typeorm';
-import { PEOPLE_USERNAME_UNIQUE, Person } from './person.entity.js';
-
-const UNIQUE_VIOLATION = '23505';
+import { Person } from './person.entity.js';
 
 /** Qual única o banco recusou ao gravar a Pessoa, ou `null` se gravou. */
 export type PersonConflict = 'email' | 'username' | null;
@@ -29,24 +26,22 @@ export class PeopleRepository {
     await this.people.update({ id }, { passwordHash });
   }
 
-  /** Grava a Pessoa; a única do banco decide os conflitos, inclusive sob concorrência. */
+  /**
+   * Grava a Pessoa; as únicas do banco decidem os conflitos, inclusive sob concorrência. O
+   * conflito não levanta erro (`ON CONFLICT DO NOTHING`), para não abortar a transação de quem
+   * chama e permitir uma nova tentativa dentro dela, como a da criação de conta.
+   */
   async insert(person: Person): Promise<PersonConflict> {
-    try {
-      await this.people.insert(person);
+    const result = await this.people
+      .createQueryBuilder()
+      .insert()
+      .values(person)
+      .orIgnore()
+      .returning('id')
+      .execute();
+    if ((result.raw as unknown[]).length > 0) {
       return null;
-    } catch (error) {
-      return conflictOf(error);
     }
+    return (await this.people.existsBy({ email: person.email })) ? 'email' : 'username';
   }
-}
-
-function conflictOf(error: unknown): PersonConflict {
-  const driverError =
-    error instanceof QueryFailedError
-      ? (error.driverError as { code?: string; constraint?: string })
-      : undefined;
-  if (driverError?.code !== UNIQUE_VIOLATION) {
-    throw error;
-  }
-  return driverError.constraint === PEOPLE_USERNAME_UNIQUE ? 'username' : 'email';
 }

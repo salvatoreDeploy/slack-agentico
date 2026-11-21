@@ -984,7 +984,9 @@
           },
           "name": {
             "type": "string",
-            "example": "geral"
+            "nullable": true,
+            "example": "geral",
+            "description": "Nulo na Conversa direta"
           },
           "description": {
             "type": "string",

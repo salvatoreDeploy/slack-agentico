@@ -47,7 +47,7 @@ export class ConversationResponse {
   @ApiProperty({ type: String, enum: [...CONVERSATION_TYPES] })
   type: ConversationType;
 
-  @ApiProperty({ type: String, example: 'geral' })
+  @ApiProperty({ type: String, nullable: true, example: 'geral', description: 'Nulo na Conversa direta' })
   name: string | null;
 
   @ApiProperty({ type: String, nullable: true })

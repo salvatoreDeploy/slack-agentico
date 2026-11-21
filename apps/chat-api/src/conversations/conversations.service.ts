@@ -26,11 +26,19 @@ export class ConversationsService {
   }
 
   /**
-   * Grava a participação de uma Pessoa nova em todos os Canais públicos, sob o lock das
-   * participações. Quem chama abre a transação, a mesma que grava a Pessoa.
+   * Toma o lock das participações nos Canais públicos até o fim da transação de quem chama: a
+   * criação de conta e a de Canal o tomam antes de gravar, para nenhuma Pessoa ficar fora de um
+   * Canal criado ao mesmo tempo que ela.
    */
-  async joinPublicChannels(personId: string): Promise<void> {
-    await this.conversations.lockPublicChannelParticipations();
-    await this.conversations.joinPublicChannels(personId);
+  lockPublicChannelParticipations(): Promise<void> {
+    return this.conversations.lockPublicChannelParticipations();
+  }
+
+  /**
+   * Grava a participação de uma Pessoa nova em todos os Canais públicos. Quem chama abre a
+   * transação, a mesma que grava a Pessoa, e já tomou o lock das participações.
+   */
+  joinPublicChannels(personId: string): Promise<void> {
+    return this.conversations.joinPublicChannels(personId);
   }
 }

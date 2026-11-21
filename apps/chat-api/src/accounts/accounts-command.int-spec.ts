@@ -126,6 +126,21 @@ describe('comando de contas: create', () => {
 
       expect((await findPerson(second))?.username).toBe(`${tag}2`);
     });
+
+    it('duas criações simultâneas com o mesmo @usuário derivado criam as duas contas', async () => {
+      const tag = uniqueTag();
+      const first = emailWithLocalPart(tag);
+      const second = emailWithLocalPart(tag);
+
+      const exitCodes = await Promise.all([
+        runAccountsCommand(['create', first, 'Primeira'], fakeTerminal([PASSWORD, PASSWORD]).io),
+        runAccountsCommand(['create', second, 'Segunda'], fakeTerminal([PASSWORD, PASSWORD]).io),
+      ]);
+
+      expect(exitCodes).toEqual([0, 0]);
+      const usernames = [(await findPerson(first))?.username, (await findPerson(second))?.username];
+      expect(usernames.sort()).toEqual([tag, `${tag}2`]);
+    });
   });
 
   describe('recusa sem criar nada', () => {
