@@ -1,6 +1,6 @@
 # 03: Ler e enviar Mensagens
 
-**Status:** a fazer
+**Status:** em andamento
 
 **O que construir:** a Pessoa abre um Canal, lê as 50 Mensagens mais recentes e envia as suas. A
 Mensagem dela aparece na hora no fim do Canal, como "enviando" e depois enviada, com o nome, o
@@ -57,3 +57,6 @@ spec da F02, "Mensagens", "Rotas da API do chat" (`GET` e `POST` de Mensagens), 
   - a tabela `messages` passa a `existe`.
 - [ ] **CA9** · Registro na pasta desta tarefa: a validação visual do Canal com histórico, da
   Mensagem `sending` e do composer perto do limite e acima dele, nos dois temas.
+- [ ] **CA10** · O carregamento do Canal mostra o esqueleto do frame `Conversa / Estrutura /
+  Histórico carregando`, com a barra lateral visível, no lugar do carregamento simples da tarefa
+  02 (spec da F02, "BFF e telas", "Carregamento").

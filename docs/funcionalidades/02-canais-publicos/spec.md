@@ -122,7 +122,7 @@ Tabela `messages`, `planejada`:
 | --- | --- | --- |
 | `id` | uuid | UUID v7, gerado pela API ao gravar: é a ordem do histórico e o cursor da paginação |
 | `conversation_id` | uuid | Referência a `conversations` |
-| `author_person_id` | uuid | Referência a `people`; o autor Bot entra com a F10 |
+| `author_person_id` | uuid | Referência a `people`; apagar a Pessoa apaga as Mensagens dela, o que só acontece fora do produto (decidido na F02-T03); o autor Bot entra com a F10 |
 | `client_message_id` | uuid | Gerado no cliente; único com o autor (LLD, "Concorrência e idempotência") |
 | `body` | texto | O texto já cortado, dentro do `tamanho da Mensagem` |
 | `created_at`, `updated_at` | timestamptz | Convenção do LLD |

@@ -61,6 +61,7 @@ docs/             HLD, LLD, ADRs, brief
 | Leitura do cookie de sessão na API do chat | `cookie` (só o `parse`, no guard) | Só o guard lê o cookie; um middleware global seria trabalho em toda requisição sem uso |
 | Validação de entrada na API do chat | `class-validator` e `class-transformer`, no `ValidationPipe` global | Caminho padrão do Nest, e o plugin do `@nestjs/swagger` lê os DTOs para gerar o contrato; o `zod` fica só na configuração |
 | Testes de ponta a ponta da web | Playwright (`@playwright/test`), só pelo navegador; sem component testing, sem a fixture `request` e, por enquanto, sem `@next/playwright` | O Next recomenda ponta a ponta para Server Components assíncronos, e o Playwright é um dos guias oficiais dele. Roda em modo headless no contêiner sem tela, guarda o `trace` na falha e tem a skill `playwright-cli`, com que o agente planeja, gera e corrige os testes. Descartado: Cypress, sem skill no projeto e com uma CLI menos ligada ao fluxo do agente. O `instant()` do `@next/playwright` entra quando uma funcionalidade precisar provar o estado logo após uma navegação |
+| Testes de unidade da web | Vitest, em Node, sem DOM, para funções puras com muitos casos (planejado) | O que seria lento ou repetitivo de provar pelo navegador, como a contagem de grafemas; a spec da F01 já previa a entrada dele |
 | Gerenciador dos projetos TypeScript | pnpm, um projeto por pasta, sem workspace | [ADR 0017](adr/0017-projetos-pnpm-independentes.md) |
 | Agentes | Python + Google ADK | [ADR 0003](adr/0003-agentes-python-google-adk.md) |
 | HTTP do Serviço de agentes | FastAPI próprio, com as rotas chamando o `Runner` do ADK | A definir |
@@ -91,6 +92,7 @@ Os módulos das outras funcionalidades entram com elas.
 | `sessions` | Login, limite de tentativas, validação, renovação e revogação da Sessão ("Sessão e login"); o guard global que exige Sessão, com o decorator `@Public()` nas rotas abertas | existe |
 | `accounts` | O comando de contas, fora do HTTP | existe, com as operações `create`, `reset-password`, `revoke-sessions` e `purge-expired-sessions` |
 | `conversations` | Conversas, Canais e participação: lista os Canais da Pessoa, lê uma Conversa conferindo a participação e grava as participações | existe |
+| `messages` | Envia e lista as Mensagens de uma Conversa, conferindo a participação pelo `conversations` | planejada |
 
 ### Integrações externas
 
@@ -269,7 +271,7 @@ exigem estão em "Conceitos transversais de implementação", seção "Concorrê
 | Chat | Tentativas de login | planejada; forma na spec da F01 |
 | Chat | Conversas (Canal público, Canal privado, Conversa direta), numa tabela com tipo ([ADR 0025](adr/0025-conversas-numa-tabela-com-tipo.md)) | existe, com o tipo `public_channel` (schema nas migrações); o Canal privado e a Conversa direta entram com as F03 e F04 |
 | Chat | Participação de Pessoa em Conversa | existe (schema nas migrações) |
-| Chat | Mensagens (autor pessoa ou bot, citação, marca "dados de negócio") | a detalhar |
+| Chat | Mensagens (autor pessoa ou bot, citação, marca "dados de negócio") | planejada, com o autor Pessoa; forma na spec da F02. O autor Bot, a citação e a marca entram com as F10, F07 e F13 |
 | Chat | Menções | a detalhar |
 | Chat | Última leitura e contadores por pessoa e conversa | a detalhar |
 | Chat | Notificações | a detalhar |
@@ -337,6 +339,8 @@ das planejadas, na spec da F02, até o snapshot recebê-las.
 | --- | --- | --- |
 | `GET /v1/channels` | existe | Os Canais de que a Pessoa participa, em ordem de nome |
 | `GET /v1/conversations/:id` | existe | A Conversa, conferindo a participação; o 404 segue "Segurança" |
+| `GET /v1/conversations/:id/messages` | planejada | A página do histórico ("Interfaces", paginação do histórico) |
+| `POST /v1/conversations/:id/messages` | planejada | Envia a Mensagem; a repetição segue "Concorrência e idempotência" |
 
 ## 6. Estados e regras
 
