@@ -1,6 +1,6 @@
 # 02: `#geral` na barra lateral
 
-**Status:** a fazer
+**Status:** em andamento
 
 **O que construir:** a primeira fatia completa da F02. A Pessoa entra e cai no `#geral`, vê a
 seção Canais na barra lateral com o Canal aberto selecionado e o cabeçalho do Canal, e o `#geral`

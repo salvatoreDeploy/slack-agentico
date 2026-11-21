@@ -1,6 +1,6 @@
 # LLD — Full Cycle Chat
 
-2026-11-20 · Luiz Carlos · Status: rascunho · HLD: [hld.md](hld.md)
+2026-11-21 · Luiz Carlos · Status: rascunho · HLD: [hld.md](hld.md)
 
 **Onde mora cada fato**
 
@@ -90,6 +90,7 @@ Os módulos das outras funcionalidades entram com elas.
 | `people` | Pessoas: criar, buscar por e-mail, trocar a senha | existe |
 | `sessions` | Login, limite de tentativas, validação, renovação e revogação da Sessão ("Sessão e login"); o guard global que exige Sessão, com o decorator `@Public()` nas rotas abertas | existe |
 | `accounts` | O comando de contas, fora do HTTP | existe, com as operações `create`, `reset-password`, `revoke-sessions` e `purge-expired-sessions` |
+| `conversations` | Conversas, Canais e participação: lista os Canais da Pessoa, lê uma Conversa conferindo a participação e grava as participações | planejada |
 
 ### Integrações externas
 
@@ -266,8 +267,8 @@ exigem estão em "Conceitos transversais de implementação", seção "Concorrê
 | Chat | Pessoas (perfil, papel de administrador, permissão de dados) | existe, com as colunas da F01 (schema nas migrações); o perfil, o papel e a permissão entram com as F09, F10 e F13 |
 | Chat | Sessões | existe (schema nas migrações) |
 | Chat | Tentativas de login | planejada; forma na spec da F01 |
-| Chat | Conversas (Canal público, Canal privado, Conversa direta), numa tabela com tipo ([ADR 0025](adr/0025-conversas-numa-tabela-com-tipo.md)) | a detalhar |
-| Chat | Participação de Pessoa em Conversa | a detalhar |
+| Chat | Conversas (Canal público, Canal privado, Conversa direta), numa tabela com tipo ([ADR 0025](adr/0025-conversas-numa-tabela-com-tipo.md)) | planejada; forma na spec da F02 |
+| Chat | Participação de Pessoa em Conversa | planejada; forma na spec da F02 |
 | Chat | Mensagens (autor pessoa ou bot, citação, marca "dados de negócio") | a detalhar |
 | Chat | Menções | a detalhar |
 | Chat | Última leitura e contadores por pessoa e conversa | a detalhar |
@@ -328,6 +329,14 @@ de eventos do WebSocket estão a definir. O que já está decidido:
 | `DELETE /v1/sessions/current` | existe | Sair ("Sessão e login") |
 | `GET /v1/me` | existe | A Pessoa da Sessão |
 | `PUT /v1/me/password` | existe | Trocar a senha ("Sessão e login") |
+
+**API do chat: Conversas** (para o BFF). A forma das planejadas está na spec da F02, até o
+snapshot recebê-las.
+
+| Método e caminho | Situação | Comportamento |
+| --- | --- | --- |
+| `GET /v1/channels` | planejada | Os Canais de que a Pessoa participa, em ordem de nome |
+| `GET /v1/conversations/:id` | planejada | A Conversa, conferindo a participação; o 404 segue "Segurança" |
 
 ## 6. Estados e regras
 
@@ -427,9 +436,10 @@ PDFs, perguntas pendentes vencidas) estão a definir.
 | Rota | Acesso | Lê | Ações | Situação |
 | --- | --- | --- | --- | --- |
 | `/entrar` | Público; quem tem Sessão vai para `/` | — | Entrar com e-mail e senha | existe |
-| `/` | Sessão | A Pessoa da Sessão (`GET /v1/me`), na casca vazia | Trocar a senha (diálogo pelo menu do usuário); Sair | existe |
+| `/` | Sessão | A Pessoa da Sessão (`GET /v1/me`), na casca vazia | Trocar a senha (diálogo pelo menu do usuário); Sair | existe. Alteração `planejada`: redireciona para o `#geral`; sem ele, mostra a casca vazia |
+| `/canais/<id>` | Sessão | A Conversa (`GET /v1/conversations/:id`) e os Canais da barra lateral (`GET /v1/channels`) | Abrir Canal pela barra lateral | planejada |
 | A definir | Sessão | Histórico da conversa | Enviar, editar, apagar, citar; "digitando"; botões de resposta pronta | a detalhar |
-| A definir (lateral) | Sessão | Conversas, com não lidas e menções | Abrir conversa | a detalhar |
+| A definir (lateral) | Sessão | Conversas, com não lidas e menções; a seção Canais entra na F02, e as não lidas e menções na F06 | Abrir conversa | a detalhar |
 | A definir | Sessão | Atividade: Menções, DMs, Tarefas | Abrir a mensagem; concluir e reabrir tarefa delegada | a detalhar |
 | A definir | Sessão | Perfil próprio e de outras pessoas | Editar o próprio perfil e a presença | a detalhar |
 | A definir | Sessão | Busca de pessoas | Abrir conversa direta | a detalhar |
