@@ -51,7 +51,10 @@ Tabela `conversations`, `planejada`:
 | `created_by` | uuid, nulo | Referência a `people`; nulo no `#geral`. Apagar a Pessoa deixa o campo nulo, sem apagar o Canal |
 | `created_at`, `updated_at` | timestamptz | Convenção do LLD, "Dados" |
 
-- Índice único parcial em `name`, só entre os Canais (`public_channel` e `private_channel`).
+- Índice único parcial em `name`, só entre os Canais, com a condição `name IS NOT NULL`. Como só
+  Canal tem nome (o `CHECK` do nome por tipo), a condição equivale a "entre os Canais" e não muda
+  quando o enum ganha tipos. A condição pelo tipo foi descartada porque a conversão do enum para
+  texto não é imutável, e o Postgres não a aceita num índice (decidido na F02-T02).
 
 Tabela `participations`, `planejada`:
 
@@ -195,6 +198,10 @@ Todas `planejadas`, com Sessão e com o corpo de erro do LLD ("Erros"):
     HTTP da web (`apps/web/AGENTS.md`, "API Externas").
   - A página do Canal é dinâmica e não fica no cache do roteador. Assim, abrir de novo o Canal pela
     barra lateral sempre busca as Mensagens.
+  - **Carregamento:** a casca e o segmento do Canal têm um `loading.tsx`. Com o `cacheComponents`,
+    é o `<Suspense>` dele que deixa a troca de Canal instantânea: a barra lateral continua visível,
+    e só a área da Conversa espera (decidido na F02-T02). O esqueleto do frame "Conversa /
+    Estrutura / Histórico carregando" entra com a tarefa 03.
 - **Barra lateral:**
   - A Sidebar ganha a SidebarSection "Canais", com uma SidebarRow por Canal, com o ChannelIcon e o
     nome, e a SidebarAction de criar Canal.
