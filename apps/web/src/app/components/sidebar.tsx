@@ -21,7 +21,7 @@ export function Sidebar({ channels }: SidebarProps) {
       <header className="flex h-header items-center border-b border-sidebar-border pr-2 pl-4">
         <h2 className="text-title font-black text-sidebar-fg-strong">{WORKSPACE_NAME}</h2>
       </header>
-      <nav aria-label="Canais e conversas" className="flex-1 overflow-y-auto">
+      <nav aria-label="Canais e conversas" className="flex-1 overflow-y-auto py-3">
         <SidebarSection title="Canais">
           {channels.map((channel) => (
             <li key={channel.id}>

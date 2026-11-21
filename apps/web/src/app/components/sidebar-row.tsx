@@ -23,7 +23,7 @@ export function SidebarRow({ href, icon, children }: SidebarRowProps) {
       href={href}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "flex h-7 items-center gap-2 rounded-item px-4 text-body",
+        "flex h-7 items-center gap-2 rounded-item px-2 text-body",
         isActive ? "bg-sidebar-active text-sidebar-on-active" : "text-sidebar-fg hover:bg-sidebar-hover",
       )}
     >

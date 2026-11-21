@@ -10,7 +10,7 @@ export function ConversationHeader({ name, description }: ConversationHeaderProp
   return (
     <header className="flex h-header shrink-0 items-center gap-3 border-b border-border-subtle px-5">
       <h1 className="flex items-center gap-1 text-title font-black text-fg">
-        <ChannelIcon className="size-5" />
+        <ChannelIcon />
         {name}
       </h1>
       {description && <p className="hidden truncate text-small text-fg-muted sm:block">{description}</p>}

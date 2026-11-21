@@ -11,7 +11,7 @@ interface ConversationIntroProps {
  */
 export function ConversationIntro({ name, description }: ConversationIntroProps) {
   return (
-    <section aria-label="Começo do canal" className="flex flex-col gap-2 px-5 pb-6">
+    <section aria-label="Começo do canal" className="flex flex-col gap-2 px-5 pt-8 pb-4">
       <span className="flex size-12 items-center justify-center rounded-card bg-surface-inset text-fg">
         <ChannelIcon className="size-6" />
       </span>
