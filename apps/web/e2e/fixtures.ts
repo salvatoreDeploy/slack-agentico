@@ -87,6 +87,8 @@ export const CHANNEL_ID_PATTERN = "[0-9a-f-]{36}";
 export async function expectGeral(page: Page): Promise<void> {
   await expect(page).toHaveURL(new RegExp(`/canais/${CHANNEL_ID_PATTERN}$`));
   await expect(page.getByRole("heading", { level: 1, name: "geral" })).toBeVisible();
+  // O título chega por streaming, depois do conteúdo; o axe e as outras conferências esperam por ele.
+  await expect(page).toHaveTitle("#geral · Full Cycle Chat");
 }
 
 /** Confere o estado "Conversa não encontrada", dentro da casca (frame de mesmo nome). */
