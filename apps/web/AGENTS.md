@@ -21,6 +21,7 @@ docker compose -f compose.yaml exec web <comando>
 | --- | --- |
 | `pnpm dev --hostname 0.0.0.0` | Sobe o servidor de desenvolvimento (`http://localhost:3000`) |
 | `pnpm lint` | ESLint com as regras do `eslint-config-next` |
+| `pnpm test` | Testes de unidade das funções puras (`src/**/*.test.ts`), com o Vitest, em Node e sem DOM |
 | `pnpm exec tsc --noEmit` | Checagem de tipos |
 | `pnpm build` | Compila a aplicação para produção |
 | `pnpm start --hostname 0.0.0.0` | Sobe o build de produção em `http://localhost:3000`, no lugar do `pnpm dev`; é contra ele que a suíte roda na Verificação completa |
@@ -63,10 +64,11 @@ O Playwright é a ferramenta de ponta a ponta da web, e só dela: testa a aplica
 
 1. `pnpm lint`
 2. `pnpm exec tsc --noEmit`
-3. `pnpm build`
-4. Testes de ponta a ponta contra o build de produção, com a API do chat (e, quando a funcionalidade usar, o Serviço de agentes) de pé:
+3. `pnpm test`
+4. `pnpm build`
+5. Testes de ponta a ponta contra o build de produção, com a API do chat (e, quando a funcionalidade usar, o Serviço de agentes) de pé:
    1. Parar o `pnpm dev` no contêiner `web`.
-   2. Subir `pnpm start --hostname 0.0.0.0` em segundo plano, sobre o build do passo 3.
+   2. Subir `pnpm start --hostname 0.0.0.0` em segundo plano, sobre o build do passo 4.
    3. Rodar `npm run test:e2e` no contêiner `e2e`.
    4. Parar o `pnpm start` e voltar ao `pnpm dev`, se for continuar trabalhando.
 

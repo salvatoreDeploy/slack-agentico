@@ -1,15 +1,11 @@
-import { Spinner } from "../../components/spinner";
+import { ConversationSkeleton } from "../../components/conversation-skeleton";
 
 /**
- * Enquanto a página da casca busca a Conversa, só a área principal espera, e a barra lateral
- * continua visível. O `<Suspense>` deste arquivo também é o que deixa a troca de Canal instantânea
- * com o `cacheComponents`. O esqueleto do frame "Conversa / Estrutura / Histórico carregando"
- * entra com a F02-T03, junto com o histórico.
+ * Enquanto a página da casca busca a Conversa, só a área principal espera, com o esqueleto do
+ * frame "Conversa / Estrutura / Histórico carregando", e a barra lateral continua visível. O
+ * `<Suspense>` deste arquivo também é o que deixa a troca de Canal instantânea com o
+ * `cacheComponents` (spec da F02, "BFF e telas", "Carregamento").
  */
 export default function ShellLoading() {
-  return (
-    <div className="flex flex-1 items-center justify-center">
-      <Spinner label="Carregando" />
-    </div>
-  );
+  return <ConversationSkeleton />;
 }

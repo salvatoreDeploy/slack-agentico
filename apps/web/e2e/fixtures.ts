@@ -20,9 +20,22 @@ export interface TestPerson {
   password: string;
 }
 
+export interface TestChannel {
+  id: string;
+  name: string;
+}
+
 interface Fixtures {
   /** Uma Pessoa gravada direto no banco `chat`, apagada ao fim do teste. */
   person: TestPerson;
+  /** Uma segunda Pessoa, autora das Mensagens "de outra Pessoa", apagada ao fim do teste. */
+  otherPerson: TestPerson;
+  /**
+   * Um Canal público com nome único e a participação das Pessoas que já existem, inclusive a da
+   * fixture `person`. Os testes de Mensagem escrevem só nele, nunca no `#geral`, porque a suíte roda
+   * em paralelo no banco `chat`. Apagá-lo ao fim leva as Mensagens e as participações.
+   */
+  testChannel: TestChannel;
   /** Uma página que já entrou pelo formulário da tela Entrar, com a Pessoa da fixture. */
   loggedInPage: Page;
 }
@@ -42,33 +55,37 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
   ],
 
   person: async ({ database }, provide) => {
+    const person = await insertPerson(database, "Ana Teste");
+    await provide(person);
+    await deletePerson(database, person);
+  },
+
+  otherPerson: async ({ database }, provide) => {
+    const person = await insertPerson(database, "Bruno Outro");
+    await provide(person);
+    await deletePerson(database, person);
+  },
+
+  testChannel: async ({ database, person }, provide) => {
     const id = randomUUID();
-    const tag = id.replace(/-/g, "").slice(0, 12);
-    const person: TestPerson = {
-      id,
-      name: "Ana Teste",
-      username: `e2e${tag}`,
-      email: `e2e-${tag}@teste.local`,
-      password: TEST_PASSWORD,
-    };
+    const channel: TestChannel = { id, name: `e2e-${id.slice(-12)}` };
     await database.query(
-      "INSERT INTO people (id, name, username, email, password_hash) VALUES ($1, $2, $3, $4, $5)",
-      [person.id, person.name, person.username, person.email, TEST_PASSWORD_HASH],
+      `INSERT INTO conversations (id, type, name, description)
+       VALUES ($1, 'public_channel', $2, 'Canal de teste')`,
+      [channel.id, channel.name],
     );
-    // Como o `create` do comando de contas: a Pessoa nova participa de todos os Canais públicos
-    // (spec da F02, "Conversas e participação"). Cópia do `joinPublicChannels` do
-    // `ConversationsRepository` da API, que é a fonte da regra; mude os dois juntos.
     await database.query(
       `INSERT INTO participations (conversation_id, person_id)
-       SELECT id, $1 FROM conversations WHERE type = 'public_channel'
-       ON CONFLICT DO NOTHING`,
-      [person.id],
+       SELECT $1, id FROM people ON CONFLICT DO NOTHING`,
+      [channel.id],
     );
-    await provide(person);
-    // As tentativas de login não referenciam a Pessoa e saem à parte; apagar a Pessoa leva as
-    // Sessões e as participações dela junto (ON DELETE CASCADE).
-    await database.query("DELETE FROM login_attempts WHERE email = $1", [person.email]);
-    await database.query("DELETE FROM people WHERE id = $1", [person.id]);
+    // A Pessoa da fixture participa mesmo que tenha sido gravada no mesmo instante.
+    await database.query(
+      "INSERT INTO participations (conversation_id, person_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+      [channel.id, person.id],
+    );
+    await provide(channel);
+    await database.query("DELETE FROM conversations WHERE id = $1", [channel.id]);
   },
 
   loggedInPage: async ({ page, person }, provide) => {
@@ -79,6 +96,66 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
 });
 
 export { expect };
+
+/**
+ * Grava uma Pessoa direto no banco, com e-mail único e a senha de teste, e a participação dela em
+ * todos os Canais públicos, como o `create` do comando de contas (spec da F02, "Conversas e
+ * participação"). O `INSERT … SELECT` é cópia do `joinPublicChannels` do `ConversationsRepository`
+ * da API, que é a fonte da regra; mude os dois juntos.
+ */
+async function insertPerson(database: pg.Pool, name: string): Promise<TestPerson> {
+  const id = randomUUID();
+  const tag = id.replace(/-/g, "").slice(0, 12);
+  const person: TestPerson = {
+    id,
+    name,
+    username: `e2e${tag}`,
+    email: `e2e-${tag}@teste.local`,
+    password: TEST_PASSWORD,
+  };
+  await database.query(
+    "INSERT INTO people (id, name, username, email, password_hash) VALUES ($1, $2, $3, $4, $5)",
+    [person.id, person.name, person.username, person.email, TEST_PASSWORD_HASH],
+  );
+  await database.query(
+    `INSERT INTO participations (conversation_id, person_id)
+     SELECT id, $1 FROM conversations WHERE type = 'public_channel'
+     ON CONFLICT DO NOTHING`,
+    [person.id],
+  );
+  return person;
+}
+
+/**
+ * Apaga a Pessoa. As tentativas de login não a referenciam e saem à parte; as Sessões, as
+ * participações e as Mensagens dela saem junto (ON DELETE CASCADE).
+ */
+async function deletePerson(database: pg.Pool, person: TestPerson): Promise<void> {
+  await database.query("DELETE FROM login_attempts WHERE email = $1", [person.email]);
+  await database.query("DELETE FROM people WHERE id = $1", [person.id]);
+}
+
+/**
+ * Grava uma Mensagem direto no banco, com a data opcional, para montar um histórico (como o de
+ * dois dias) ou a Mensagem de outra Pessoa que só aparece ao reabrir o Canal.
+ */
+export async function insertMessage(
+  database: pg.Pool,
+  message: { channelId: string; authorId: string; body: string; createdAt?: Date },
+): Promise<void> {
+  await database.query(
+    `INSERT INTO messages (id, conversation_id, author_person_id, client_message_id, body, created_at)
+     VALUES (uuidv7($4::timestamptz - now()), $1, $2, gen_random_uuid(), $3, $4)`,
+    [message.channelId, message.authorId, message.body, message.createdAt ?? new Date()],
+  );
+}
+
+/** Abre um Canal pelo endereço e espera o cabeçalho e o título, que chega por streaming. */
+export async function openChannel(page: Page, channel: TestChannel): Promise<void> {
+  await page.goto(`/canais/${channel.id}`);
+  await expect(page.getByRole("heading", { level: 1, name: channel.name })).toBeVisible();
+  await expect(page).toHaveTitle(`#${channel.name} · Full Cycle Chat`);
+}
 
 /** O id de um Canal, para conferir endereços. */
 export const CHANNEL_ID_PATTERN = "[0-9a-f-]{36}";
