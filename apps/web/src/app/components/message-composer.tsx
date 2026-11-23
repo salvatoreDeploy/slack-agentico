@@ -1,7 +1,7 @@
 "use client";
 
 import { SendHorizontal } from "lucide-react";
-import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { useState, type FormEvent, type KeyboardEvent, type Ref } from "react";
 import { cn } from "../utils/cn";
 import { countGraphemes } from "../utils/graphemes";
 
@@ -14,6 +14,8 @@ const COUNTER_THRESHOLD = 200;
 interface MessageComposerProps {
   channelName: string;
   onSend: (body: string) => void;
+  /** O campo, para quem precisa devolver o foco a ele, como "Tentar de novo". */
+  inputRef?: Ref<HTMLTextAreaElement>;
 }
 
 /**
@@ -21,7 +23,7 @@ interface MessageComposerProps {
  * linha. O contador aparece perto do `tamanho da Mensagem` e, acima dele, bloqueia o envio. Um
  * texto vazio depois do corte das pontas não envia.
  */
-export function MessageComposer({ channelName, onSend }: MessageComposerProps) {
+export function MessageComposer({ channelName, onSend, inputRef }: MessageComposerProps) {
   const [body, setBody] = useState("");
   const trimmed = body.trim();
   // O tamanho em UTF-16 nunca é menor que o número de grafemas: abaixo do limiar, a contagem não
@@ -50,6 +52,7 @@ export function MessageComposer({ channelName, onSend }: MessageComposerProps) {
     <form onSubmit={submit} className="px-5 pb-5">
       <div className="flex flex-col rounded-card border border-border-strong bg-surface focus-within:border-fg-muted">
         <textarea
+          ref={inputRef}
           aria-label={`Mensagem para #${channelName}`}
           placeholder={`Mensagem para #${channelName}`}
           rows={1}

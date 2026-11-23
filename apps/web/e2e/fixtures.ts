@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { test as base, expect, type Locator, type Page } from "@playwright/test";
+import { test as base, expect, type Locator, type Page, type Route } from "@playwright/test";
 import pg from "pg";
 
 /** Senha de teste das Pessoas criadas pela fixture `person`. */
@@ -165,6 +165,24 @@ export function composerOf(page: Page, channel: TestChannel): Locator {
 /** A lista do histórico do Canal. */
 export function historyOf(page: Page, channel: TestChannel): Locator {
   return page.getByRole("list", { name: `Mensagens de #${channel.name}` });
+}
+
+/**
+ * Intercepta o envio de Mensagem do Canal, a chamada da Server Action, que vai por `POST` ao
+ * endereço da página. `handle` decide o destino de cada envio; o resto segue normal.
+ */
+export async function routeSend(
+  page: Page,
+  channel: TestChannel,
+  handle: (route: Route) => Promise<void>,
+): Promise<void> {
+  await page.route(`**/canais/${channel.id}`, async (route) => {
+    if (route.request().method() === "POST") {
+      await handle(route);
+    } else {
+      await route.continue();
+    }
+  });
 }
 
 /** O texto de uma Mensagem da lista, com as quebras de linha, como a Pessoa o vê. */

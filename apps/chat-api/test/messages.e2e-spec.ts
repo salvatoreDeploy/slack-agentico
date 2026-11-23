@@ -197,4 +197,35 @@ describe('Mensagens de uma Conversa (e2e)', () => {
     expect(response.status).toBe(404);
     expect(response.body).toMatchObject({ code: 'not_found' });
   });
+
+  it('o mesmo client_message_id do mesmo autor responde 200 com a Mensagem já gravada', async () => {
+    const { token, channelId } = await inChannel();
+    const clientMessageId = randomUUID();
+    const first = await send(token, channelId, 'primeira tentativa', clientMessageId).expect(201);
+
+    const response = await send(token, channelId, 'corpo diferente', clientMessageId);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(first.body);
+    const page = (await history(token, channelId)).body as MessagePage;
+    expect(page.messages.map((m) => m.body)).toEqual(['primeira tentativa']);
+  });
+
+  it('o mesmo client_message_id de outro autor grava outra Mensagem', async () => {
+    const { person, token, channelId } = await inChannel();
+    const other = await createPerson(app);
+    // Criada depois do Canal, a outra Pessoa já participa dele, como toda conta nova.
+    const otherToken = await login(app, other);
+    const clientMessageId = randomUUID();
+    await send(token, channelId, 'de uma Pessoa', clientMessageId).expect(201);
+
+    const response = await send(otherToken, channelId, 'de outra Pessoa', clientMessageId);
+
+    expect(response.status).toBe(201);
+    const page = (await history(token, channelId)).body as MessagePage;
+    expect(page.messages.map((m) => [m.author.id, m.body])).toEqual([
+      [person.id, 'de uma Pessoa'],
+      [other.id, 'de outra Pessoa'],
+    ]);
+  });
 });

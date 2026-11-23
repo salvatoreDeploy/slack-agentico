@@ -1,3 +1,4 @@
+import { CircleAlert } from "lucide-react";
 import { memo } from "react";
 import type { Message } from "../services/chat-api";
 import { cn } from "../utils/cn";
@@ -13,15 +14,18 @@ interface MessageItemProps {
   status: MessageStatus;
   /** Se o horário aparece: só no navegador, que sabe o fuso. */
   showTime: boolean;
+  /** A nova tentativa de uma Mensagem `failed`. */
+  onRetry?: () => void;
 }
 
 /**
  * Uma Mensagem no layout `full`: o avatar no "gutter", o nome e o horário, e o texto (frame
  * "Conversa / Estrutura / Canal público"). `sending` fica com a opacidade do frame "Conversa /
- * Mensagem / Enviando"; `failed` mostra o aviso do frame "Conversa / Mensagem / Falha no envio".
+ * Mensagem / Enviando"; `failed` mostra o aviso e "Tentar de novo" do frame "Conversa / Mensagem /
+ * Falha no envio", sem o "Descartar", que fica fora da F02.
  * Memorizado, para as Mensagens já confirmadas não renderizarem de novo a cada envio.
  */
-export const MessageItem = memo(function MessageItem({ message, status, showTime }: MessageItemProps) {
+export const MessageItem = memo(function MessageItem({ message, status, showTime, onRetry }: MessageItemProps) {
   return (
     <li
       aria-busy={status === "sending" || undefined}
@@ -36,7 +40,19 @@ export const MessageItem = memo(function MessageItem({ message, status, showTime
           </time>
         </p>
         <MessageText text={message.body} />
-        {status === "failed" && <p className="text-small text-danger-fg">Não foi possível enviar.</p>}
+        {status === "failed" && (
+          <p className="flex items-center gap-2 pt-1 text-small text-danger-fg">
+            <CircleAlert className="size-4 shrink-0" aria-hidden />
+            Não foi possível enviar.
+            <button
+              type="button"
+              onClick={onRetry}
+              className="rounded text-caption text-link hover:text-link-hover hover:underline"
+            >
+              Tentar de novo
+            </button>
+          </p>
+        )}
       </div>
     </li>
   );
