@@ -16,7 +16,7 @@ export class ListMessagesQuery {
 
 /** Entrada de `POST /v1/conversations/:id/messages`. */
 export class SendMessageDto {
-  @ApiProperty({ type: String, format: 'uuid', description: 'Gerado no cliente; a repetição devolve a mesma Mensagem' })
+  @ApiProperty({ type: String, format: 'uuid', description: 'Gerado no cliente; único com o autor' })
   @IsUUID()
   client_message_id: string;
 

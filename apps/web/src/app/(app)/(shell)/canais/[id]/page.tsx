@@ -1,6 +1,5 @@
 import { SearchX } from "lucide-react";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import Link from "next/link";
 import { ChannelConversation } from "../../../../components/channel-conversation";
 import { ConversationHeader } from "../../../../components/conversation-header";
@@ -8,23 +7,11 @@ import { ConversationIntro } from "../../../../components/conversation-intro";
 import { EmptyState } from "../../../../components/empty-state";
 import { getConversation, getMe, listMessages } from "../../../../services/chat-api";
 import { HOME_PATH } from "../../../../utils/return-path";
-import { SESSION_COOKIE } from "../../../../utils/session-cookie-name";
 import { redirectToExpiredSession } from "../../../../utils/session-redirect";
-
-async function sessionToken(): Promise<string> {
-  return (await cookies()).get(SESSION_COOKIE)?.value ?? "";
-}
-
-async function loadConversation(id: string) {
-  const result = await getConversation(await sessionToken(), id);
-  if (result.status === "unauthenticated") {
-    return redirectToExpiredSession();
-  }
-  return result;
-}
+import { sessionToken } from "../../../../utils/session-token";
 
 export async function generateMetadata({ params }: PageProps<"/canais/[id]">): Promise<Metadata> {
-  const result = await loadConversation((await params).id);
+  const result = await getConversation((await sessionToken()) ?? "", (await params).id);
   return { title: result.status === "ok" ? `#${result.conversation.name}` : "Conversa não encontrada" };
 }
 
@@ -35,8 +22,11 @@ export async function generateMetadata({ params }: PageProps<"/canais/[id]">): P
  */
 export default async function ChannelPage({ params }: PageProps<"/canais/[id]">) {
   const { id } = await params;
-  const token = await sessionToken();
-  const [result, page, me] = await Promise.all([loadConversation(id), listMessages(token, id), getMe(token)]);
+  const token = (await sessionToken()) ?? "";
+  const [result, page, me] = await Promise.all([getConversation(token, id), listMessages(token, id), getMe(token)]);
+  if (result.status === "unauthenticated" || page.status === "unauthenticated" || me.status === "unauthenticated") {
+    return redirectToExpiredSession();
+  }
   if (result.status === "not_found" || page.status === "not_found") {
     return (
       <div className="flex flex-1 items-center justify-center">
@@ -53,10 +43,6 @@ export default async function ChannelPage({ params }: PageProps<"/canais/[id]">)
       </div>
     );
   }
-  if (page.status === "unauthenticated" || me.status === "unauthenticated") {
-    return redirectToExpiredSession();
-  }
-
   const { conversation } = result;
   return (
     <>
@@ -65,7 +51,7 @@ export default async function ChannelPage({ params }: PageProps<"/canais/[id]">)
         key={conversation.id}
         conversationId={conversation.id}
         channelName={conversation.name}
-        author={{ id: me.person.id, name: me.person.name, username: me.person.username }}
+        author={me.person}
         initialMessages={page.messages}
         intro={
           page.hasMore ? null : (

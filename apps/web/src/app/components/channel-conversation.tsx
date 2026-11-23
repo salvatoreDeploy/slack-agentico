@@ -1,9 +1,10 @@
 "use client";
 
-import { Fragment, useState, useSyncExternalStore, type ReactNode } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import { sendMessage } from "../actions/send-message";
+import { useIsClient } from "../hooks/use-is-client";
 import type { Message } from "../services/chat-api";
-import { dayKey, dayLabel, formatTime } from "../utils/message-time";
+import { dayKey, dayLabel } from "../utils/message-time";
 import { DayDivider } from "./day-divider";
 import { MessageComposer } from "./message-composer";
 import { MessageItem, type MessageStatus } from "./message-item";
@@ -24,13 +25,10 @@ interface ChannelConversationProps {
   intro: ReactNode;
 }
 
-const subscribeNothing = () => () => {};
-
 /**
  * O histórico e o composer do Canal (spec da F02, "BFF e telas"). As Mensagens enviadas nesta visita
  * ficam no estado local, sobre as que vieram do servidor ("Estado do cliente"). O horário e os
- * separadores de dia só aparecem no navegador, que sabe o fuso; no servidor eles ficam vazios,
- * para a hidratação não divergir.
+ * separadores de dia só aparecem no navegador, que sabe o fuso.
  */
 export function ChannelConversation({
   conversationId,
@@ -40,17 +38,7 @@ export function ChannelConversation({
   intro,
 }: ChannelConversationProps) {
   const [sent, setSent] = useState<ListedMessage[]>([]);
-  const isClient = useSyncExternalStore(subscribeNothing, () => true, () => false);
-  const listed: ListedMessage[] = [
-    ...initialMessages.map((message) => ({ message, status: "sent" as const })),
-    ...sent,
-  ];
-
-  function replace(clientMessageId: string, next: ListedMessage) {
-    setSent((current) =>
-      current.map((item) => (item.message.client_message_id === clientMessageId ? next : item)),
-    );
-  }
+  const isClient = useIsClient();
 
   async function send(body: string) {
     const clientMessageId = crypto.randomUUID();
@@ -63,30 +51,30 @@ export function ChannelConversation({
       created_at: new Date().toISOString(),
     };
     setSent((current) => [...current, { message: pending, status: "sending" }]);
-    let result: Awaited<ReturnType<typeof sendMessage>>;
-    try {
-      result = await sendMessage(conversationId, clientMessageId, body);
-    } catch {
-      result = { status: "failed" };
-    }
-    replace(
-      clientMessageId,
-      result.status === "sent" ? { message: result.message, status: "sent" } : { message: pending, status: "failed" },
-    );
+    const result = await sendMessage(conversationId, clientMessageId, body).catch(() => ({ status: "failed" }) as const);
+    const next: ListedMessage =
+      result.status === "sent" ? { message: result.message, status: "sent" } : { message: pending, status: "failed" };
+    setSent((current) => current.map((item) => (item.message.client_message_id === clientMessageId ? next : item)));
   }
 
+  const listed: ListedMessage[] = [
+    ...initialMessages.map((message) => ({ message, status: "sent" as const })),
+    ...sent,
+  ];
   const now = new Date();
+  let previousDay: string | undefined;
+
   return (
     <>
       <div className="flex flex-1 flex-col-reverse overflow-y-auto">
         <div className="flex flex-col pb-2">
           {intro}
           <ol aria-label={`Mensagens de #${channelName}`} className="flex flex-col">
-            {listed.map(({ message, status }, index) => {
+            {listed.map(({ message, status }) => {
               const date = new Date(message.created_at);
-              const previous = listed[index - 1];
-              const startsDay =
-                isClient && (!previous || dayKey(new Date(previous.message.created_at)) !== dayKey(date));
+              const day = dayKey(date);
+              const startsDay = isClient && day !== previousDay;
+              previousDay = day;
               return (
                 <Fragment key={message.client_message_id}>
                   {startsDay && (
@@ -94,12 +82,7 @@ export function ChannelConversation({
                       <DayDivider label={dayLabel(date, now)} />
                     </li>
                   )}
-                  <MessageItem
-                    message={message}
-                    status={status}
-                    dateTime={message.created_at}
-                    time={isClient ? formatTime(message.created_at) : ""}
-                  />
+                  <MessageItem message={message} status={status} showTime={isClient} />
                 </Fragment>
               );
             })}

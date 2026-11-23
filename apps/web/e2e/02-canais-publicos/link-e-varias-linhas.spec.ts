@@ -1,6 +1,6 @@
 // spec: e2e/plans/02-canais-publicos.plan.md
 // seed: e2e/seed.spec.ts
-import { expect, insertMessage, openChannel, test } from "../fixtures";
+import { expect, historyOf, insertMessage, messageText, openChannel, test } from "../fixtures";
 
 test.describe("Texto da Mensagem", () => {
   test("mantém as quebras de linha e só transforma em link os endereços http e https", async ({
@@ -17,12 +17,12 @@ test.describe("Texto da Mensagem", () => {
 
     await openChannel(page, channel);
 
-    const list = page.getByRole("list", { name: `Mensagens de #${channel.name}` });
+    const list = historyOf(page, channel);
     const link = list.getByRole("link", { name: "https://exemplo.com" });
     await expect(link).toHaveAttribute("href", "https://exemplo.com");
     await expect(link).toHaveAttribute("target", "_blank");
     await expect(list.getByRole("link")).toHaveCount(1);
-    const text = list.getByRole("listitem").filter({ hasText: "primeira linha" }).locator("p").nth(1);
-    expect(await text.innerText()).toBe("primeira linha\nveja https://exemplo.com e exemplo.com");
+    const item = list.getByRole("listitem").filter({ hasText: "primeira linha" });
+    expect(await messageText(item)).toBe("primeira linha\nveja https://exemplo.com e exemplo.com");
   });
 });

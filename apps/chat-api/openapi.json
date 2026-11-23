@@ -1483,7 +1483,7 @@
           "client_message_id": {
             "type": "string",
             "format": "uuid",
-            "description": "Gerado no cliente; a repetição devolve a mesma Mensagem"
+            "description": "Gerado no cliente; único com o autor"
           },
           "body": {
             "type": "string",

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { test as base, expect, type Page } from "@playwright/test";
+import { test as base, expect, type Locator, type Page } from "@playwright/test";
 import pg from "pg";
 
 /** Senha de teste das Pessoas criadas pela fixture `person`. */
@@ -74,15 +74,12 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
        VALUES ($1, 'public_channel', $2, 'Canal de teste')`,
       [channel.id, channel.name],
     );
+    // Todas as Pessoas que já existem, como na criação de Canal (spec da F02). A dependência da
+    // fixture `person` garante que ela já foi gravada e entra no `SELECT`.
+    void person;
     await database.query(
-      `INSERT INTO participations (conversation_id, person_id)
-       SELECT $1, id FROM people ON CONFLICT DO NOTHING`,
+      "INSERT INTO participations (conversation_id, person_id) SELECT $1, id FROM people",
       [channel.id],
-    );
-    // A Pessoa da fixture participa mesmo que tenha sido gravada no mesmo instante.
-    await database.query(
-      "INSERT INTO participations (conversation_id, person_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-      [channel.id, person.id],
     );
     await provide(channel);
     await database.query("DELETE FROM conversations WHERE id = $1", [channel.id]);
@@ -150,22 +147,46 @@ export async function insertMessage(
   );
 }
 
-/** Abre um Canal pelo endereço e espera o cabeçalho e o título, que chega por streaming. */
+/** Abre um Canal pelo endereço e espera ele ficar pronto. */
 export async function openChannel(page: Page, channel: TestChannel): Promise<void> {
   await page.goto(`/canais/${channel.id}`);
-  await expect(page.getByRole("heading", { level: 1, name: channel.name })).toBeVisible();
-  await expect(page).toHaveTitle(`#${channel.name} · Full Cycle Chat`);
+  await expectChannel(page, channel.name);
+}
+
+/** Um dia, para montar o histórico de ontem e de hoje. */
+export const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+/** O composer do Canal. */
+export function composerOf(page: Page, channel: TestChannel): Locator {
+  return page.getByRole("textbox", { name: `Mensagem para #${channel.name}` });
+}
+
+/** A lista do histórico do Canal. */
+export function historyOf(page: Page, channel: TestChannel): Locator {
+  return page.getByRole("list", { name: `Mensagens de #${channel.name}` });
+}
+
+/** O texto de uma Mensagem da lista, com as quebras de linha, como a Pessoa o vê. */
+export function messageText(item: Locator): Promise<string> {
+  return item.locator("p").nth(1).innerText();
 }
 
 /** O id de um Canal, para conferir endereços. */
 export const CHANNEL_ID_PATTERN = "[0-9a-f-]{36}";
 
+/**
+ * Confere que a página está no Canal pronto: o cabeçalho e o título, que chega por streaming depois
+ * do conteúdo; o axe e as outras conferências esperam por ele.
+ */
+export async function expectChannel(page: Page, name: string): Promise<void> {
+  await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
+  await expect(page).toHaveTitle(`#${name} · Full Cycle Chat`);
+}
+
 /** Confere que a página está no `#geral`, para onde `/` e a entrada sem `voltar` levam. */
 export async function expectGeral(page: Page): Promise<void> {
   await expect(page).toHaveURL(new RegExp(`/canais/${CHANNEL_ID_PATTERN}$`));
-  await expect(page.getByRole("heading", { level: 1, name: "geral" })).toBeVisible();
-  // O título chega por streaming, depois do conteúdo; o axe e as outras conferências esperam por ele.
-  await expect(page).toHaveTitle("#geral · Full Cycle Chat");
+  await expectChannel(page, "geral");
 }
 
 /** Confere o estado "Conversa não encontrada", dentro da casca (frame de mesmo nome). */

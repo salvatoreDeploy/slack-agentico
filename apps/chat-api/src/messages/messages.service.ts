@@ -29,7 +29,7 @@ export class MessagesService {
    * (LLD, "Interfaces"). Busca uma a mais para saber se há mais páginas.
    */
   async listMessages(conversationId: string, personId: string, before?: string): Promise<MessagePage> {
-    await this.conversations.getConversation(conversationId, personId);
+    await this.conversations.assertParticipant(conversationId, personId);
     const newestFirst = await this.messages.listNewestFirst(conversationId, before, HISTORY_PAGE_SIZE + 1);
     const hasMore = newestFirst.length > HISTORY_PAGE_SIZE;
     return { messages: newestFirst.slice(0, HISTORY_PAGE_SIZE).reverse(), hasMore };
@@ -37,11 +37,12 @@ export class MessagesService {
 
   /**
    * Grava a Mensagem da Pessoa na Conversa de que ela participa, com as pontas cortadas. Recusa o
-   * corpo vazio depois do corte e o acima do `tamanho da Mensagem` em grafemas.
+   * corpo vazio depois do corte e o acima do `tamanho da Mensagem` em grafemas. O autor é a Pessoa
+   * da Sessão, que vem de quem chama, para a resposta não reler a Mensagem.
    */
   async sendMessage(
     conversationId: string,
-    personId: string,
+    author: Message['author'],
     clientMessageId: string,
     rawBody: string,
   ): Promise<Message> {
@@ -52,13 +53,15 @@ export class MessagesService {
         { field: 'body', message: `A Mensagem tem de 1 a ${MESSAGE_MAX_LENGTH} caracteres.` },
       ]);
     }
-    await this.conversations.getConversation(conversationId, personId);
+    await this.conversations.assertParticipant(conversationId, author.id);
     const message = new Message();
     message.id = uuidv7();
     message.conversationId = conversationId;
-    message.authorPersonId = personId;
+    message.authorPersonId = author.id;
+    message.author = author;
     message.clientMessageId = clientMessageId;
     message.body = body;
-    return this.messages.insert(message);
+    await this.messages.insert(message);
+    return message;
   }
 }

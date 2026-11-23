@@ -1,11 +1,11 @@
 // spec: e2e/plans/02-canais-publicos.plan.md
 // seed: e2e/seed.spec.ts
-import { expect, openChannel, test } from "../fixtures";
+import { composerOf, expect, openChannel, test } from "../fixtures";
 
 test.describe("Enviar Mensagem", () => {
   test("Tab chega ao composer e Enter envia", async ({ loggedInPage: page, testChannel: channel }) => {
     await openChannel(page, channel);
-    const composer = page.getByRole("textbox", { name: `Mensagem para #${channel.name}` });
+    const composer = composerOf(page, channel);
 
     for (let i = 0; i < 15 && !(await composer.evaluate((el) => el === document.activeElement)); i++) {
       await page.keyboard.press("Tab");

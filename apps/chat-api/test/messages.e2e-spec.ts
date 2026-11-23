@@ -17,6 +17,12 @@ interface MessageBody {
   created_at: string;
 }
 
+/** A resposta de `GET /v1/conversations/:id/messages`. */
+interface MessagePage {
+  messages: MessageBody[];
+  has_more: boolean;
+}
+
 describe('Mensagens de uma Conversa (e2e)', () => {
   let app: INestApplication<App>;
 
@@ -37,7 +43,7 @@ describe('Mensagens de uma Conversa (e2e)', () => {
     return { person, token, channelId: channel.id };
   }
 
-  function send(token: string, channelId: string, body: string, clientMessageId = randomUUID()) {
+  function send(token: string, channelId: string, body: string, clientMessageId: string = randomUUID()) {
     return request(app.getHttpServer())
       .post(`/v1/conversations/${channelId}/messages`)
       .set('Cookie', sessionCookie(token))
@@ -59,7 +65,7 @@ describe('Mensagens de uma Conversa (e2e)', () => {
     const response = await history(token, channelId);
 
     expect(response.status).toBe(200);
-    const page = response.body as { messages: MessageBody[]; has_more: boolean };
+    const page = response.body as MessagePage;
     expect(page.messages.map((m) => m.body)).toEqual(['primeira', 'segunda']);
     expect(page.has_more).toBe(false);
   });
@@ -71,7 +77,7 @@ describe('Mensagens de uma Conversa (e2e)', () => {
     const response = await history(token, channelId);
 
     expect(response.status).toBe(200);
-    const page = response.body as { messages: MessageBody[]; has_more: boolean };
+    const page = response.body as MessagePage;
     expect(page.messages.map((m) => m.body)).toEqual(
       Array.from({ length: 50 }, (_, i) => String(i + 3)),
     );
@@ -85,8 +91,9 @@ describe('Mensagens de uma Conversa (e2e)', () => {
     const response = await history(token, channelId, ids[2]);
 
     expect(response.status).toBe(200);
-    expect((response.body as { messages: MessageBody[] }).messages.map((m) => m.body)).toEqual(['1', '2']);
-    expect(response.body.has_more).toBe(false);
+    const page = response.body as MessagePage;
+    expect(page.messages.map((m) => m.body)).toEqual(['1', '2']);
+    expect(page.has_more).toBe(false);
   });
 
   it('um before malformado responde 400', async () => {
@@ -118,7 +125,7 @@ describe('Mensagens de uma Conversa (e2e)', () => {
 
     const response = await history(token, channelId);
 
-    expect((response.body as { messages: MessageBody[] }).messages[0].author).toEqual({
+    expect((response.body as MessagePage).messages[0].author).toEqual({
       id: person.id,
       name: 'Nome Novo',
       username: person.username,

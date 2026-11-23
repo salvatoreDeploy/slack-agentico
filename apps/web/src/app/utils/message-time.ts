@@ -14,15 +14,17 @@ export function dayKey(date: Date): string {
 
 /**
  * O rótulo do separador de dia (spec da F02, "BFF e telas"): "Hoje", "Ontem", "20 de novembro" e,
- * num ano que não é o atual, "20 de novembro de 2025". `now` vem de quem chama, para o teste.
+ * num ano que não é o atual, "20 de novembro de 2025". `now` é o instante de referência, passado
+ * por quem chama.
  */
 export function dayLabel(date: Date, now: Date): string {
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  if (dayKey(date) === dayKey(now)) {
+  const key = dayKey(date);
+  if (key === dayKey(now)) {
     return "Hoje";
   }
-  if (dayKey(date) === dayKey(yesterday)) {
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (key === dayKey(yesterday)) {
     return "Ontem";
   }
   return (date.getFullYear() === now.getFullYear() ? DAY_FORMAT : DAY_WITH_YEAR_FORMAT).format(date);

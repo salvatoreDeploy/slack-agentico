@@ -26,6 +26,16 @@ export class ConversationsService {
   }
 
   /**
+   * Confere que a Pessoa participa da Conversa, sem carregá-la, para quem só precisa do acesso,
+   * como as Mensagens. O id malformado e a Conversa inexistente recebem o mesmo erro.
+   */
+  async assertParticipant(id: string, personId: string): Promise<void> {
+    if (!isUUID(id) || !(await this.conversations.isParticipant(id, personId))) {
+      throw new ConversationNotFoundError();
+    }
+  }
+
+  /**
    * Toma o lock das participações nos Canais públicos até o fim da transação de quem chama: a
    * criação de conta e a de Canal o tomam antes de gravar, para nenhuma Pessoa ficar fora de um
    * Canal criado ao mesmo tempo que ela.

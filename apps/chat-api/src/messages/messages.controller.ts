@@ -55,7 +55,7 @@ export class MessagesController {
     @Body() body: SendMessageDto,
   ): Promise<MessageResponse> {
     return MessageResponse.of(
-      await this.messages.sendMessage(id, request.person.id, body.client_message_id, body.body),
+      await this.messages.sendMessage(id, request.person, body.client_message_id, body.body),
     );
   }
 }

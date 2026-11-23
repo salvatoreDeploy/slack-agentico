@@ -24,12 +24,15 @@ interface MessageComposerProps {
 export function MessageComposer({ channelName, onSend }: MessageComposerProps) {
   const [body, setBody] = useState("");
   const trimmed = body.trim();
-  const remaining = MESSAGE_MAX_LENGTH - countGraphemes(trimmed);
+  // O tamanho em UTF-16 nunca é menor que o número de grafemas: abaixo do limiar, a contagem não
+  // muda nada na tela e é dispensada a cada tecla.
+  const remaining =
+    MESSAGE_MAX_LENGTH - (trimmed.length < MESSAGE_MAX_LENGTH - COUNTER_THRESHOLD ? trimmed.length : countGraphemes(trimmed));
   const isOverLimit = remaining < 0;
   const canSend = trimmed.length > 0 && !isOverLimit;
 
-  function submit(event?: FormEvent) {
-    event?.preventDefault();
+  function submit(event: FormEvent) {
+    event.preventDefault();
     if (!canSend) {
       return;
     }

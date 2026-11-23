@@ -1,7 +1,7 @@
 // spec: e2e/plans/02-canais-publicos.plan.md
 // seed: e2e/seed.spec.ts
 import AxeBuilder from "@axe-core/playwright";
-import { expect, insertMessage, openChannel, test } from "../fixtures";
+import { expect, insertMessage, ONE_DAY_MS, openChannel, test } from "../fixtures";
 
 test.describe("Acessibilidade", () => {
   test("o Canal com Mensagens não tem violações do axe-core", async ({
@@ -14,7 +14,7 @@ test.describe("Acessibilidade", () => {
       channelId: channel.id,
       authorId: otherPerson.id,
       body: "uma Mensagem com https://exemplo.com",
-      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - ONE_DAY_MS),
     });
     await insertMessage(database, { channelId: channel.id, authorId: otherPerson.id, body: "outra de hoje" });
     await openChannel(page, channel);

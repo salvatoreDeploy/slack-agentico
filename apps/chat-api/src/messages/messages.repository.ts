@@ -28,9 +28,8 @@ export class MessagesRepository {
     return query.getMany();
   }
 
-  /** Grava a Mensagem e a devolve com o autor. */
-  async insert(message: Message): Promise<Message> {
+  /** Grava a Mensagem; as datas que o banco gera voltam na própria entidade, sem nova leitura. */
+  async insert(message: Message): Promise<void> {
     await this.messages.insert(message);
-    return this.messages.findOneOrFail({ where: { id: message.id }, relations: { author: true } });
   }
 }

@@ -1,6 +1,6 @@
 // spec: e2e/plans/02-canais-publicos.plan.md
 // seed: e2e/seed.spec.ts
-import { expect, insertMessage, openChannel, test } from "../fixtures";
+import { expect, historyOf, insertMessage, openChannel, test } from "../fixtures";
 
 test.describe("Texto da Mensagem", () => {
   test("uma marcação HTML aparece como texto", async ({ loggedInPage: page, otherPerson, testChannel: channel, database }) => {
@@ -8,7 +8,7 @@ test.describe("Texto da Mensagem", () => {
 
     await openChannel(page, channel);
 
-    const list = page.getByRole("list", { name: `Mensagens de #${channel.name}` });
+    const list = historyOf(page, channel);
     await expect(list.getByText("<b>oi</b> <img src=x>")).toBeVisible();
     await expect(list.locator("b, img")).toHaveCount(0);
   });

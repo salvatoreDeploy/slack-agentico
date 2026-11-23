@@ -1,10 +1,9 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
 /**
- * Mensagens (spec da F02, "Mensagens"). Gerada pelo TypeORM e aparada à mão: o gerador não conhece
- * o índice parcial e o `CHECK` escritos à mão em `CreateConversationsAndParticipations` e propõe
- * apagá-los, e propõe recriar o enum do tipo sem mudança. Uma migração gerada depois desta precisa
- * da mesma conferência.
+ * Mensagens (spec da F02, "Mensagens"). Gerada pelo TypeORM, só com a tabela `messages`. A entidade
+ * `Conversation` declara o índice parcial e o `CHECK` da migração anterior, para o gerador não
+ * propor apagá-los nas próximas.
  */
 export class CreateMessages1795287893333 implements MigrationInterface {
     name = 'CreateMessages1795287893333'
