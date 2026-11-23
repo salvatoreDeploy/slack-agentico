@@ -73,10 +73,11 @@ export async function createSession(email: string, password: string): Promise<Cr
 }
 
 /**
- * A Pessoa da Sessão: `GET /v1/me`, com o cookie de sessão repassado (LLD, "Interfaces"). Lança
+ * A Pessoa da Sessão: `GET /v1/me`, com o cookie de sessão repassado (LLD, "Interfaces"). O
+ * `cache()` faz uma chamada só por requisição, dividida entre o layout e a página. Lança
  * `ChatApiUnavailableError` numa falha de rede ou num 5xx.
  */
-export async function getMe(token: string): Promise<MeResult> {
+export const getMe = cache(async (token: string): Promise<MeResult> => {
   const response = await getWithSession("/v1/me", token);
   if (response.status === 200) {
     return { status: "ok", person: (await response.json()) as Person };
@@ -85,7 +86,7 @@ export async function getMe(token: string): Promise<MeResult> {
     return { status: "unauthenticated" };
   }
   throw new ChatApiUnavailableError(response.status);
-}
+});
 
 /**
  * Sair: `DELETE /v1/sessions/current`, com o cookie de sessão repassado. Nunca lança: a falha de
@@ -218,3 +219,74 @@ export const getConversation = cache(async (token: string, id: string): Promise<
       throw new ChatApiUnavailableError(response.status);
   }
 });
+
+/** Uma Mensagem, como a API do chat a devolve, com o nome atual do autor. */
+export interface Message {
+  id: string;
+  conversation_id: string;
+  client_message_id: string;
+  author: Pick<Person, "id" | "name" | "username">;
+  body: string;
+  created_at: string;
+}
+
+export type MessagePageResult =
+  | { status: "ok"; messages: Message[]; hasMore: boolean }
+  | { status: "not_found" }
+  | { status: "unauthenticated" };
+
+/**
+ * A página mais recente do histórico: `GET /v1/conversations/:id/messages`, em ordem crescente
+ * (LLD, "Interfaces"). Lança `ChatApiUnavailableError` numa falha de rede ou num 5xx.
+ */
+export async function listMessages(token: string, id: string): Promise<MessagePageResult> {
+  const response = await getWithSession(`/v1/conversations/${encodeURIComponent(id)}/messages`, token);
+  switch (response.status) {
+    case 200: {
+      const body = (await response.json()) as { messages: Message[]; has_more: boolean };
+      return { status: "ok", messages: body.messages, hasMore: body.has_more };
+    }
+    case 404:
+      return { status: "not_found" };
+    case 401:
+      return { status: "unauthenticated" };
+    default:
+      throw new ChatApiUnavailableError(response.status);
+  }
+}
+
+export type SendMessageResult =
+  | { status: "sent"; message: Message }
+  | { status: "unauthenticated" }
+  /** Rede, 5xx ou uma recusa da API: a Mensagem fica como não enviada. */
+  | { status: "failed" };
+
+/**
+ * Envia a Mensagem: `POST /v1/conversations/:id/messages`, com o cookie de sessão repassado. Nunca
+ * lança; a Server Action traduz o resultado no estado da Mensagem.
+ */
+export async function sendMessage(
+  token: string,
+  conversationId: string,
+  clientMessageId: string,
+  body: string,
+): Promise<SendMessageResult> {
+  let response: Response;
+  try {
+    response = await fetch(url(`/v1/conversations/${encodeURIComponent(conversationId)}/messages`), {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie: `${SESSION_COOKIE}=${token}` },
+      body: JSON.stringify({ client_message_id: clientMessageId, body }),
+      cache: "no-store",
+    });
+  } catch {
+    return { status: "failed" };
+  }
+  if (response.status === 200 || response.status === 201) {
+    return { status: "sent", message: (await response.json()) as Message };
+  }
+  if (response.status === 401) {
+    return { status: "unauthenticated" };
+  }
+  return { status: "failed" };
+}

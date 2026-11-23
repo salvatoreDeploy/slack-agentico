@@ -6,9 +6,16 @@ este plano é dono dos passos de cada cenário. Cada tarefa de tela acrescenta o
 
 **Seed:** `e2e/seed.spec.ts`
 
-**Fixtures:** `person` (uma Pessoa gravada no banco `chat`, com a participação em todos os Canais
-públicos, apagada ao fim) e `loggedInPage` (uma página que já entrou pelo formulário e está no
-`#geral`), em `e2e/fixtures.ts`. O atalho `expectGeral` confere que a página está no `#geral`.
+**Fixtures:** em `e2e/fixtures.ts`:
+- `person`: uma Pessoa gravada no banco `chat`, com a participação em todos os Canais públicos,
+  apagada ao fim;
+- `otherPerson`: uma segunda Pessoa, autora das Mensagens "de outra Pessoa";
+- `testChannel`: um Canal público com nome único, com a participação das Pessoas, apagado ao fim
+  com as Mensagens;
+- `loggedInPage`: uma página que já entrou pelo formulário e está no `#geral`.
+
+Os atalhos `expectGeral` e `openChannel` conferem que a página está no Canal, com o título, e o
+`insertMessage` grava uma Mensagem direto no banco, com a data opcional.
 
 Os testes desta funcionalidade nunca escrevem no `#geral`, porque a suíte roda em paralelo no
 banco `chat`.
@@ -96,3 +103,111 @@ Steps:
 2. Abrir a Conversa não encontrada e rodar o axe-core.
 
 Expected: nenhuma violação nos dois.
+
+## 2. Ler e enviar Mensagens (F02-T03)
+
+Os cenários que conferem horário e dia fixam o fuso do navegador em `America/Sao_Paulo`.
+
+### 2.1 historico-com-autor-horario-e-dias
+
+**File:** `e2e/02-canais-publicos/historico-com-autor-horario-e-dias.spec.ts`
+
+Steps:
+1. Gravar uma Mensagem de `otherPerson` de 24 h atrás e uma de `person` de 1 min atrás no
+   `testChannel`.
+2. Abrir o Canal.
+
+Expected: os separadores são "Ontem" e "Hoje", nessa ordem; cada Mensagem tem o nome do autor e o
+horário `HH:mm` no fuso fixado; a Mensagem mais recente está visível, com a lista rolada até o fim.
+
+### 2.2 texto-com-html-aparece-como-texto
+
+**File:** `e2e/02-canais-publicos/texto-com-html-aparece-como-texto.spec.ts`
+
+Steps:
+1. Gravar a Mensagem `<b>oi</b> <img src=x>` e abrir o Canal.
+
+Expected: o texto aparece como está, e a lista não tem `<b>` nem `<img>`.
+
+### 2.3 link-e-varias-linhas
+
+**File:** `e2e/02-canais-publicos/link-e-varias-linhas.spec.ts`
+
+Steps:
+1. Gravar a Mensagem "primeira linha\nveja https://exemplo.com e exemplo.com" e abrir o Canal.
+
+Expected: `https://exemplo.com` é o único link, com `target="_blank"`; o texto mantém a quebra de
+linha.
+
+### 2.4 envia-uma-mensagem
+
+**File:** `e2e/02-canais-publicos/envia-uma-mensagem.spec.ts`
+
+Steps:
+1. Abrir o Canal e segurar o envio da Server Action no navegador.
+2. Digitar "olá, canal" e apertar Enter.
+3. Liberar o envio.
+
+Expected: no passo 2, a Mensagem aparece no fim, com `aria-busy` e a opacidade 0,6, e o campo fica
+vazio; no passo 3, ela deixa de estar ocupada e mostra o nome da Pessoa e o horário.
+
+### 2.5 envia-pelo-teclado-com-varias-linhas
+
+**File:** `e2e/02-canais-publicos/envia-pelo-teclado-com-varias-linhas.spec.ts`
+
+Steps:
+1. No composer, digitar "linha um", Shift+Enter, "linha dois" e Enter.
+
+Expected: antes do Enter, o campo tem as duas linhas; depois, a Mensagem enviada tem as duas.
+
+### 2.6 contador-perto-e-acima-do-limite
+
+**File:** `e2e/02-canais-publicos/contador-perto-e-acima-do-limite.spec.ts`
+
+Steps:
+1. Preencher o composer com 3.801 emojis compostos.
+2. Preencher com 4.012 letras.
+
+Expected: no passo 1, "Restam 199 caracteres" e o envio habilitado; no passo 2, "12 caracteres acima
+do limite" e o envio desabilitado.
+
+### 2.7 mensagem-de-outra-pessoa-ao-reabrir
+
+**File:** `e2e/02-canais-publicos/mensagem-de-outra-pessoa-ao-reabrir.spec.ts`
+
+Steps:
+1. Abrir o Canal e gravar uma Mensagem de `otherPerson` no banco.
+2. Ir ao `#geral` pela barra lateral e voltar ao Canal.
+
+Expected: no passo 1, a Mensagem não aparece; no passo 2, aparece, com o nome de `otherPerson`.
+
+### 2.8 envia-so-pelo-teclado
+
+**File:** `e2e/02-canais-publicos/envia-so-pelo-teclado.spec.ts`
+
+Steps:
+1. Abrir o Canal e apertar Tab até o composer.
+2. Digitar e apertar Enter.
+
+Expected: o composer recebe o foco, e a Mensagem é enviada.
+
+### 2.9 acessibilidade-canal-com-mensagens
+
+**File:** `e2e/02-canais-publicos/acessibilidade-canal-com-mensagens.spec.ts`
+
+Steps:
+1. Gravar Mensagens de ontem e de hoje, com um link, abrir o Canal e rodar o axe-core.
+
+Expected: nenhuma violação.
+
+### 2.10 mensagem-enviada-uma-vez-ao-voltar
+
+**File:** `e2e/02-canais-publicos/mensagem-enviada-uma-vez-ao-voltar.spec.ts`
+
+Steps:
+1. Enviar "só uma vez" no Canal e esperar a confirmação.
+2. Ir ao `#geral` pela barra lateral e voltar ao Canal pela barra lateral.
+3. Ir ao `#geral` de novo e voltar pelo histórico do navegador.
+
+Expected: depois dos passos 2 e 3, a Mensagem aparece uma vez só. O Next preserva o estado da rota
+ao voltar, e a página traz a Mensagem de novo do servidor.

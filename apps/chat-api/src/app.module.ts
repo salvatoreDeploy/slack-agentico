@@ -4,10 +4,11 @@ import { LoggingModule } from './common/logging/logging.module.js';
 import { ConfigModule } from './config/config.module.js';
 import { ConversationsModule } from './conversations/conversations.module.js';
 import { DatabaseModule } from './database/database.module.js';
+import { MessagesModule } from './messages/messages.module.js';
 import { PeopleModule } from './people/people.module.js';
 import { SessionsModule } from './sessions/sessions.module.js';
 
 @Module({
-  imports: [ConfigModule, LoggingModule, DatabaseModule, ErrorsModule, PeopleModule, SessionsModule, ConversationsModule],
+  imports: [ConfigModule, LoggingModule, DatabaseModule, ErrorsModule, PeopleModule, SessionsModule, ConversationsModule, MessagesModule],
 })
 export class AppModule {}

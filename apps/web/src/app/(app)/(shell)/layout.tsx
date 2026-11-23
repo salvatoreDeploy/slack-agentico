@@ -1,12 +1,11 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Rail } from "../../components/rail";
 import { Sidebar } from "../../components/sidebar";
 import { Toaster } from "../../components/toaster";
 import { getMe, listChannels } from "../../services/chat-api";
 import { signInPath } from "../../utils/return-path";
-import { SESSION_COOKIE } from "../../utils/session-cookie-name";
 import { redirectToExpiredSession, requestedPath } from "../../utils/session-redirect";
+import { sessionToken } from "../../utils/session-token";
 
 /**
  * A casca das telas com Sessão. Confere a Sessão de verdade na API do chat; um 401 passa pelo
@@ -15,7 +14,7 @@ import { redirectToExpiredSession, requestedPath } from "../../utils/session-red
  * Canais da barra lateral.
  */
 export default async function ShellLayout({ children }: LayoutProps<"/">) {
-  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  const token = await sessionToken();
   if (!token) {
     redirect(signInPath(await requestedPath()));
   }

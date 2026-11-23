@@ -1,7 +1,9 @@
 import {
+  Check,
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
@@ -19,15 +21,21 @@ export type ConversationType = (typeof CONVERSATION_TYPES)[number];
 
 /**
  * Conversa: Canal ou Conversa direta, numa tabela só, com o tipo (ADR 0025). O nome e a descrição
- * só existem nos Canais; o índice único parcial do nome e o `CHECK` do nome por tipo estão na
- * migração, escritos à mão.
+ * só existem nos Canais. O índice único parcial do nome e o `CHECK` do nome por tipo são
+ * declarados aqui, com o texto que o Postgres guarda, para o `migration:generate` não propor
+ * apagá-los (spec da F02, "Conversas e participação").
  */
 @Entity({ name: 'conversations' })
+@Index('conversations_channel_name_key', ['name'], { unique: true, where: '(name IS NOT NULL)' })
+@Check(
+  'conversations_name_by_type',
+  `(((type)::text = ANY (ARRAY['public_channel'::text, 'private_channel'::text])) = (name IS NOT NULL))`,
+)
 export class Conversation {
   @PrimaryColumn({ type: 'uuid', primaryKeyConstraintName: 'conversations_pkey' })
   id: string;
 
-  @Column({ type: 'enum', enum: [...CONVERSATION_TYPES], enumName: 'conversations_type_enum' })
+  @Column({ type: 'enum', enum: [...CONVERSATION_TYPES] })
   type: ConversationType;
 
   @Column({ type: 'text', nullable: true })

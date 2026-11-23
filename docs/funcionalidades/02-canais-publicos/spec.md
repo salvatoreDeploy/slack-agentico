@@ -122,7 +122,7 @@ Tabela `messages`, `planejada`:
 | --- | --- | --- |
 | `id` | uuid | UUID v7, gerado pela API ao gravar: é a ordem do histórico e o cursor da paginação |
 | `conversation_id` | uuid | Referência a `conversations` |
-| `author_person_id` | uuid | Referência a `people`; o autor Bot entra com a F10 |
+| `author_person_id` | uuid | Referência a `people`; apagar a Pessoa apaga as Mensagens dela, o que só acontece fora do produto (decidido na F02-T03); o autor Bot entra com a F10 |
 | `client_message_id` | uuid | Gerado no cliente; único com o autor (LLD, "Concorrência e idempotência") |
 | `body` | texto | O texto já cortado, dentro do `tamanho da Mensagem` |
 | `created_at`, `updated_at` | timestamptz | Convenção do LLD |
@@ -134,6 +134,9 @@ Tabela `messages`, `planejada`:
   - O tamanho conta em grafemas, que são os caracteres como a Pessoa os vê, pelo
     `Intl.Segmenter`. A web conta do mesmo jeito.
   - Uma Mensagem vazia depois do corte é recusada.
+  - O corpo da requisição aceita o `tamanho do corpo da requisição` do LLD, que cobre 4.000
+    grafemas de muitos bytes; o padrão de 100 KB do Express recusava Mensagens válidas (decidido
+    na F02-T03).
 - **Autor:** a resposta traz o nome atual do autor, lido de `people` a cada leitura, e nunca uma
   cópia gravada na Mensagem.
 

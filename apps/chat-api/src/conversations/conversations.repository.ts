@@ -40,6 +40,15 @@ export class ConversationsRepository {
       .getOne();
   }
 
+  /** Se a Pessoa participa da Conversa, pela chave primária da participação. */
+  async isParticipant(conversationId: string, personId: string): Promise<boolean> {
+    const rows: unknown[] = await this.txHost.tx.query(
+      'SELECT 1 FROM participations WHERE conversation_id = $1 AND person_id = $2',
+      [conversationId, personId],
+    );
+    return rows.length > 0;
+  }
+
   /** Grava a participação da Pessoa em todos os Canais públicos; o par repetido é ignorado. */
   async joinPublicChannels(personId: string): Promise<void> {
     await this.txHost.tx.query(
