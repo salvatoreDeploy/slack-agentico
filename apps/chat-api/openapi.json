@@ -1051,8 +1051,18 @@
           }
         },
         "responses": {
+          "200": {
+            "description": "O `client_message_id` já tinha sido usado pelo autor: a Mensagem já gravada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
           "201": {
-            "description": "",
+            "description": "A Mensagem foi gravada agora",
             "content": {
               "application/json": {
                 "schema": {
@@ -1196,6 +1206,59 @@
                       "type": "string",
                       "enum": [
                         "not_found"
+                      ]
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code",
+                    "detail"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "about:blank"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "client_message_id_conflict"
                       ]
                     },
                     "detail": {

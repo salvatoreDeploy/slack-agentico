@@ -1,7 +1,7 @@
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Injectable } from '@nestjs/common';
-import { Message } from './message.entity.js';
+import { Message, MESSAGES_AUTHOR_CLIENT_MESSAGE_UNIQUE } from './message.entity.js';
 
 @Injectable()
 export class MessagesRepository {
@@ -28,8 +28,24 @@ export class MessagesRepository {
     return query.getMany();
   }
 
-  /** Grava a Mensagem; as datas que o banco gera voltam na própria entidade, sem nova leitura. */
-  async insert(message: Message): Promise<void> {
-    await this.messages.insert(message);
+  /**
+   * Grava a Mensagem e diz se gravou. A repetição do par (autor, `client_message_id`) não grava nem
+   * levanta erro (`ON CONFLICT ON CONSTRAINT … DO NOTHING`), para não abortar a transação de quem
+   * chama; qualquer outro conflito continua sendo erro. O TypeORM devolve as datas que o banco gera
+   * na própria entidade, sem nova leitura.
+   */
+  async insert(message: Message): Promise<boolean> {
+    const { raw } = await this.messages
+      .createQueryBuilder()
+      .insert()
+      .values(message)
+      .orUpdate([], MESSAGES_AUTHOR_CLIENT_MESSAGE_UNIQUE)
+      .execute();
+    return (raw as unknown[]).length > 0;
+  }
+
+  /** A Mensagem já gravada pelo autor com o id gerado no cliente, sem o autor, que quem chama tem. */
+  findByAuthorAndClientId(authorPersonId: string, clientMessageId: string): Promise<Message> {
+    return this.messages.findOneByOrFail({ authorPersonId, clientMessageId });
   }
 }

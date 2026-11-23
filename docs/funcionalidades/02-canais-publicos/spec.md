@@ -150,7 +150,7 @@ Todas `planejadas`, com Sessão e com o corpo de erro do LLD ("Erros"):
 | `POST /v1/channels` | `name`, `description` opcional | 201 com `channel` | `validation_failed` (400), `channel_name_taken` (409) |
 | `GET /v1/conversations/:id` | — | 200 com `conversation` | `not_found` (404) |
 | `GET /v1/conversations/:id/messages` | `before` opcional | 200 com `messages` e `has_more` | `validation_failed` (400, `before` malformado), `not_found` (404) |
-| `POST /v1/conversations/:id/messages` | `client_message_id`, `body` | 201 com `message`; 200 com a mesma Mensagem quando o par (autor, `client_message_id`) já existe | `validation_failed` (400), `not_found` (404) |
+| `POST /v1/conversations/:id/messages` | `client_message_id`, `body` | 201 com `message`; 200 com a mesma Mensagem quando o par (autor, `client_message_id`) já existe na mesma Conversa | `validation_failed` (400), `not_found` (404), `client_message_id_conflict` (409, o par já existe em outra Conversa; decidido na F02-T04) |
 
 - **Formas devolvidas:**
   - `channel` tem `id`, `name` e `description`.

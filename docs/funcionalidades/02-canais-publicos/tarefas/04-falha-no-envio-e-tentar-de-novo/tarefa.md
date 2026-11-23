@@ -1,6 +1,6 @@
 # 04: Falha no envio e tentar de novo
 
-**Status:** a fazer
+**Status:** concluída
 
 **O que construir:** quando o envio de uma Mensagem falha, por rede ou servidor, a Pessoa não perde
 o texto: a Mensagem fica marcada como não enviada, com "Tentar de novo". A nova tentativa nunca
@@ -17,13 +17,13 @@ idempotência".
 
 **Bloqueada por:** 03 (Ler e enviar Mensagens)
 
-- [ ] **CA1** · O mesmo `client_message_id` do mesmo autor, enviado de novo, responde 200 com a
+- [x] **CA1** · O mesmo `client_message_id` do mesmo autor, enviado de novo, responde 200 com a
   Mensagem já gravada, e o banco fica com uma linha só. Provado por e2e, com o snapshot do contrato
   atualizado.
-- [ ] **CA2** · Na falha do envio, a Mensagem passa a `failed`, com o texto preservado e "Tentar de
+- [x] **CA2** · Na falha do envio, a Mensagem passa a `failed`, com o texto preservado e "Tentar de
   novo". "Tentar de novo" reenvia com o mesmo `client_message_id` e volta a `sending` e a `sent`.
-- [ ] **CA3** · A suíte do Playwright cobre a falha, com a rota do BFF bloqueada pelo `page.route`,
+- [x] **CA3** · A suíte do Playwright cobre a falha, com a rota do BFF bloqueada pelo `page.route`,
   e a nova tentativa com a rota liberada, que deixa uma Mensagem só depois de reabrir o Canal.
   "Tentar de novo" funciona pelo teclado.
-- [ ] **CA4** · Registro na pasta desta tarefa: a validação visual da Mensagem `failed`, nos dois
+- [x] **CA4** · Registro na pasta desta tarefa: a validação visual da Mensagem `failed`, nos dois
   temas.

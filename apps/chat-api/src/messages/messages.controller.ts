@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Post, Query, Req, Res } from '@nestjs/common';
 import { ApiBody, ApiCookieAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { ApiProblemResponse } from '../common/errors/problem-response.decorator.js';
 import type { AuthenticatedRequest } from '../sessions/session.guard.js';
 import { SESSION_COOKIE } from '../sessions/session-rules.js';
@@ -45,18 +46,22 @@ export class MessagesController {
   @Post()
   @ApiParam(CONVERSATION_ID_PARAM)
   @ApiBody({ type: SendMessageDto })
-  @ApiCreatedResponse({ type: MessageResponse })
+  @ApiCreatedResponse({ type: MessageResponse, description: 'A Mensagem foi gravada agora' })
+  @ApiOkResponse({ type: MessageResponse, description: 'O `client_message_id` já tinha sido usado pelo autor: a Mensagem já gravada' })
   @ApiProblemResponse(400, ['validation_failed', 'malformed_body'])
   @ApiProblemResponse(401, ['unauthenticated'])
   @ApiProblemResponse(404, ['not_found'])
+  @ApiProblemResponse(409, ['client_message_id_conflict'])
   @ApiProblemResponse(413, ['payload_too_large'])
   async sendMessage(
     @Req() request: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() body: SendMessageDto,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<MessageResponse> {
-    return MessageResponse.of(
-      await this.messages.sendMessage(id, request.person, body.client_message_id, body.body),
-    );
+    const sent = await this.messages.sendMessage(id, request.person, body.client_message_id, body.body);
+    // A repetição responde 200, e a primeira gravação 201 (LLD, "Concorrência e idempotência").
+    response.status(sent.created ? HttpStatus.CREATED : HttpStatus.OK);
+    return MessageResponse.of(sent.message);
   }
 }

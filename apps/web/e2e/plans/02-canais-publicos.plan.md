@@ -211,3 +211,40 @@ Steps:
 
 Expected: depois dos passos 2 e 3, a Mensagem aparece uma vez só. O Next preserva o estado da rota
 ao voltar, e a página traz a Mensagem de novo do servidor.
+
+## 3. Falha no envio e tentar de novo (F02-T04)
+
+O atalho `routeSend` intercepta o `POST` da Server Action no endereço do Canal.
+
+### 3.1 falha-no-envio-e-tentar-de-novo
+
+**File:** `e2e/02-canais-publicos/falha-no-envio-e-tentar-de-novo.spec.ts`
+
+Steps:
+1. Bloquear o envio e enviar "vai falhar primeiro".
+2. Liberar o envio e clicar em "Tentar de novo".
+
+Expected: no passo 1, a Mensagem fica com o texto, "Não foi possível enviar." e "Tentar de novo";
+no passo 2, ela é confirmada, sem o aviso nem o botão.
+
+### 3.2 tentar-de-novo-nao-duplica
+
+**File:** `e2e/02-canais-publicos/tentar-de-novo-nao-duplica.spec.ts`
+
+Steps:
+1. Entregar o envio à API (`route.fetch()`) e responder ao navegador com uma falha
+   (`route.abort()`).
+2. Liberar o envio, clicar em "Tentar de novo" e recarregar a página.
+
+Expected: no passo 1, a Mensagem aparece como não enviada, embora a API a tenha gravado; depois
+do passo 2, o Canal tem uma Mensagem só com esse texto.
+
+### 3.3 tentar-de-novo-pelo-teclado
+
+**File:** `e2e/02-canais-publicos/tentar-de-novo-pelo-teclado.spec.ts`
+
+Steps:
+1. Bloquear o envio e enviar "pelo teclado".
+2. Liberar o envio, levar o foco a "Tentar de novo" com Shift+Tab e apertar Enter.
+
+Expected: a Mensagem é confirmada, e o foco volta ao composer.
