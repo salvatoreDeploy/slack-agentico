@@ -134,6 +134,9 @@ Tabela `messages`, `planejada`:
   - O tamanho conta em grafemas, que são os caracteres como a Pessoa os vê, pelo
     `Intl.Segmenter`. A web conta do mesmo jeito.
   - Uma Mensagem vazia depois do corte é recusada.
+  - O corpo da requisição aceita o `tamanho do corpo da requisição` do LLD, que cobre 4.000
+    grafemas de muitos bytes; o padrão de 100 KB do Express recusava Mensagens válidas (decidido
+    na F02-T03).
 - **Autor:** a resposta traz o nome atual do autor, lido de `people` a cada leitura, e nunca uma
   cópia gravada na Mensagem.
 
