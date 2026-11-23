@@ -1,6 +1,6 @@
 // spec: e2e/plans/02-canais-publicos.plan.md
 // seed: e2e/seed.spec.ts
-import { composerOf, expect, openChannel, test } from "../fixtures";
+import { composerOf, expect, openChannel, routeSend, test } from "../fixtures";
 
 test.describe("Enviar Mensagem", () => {
   test("a Mensagem aparece como enviando, o campo fica vazio, e depois ela é confirmada", async ({
@@ -11,10 +11,8 @@ test.describe("Enviar Mensagem", () => {
     await openChannel(page, channel);
     let release!: () => void;
     const held = new Promise<void>((resolve) => (release = resolve));
-    await page.route(`**/canais/${channel.id}`, async (route) => {
-      if (route.request().method() === "POST") {
-        await held;
-      }
+    await routeSend(page, channel, async (route) => {
+      await held;
       await route.continue();
     });
     const composer = composerOf(page, channel);

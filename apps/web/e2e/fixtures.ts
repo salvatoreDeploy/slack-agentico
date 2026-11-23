@@ -168,8 +168,9 @@ export function historyOf(page: Page, channel: TestChannel): Locator {
 }
 
 /**
- * Intercepta o envio de Mensagem do Canal, a chamada da Server Action, que vai por `POST` ao
- * endereço da página. `handle` decide o destino de cada envio; o resto segue normal.
+ * Intercepta as chamadas de Server Action do Canal, que vão por `POST` ao endereço da página com
+ * o cabeçalho `next-action`, como o envio de Mensagem. `handle` decide o destino de cada uma; o
+ * resto segue normal.
  */
 export async function routeSend(
   page: Page,
@@ -177,12 +178,69 @@ export async function routeSend(
   handle: (route: Route) => Promise<void>,
 ): Promise<void> {
   await page.route(`**/canais/${channel.id}`, async (route) => {
-    if (route.request().method() === "POST") {
+    const request = route.request();
+    if (request.method() === "POST" && request.headers()["next-action"]) {
       await handle(route);
     } else {
       await route.continue();
     }
   });
+}
+
+/**
+ * Faz o envio de Mensagem falhar até `release()`. Com `afterReaching`, o envio chega à API e grava,
+ * mas a resposta se perde no caminho, como numa queda de rede logo depois do envio.
+ */
+export async function failSends(
+  page: Page,
+  channel: TestChannel,
+  options: { afterReaching?: boolean } = {},
+): Promise<{ release: () => void }> {
+  let isFailing = true;
+  await routeSend(page, channel, async (route) => {
+    if (!isFailing) {
+      await route.continue();
+      return;
+    }
+    if (options.afterReaching) {
+      await route.fetch();
+    }
+    await route.abort();
+  });
+  return { release: () => (isFailing = false) };
+}
+
+/** Envia o texto pelo composer e devolve a Mensagem na lista do histórico. */
+export async function sendFromComposer(page: Page, channel: TestChannel, text: string): Promise<Locator> {
+  const composer = composerOf(page, channel);
+  await composer.fill(text);
+  await composer.press("Enter");
+  return historyOf(page, channel).getByRole("listitem").filter({ hasText: text });
+}
+
+/** O aviso de Mensagem não enviada, dentro da Mensagem. */
+export function failureOf(item: Locator): Locator {
+  return item.getByText("Não foi possível enviar.");
+}
+
+/** O botão "Tentar de novo", dentro da Mensagem não enviada. */
+export function retryOf(item: Locator): Locator {
+  return item.getByRole("button", { name: "Tentar de novo" });
+}
+
+/**
+ * Aperta `key` até o foco chegar ao elemento, no máximo `max` vezes, para os testes que provam o
+ * caminho do teclado sem depender da ordem exata dos elementos da casca.
+ */
+export async function tabUntilFocused(
+  page: Page,
+  target: Locator,
+  { key = "Tab", max = 15 }: { key?: "Tab" | "Shift+Tab"; max?: number } = {},
+): Promise<void> {
+  for (let i = 0; i < max && !(await target.evaluate((el) => el === document.activeElement)); i++) {
+    await page.keyboard.press(key);
+  }
+  await expect(target).toBeFocused();
 }
 
 /** O texto de uma Mensagem da lista, com as quebras de linha, como a Pessoa o vê. */

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useRef, useState, type ReactNode } from "react";
+import { Fragment, useCallback, useRef, useState, type ReactNode } from "react";
 import { sendMessage } from "../actions/send-message";
 import { useIsClient } from "../hooks/use-is-client";
 import type { Message } from "../services/chat-api";
@@ -49,22 +49,25 @@ export function ChannelConversation({
   const isClient = useIsClient();
   const composerRef = useRef<HTMLTextAreaElement>(null);
 
-  function setStatus(pending: Message, next: ListedMessage) {
+  const setStatus = useCallback((pending: Message, next: ListedMessage) => {
     setSent((current) =>
       current.map((item) => (item.message.client_message_id === pending.client_message_id ? next : item)),
     );
-  }
+  }, []);
 
   /** Chama a Server Action com o `client_message_id` da Mensagem: a nova tentativa não duplica. */
-  async function deliver(pending: Message) {
-    const result = await sendMessage(conversationId, pending.client_message_id, pending.body).catch(
-      () => ({ status: "failed" }) as const,
-    );
-    setStatus(
-      pending,
-      result.status === "sent" ? { message: result.message, status: "sent" } : { message: pending, status: "failed" },
-    );
-  }
+  const deliver = useCallback(
+    async (pending: Message) => {
+      const result = await sendMessage(conversationId, pending.client_message_id, pending.body).catch(
+        () => ({ status: "failed" }) as const,
+      );
+      setStatus(
+        pending,
+        result.status === "sent" ? { message: result.message, status: "sent" } : { message: pending, status: "failed" },
+      );
+    },
+    [conversationId, setStatus],
+  );
 
   function send(body: string) {
     const clientMessageId = crypto.randomUUID();
@@ -81,11 +84,14 @@ export function ChannelConversation({
   }
 
   /** "Tentar de novo": volta a Mensagem a `sending` e devolve o foco ao composer. */
-  function retry(pending: Message) {
-    setStatus(pending, { message: pending, status: "sending" });
-    composerRef.current?.focus();
-    void deliver(pending);
-  }
+  const retry = useCallback(
+    (pending: Message) => {
+      setStatus(pending, { message: pending, status: "sending" });
+      composerRef.current?.focus();
+      void deliver(pending);
+    },
+    [deliver, setStatus],
+  );
 
   // Ao voltar a um Canal, o Next preserva este estado e a página traz de novo do servidor as
   // Mensagens enviadas na visita anterior: as que já vieram do servidor saem do estado local.
@@ -119,7 +125,7 @@ export function ChannelConversation({
                     message={message}
                     status={status}
                     showTime={isClient}
-                    onRetry={status === "failed" ? () => retry(message) : undefined}
+                    onRetry={retry}
                   />
                 </Fragment>
               );

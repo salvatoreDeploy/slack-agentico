@@ -4,18 +4,22 @@ import type { Message } from "../services/chat-api";
 import { cn } from "../utils/cn";
 import { formatTime } from "../utils/message-time";
 import { Avatar } from "./avatar";
+import { Button } from "./button";
 import { MessageText } from "./message-text";
 
 /** O estado de envio de uma Mensagem (design system, "MessageItem"). */
 export type MessageStatus = "sent" | "sending" | "failed";
 
 interface MessageItemProps {
-  message: Pick<Message, "author" | "body" | "created_at">;
+  message: Message;
   status: MessageStatus;
   /** Se o horário aparece: só no navegador, que sabe o fuso. */
   showTime: boolean;
-  /** A nova tentativa de uma Mensagem `failed`. */
-  onRetry?: () => void;
+  /**
+   * A nova tentativa, que o item oferece quando está `failed`. Estável no pai, para o `memo` valer
+   * também nas Mensagens com falha.
+   */
+  onRetry: (message: Message) => void;
 }
 
 /**
@@ -44,13 +48,9 @@ export const MessageItem = memo(function MessageItem({ message, status, showTime
           <p className="flex items-center gap-2 pt-1 text-small text-danger-fg">
             <CircleAlert className="size-4 shrink-0" aria-hidden />
             Não foi possível enviar.
-            <button
-              type="button"
-              onClick={onRetry}
-              className="rounded text-caption text-link hover:text-link-hover hover:underline"
-            >
+            <Button type="button" variant="link" size="inline" onClick={() => onRetry(message)}>
               Tentar de novo
-            </button>
+            </Button>
           </p>
         )}
       </div>

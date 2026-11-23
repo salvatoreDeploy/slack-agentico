@@ -30,30 +30,16 @@ export class MessagesRepository {
 
   /**
    * Grava a Mensagem e diz se gravou. A repetição do par (autor, `client_message_id`) não grava nem
-   * levanta erro (`ON CONFLICT DO NOTHING`), para não abortar a transação de quem chama. As datas
-   * que o banco gera voltam na própria entidade, sem nova leitura.
+   * levanta erro (`ON CONFLICT DO NOTHING`), para não abortar a transação de quem chama. O TypeORM
+   * devolve as datas que o banco gera na própria entidade, sem nova leitura.
    */
   async insert(message: Message): Promise<boolean> {
-    const result = await this.messages
-      .createQueryBuilder()
-      .insert()
-      .values(message)
-      .orIgnore()
-      .returning(['createdAt', 'updatedAt'])
-      .execute();
-    const generated = result.generatedMaps[0] as Partial<Message> | undefined;
-    if ((result.raw as unknown[]).length === 0 || !generated) {
-      return false;
-    }
-    Object.assign(message, generated);
-    return true;
+    const { raw } = await this.messages.createQueryBuilder().insert().values(message).orIgnore().execute();
+    return (raw as unknown[]).length > 0;
   }
 
-  /** A Mensagem já gravada pelo autor com o id gerado no cliente, com o autor. */
+  /** A Mensagem já gravada pelo autor com o id gerado no cliente, sem o autor, que quem chama tem. */
   findByAuthorAndClientId(authorPersonId: string, clientMessageId: string): Promise<Message> {
-    return this.messages.findOneOrFail({
-      where: { authorPersonId, clientMessageId },
-      relations: { author: true },
-    });
+    return this.messages.findOneByOrFail({ authorPersonId, clientMessageId });
   }
 }

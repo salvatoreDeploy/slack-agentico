@@ -72,6 +72,8 @@ export class MessagesService {
     if (await this.messages.insert(message)) {
       return { message, created: true };
     }
-    return { message: await this.messages.findByAuthorAndClientId(author.id, clientMessageId), created: false };
+    const existing = await this.messages.findByAuthorAndClientId(author.id, clientMessageId);
+    existing.author = author;
+    return { message: existing, created: false };
   }
 }

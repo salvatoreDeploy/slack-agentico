@@ -1,6 +1,6 @@
 // spec: e2e/plans/02-canais-publicos.plan.md
 // seed: e2e/seed.spec.ts
-import { composerOf, expect, openChannel, routeSend, test } from "../fixtures";
+import { expect, failSends, failureOf, openChannel, retryOf, sendFromComposer, test } from "../fixtures";
 
 test.describe("Falha no envio", () => {
   test("a Mensagem fica não enviada com o texto, e Tentar de novo a envia", async ({
@@ -8,18 +8,15 @@ test.describe("Falha no envio", () => {
     testChannel: channel,
   }) => {
     await openChannel(page, channel);
-    let isOffline = true;
-    await routeSend(page, channel, (route) => (isOffline ? route.abort() : route.continue()));
-    await composerOf(page, channel).fill("vai falhar primeiro");
-    await composerOf(page, channel).press("Enter");
-    const item = page.getByRole("listitem").filter({ hasText: "vai falhar primeiro" });
-    await expect(item.getByText("Não foi possível enviar.")).toBeVisible();
-    isOffline = false;
+    const { release } = await failSends(page, channel);
+    const item = await sendFromComposer(page, channel, "vai falhar primeiro");
+    await expect(failureOf(item)).toBeVisible();
+    release();
 
-    await item.getByRole("button", { name: "Tentar de novo" }).click();
+    await retryOf(item).click();
 
     await expect(item).not.toHaveAttribute("aria-busy");
-    await expect(item.getByText("Não foi possível enviar.")).toHaveCount(0);
-    await expect(item.getByRole("button", { name: "Tentar de novo" })).toHaveCount(0);
+    await expect(failureOf(item)).toHaveCount(0);
+    await expect(retryOf(item)).toHaveCount(0);
   });
 });
