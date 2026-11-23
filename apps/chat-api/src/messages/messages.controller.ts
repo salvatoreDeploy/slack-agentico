@@ -49,6 +49,7 @@ export class MessagesController {
   @ApiProblemResponse(400, ['validation_failed', 'malformed_body'])
   @ApiProblemResponse(401, ['unauthenticated'])
   @ApiProblemResponse(404, ['not_found'])
+  @ApiProblemResponse(413, ['payload_too_large'])
   async sendMessage(
     @Req() request: AuthenticatedRequest,
     @Param('id') id: string,
