@@ -199,3 +199,15 @@ Steps:
 1. Gravar Mensagens de ontem e de hoje, com um link, abrir o Canal e rodar o axe-core.
 
 Expected: nenhuma violação.
+
+### 2.10 mensagem-enviada-uma-vez-ao-voltar
+
+**File:** `e2e/02-canais-publicos/mensagem-enviada-uma-vez-ao-voltar.spec.ts`
+
+Steps:
+1. Enviar "só uma vez" no Canal e esperar a confirmação.
+2. Ir ao `#geral` pela barra lateral e voltar ao Canal pela barra lateral.
+3. Ir ao `#geral` de novo e voltar pelo histórico do navegador.
+
+Expected: depois dos passos 2 e 3, a Mensagem aparece uma vez só. O Next preserva o estado da rota
+ao voltar, e a página traz a Mensagem de novo do servidor.

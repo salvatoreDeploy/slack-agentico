@@ -170,6 +170,15 @@ describe('Mensagens de uma Conversa (e2e)', () => {
     expect(refused.body).toMatchObject({ code: 'validation_failed', errors: [{ field: 'body' }] });
   });
 
+  it('4.000 grafemas de muitos bytes cabem no limite do corpo', async () => {
+    const { token, channelId } = await inChannel();
+
+    // A bandeira da Inglaterra é um grafema só, com 28 bytes em UTF-8: cerca de 112 KB no total.
+    const response = await send(token, channelId, '🏴󠁧󠁢󠁥󠁮󠁧󠁿'.repeat(4000));
+
+    expect(response.status).toBe(201);
+  });
+
   it('um client_message_id malformado responde 400', async () => {
     const { token, channelId } = await inChannel();
 

@@ -9,6 +9,14 @@ import { DayDivider } from "./day-divider";
 import { MessageComposer } from "./message-composer";
 import { MessageItem, type MessageStatus } from "./message-item";
 
+/**
+ * A identidade de uma Mensagem que não muda da confirmação em diante: o autor com o id gerado no
+ * cliente, o par único no banco (LLD, "Concorrência e idempotência").
+ */
+function messageKey(message: Message): string {
+  return `${message.author.id}:${message.client_message_id}`;
+}
+
 /** Uma Mensagem na tela: a que veio do servidor ou uma enviada nesta visita, com o estado. */
 interface ListedMessage {
   message: Message;
@@ -57,9 +65,12 @@ export function ChannelConversation({
     setSent((current) => current.map((item) => (item.message.client_message_id === clientMessageId ? next : item)));
   }
 
+  // Ao voltar a um Canal, o Next preserva este estado e a página traz de novo do servidor as
+  // Mensagens enviadas na visita anterior: as que já vieram do servidor saem do estado local.
+  const fromServer = new Set(initialMessages.map(messageKey));
   const listed: ListedMessage[] = [
     ...initialMessages.map((message) => ({ message, status: "sent" as const })),
-    ...sent,
+    ...sent.filter((item) => !fromServer.has(messageKey(item.message))),
   ];
   const now = new Date();
   let previousDay: string | undefined;
@@ -76,7 +87,7 @@ export function ChannelConversation({
               const startsDay = isClient && day !== previousDay;
               previousDay = day;
               return (
-                <Fragment key={message.client_message_id}>
+                <Fragment key={messageKey(message)}>
                   {startsDay && (
                     <li>
                       <DayDivider label={dayLabel(date, now)} />

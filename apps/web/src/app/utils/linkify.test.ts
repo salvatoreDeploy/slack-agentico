@@ -26,6 +26,14 @@ describe("linkify", () => {
     ]);
   });
 
+  it("mantém o parêntese que fecha um parêntese do próprio endereço", () => {
+    expect(linkify("(veja https://pt.wikipedia.org/wiki/Java_(linguagem))")).toEqual([
+      { kind: "text", value: "(veja " },
+      { kind: "link", value: "https://pt.wikipedia.org/wiki/Java_(linguagem)" },
+      { kind: "text", value: ")" },
+    ]);
+  });
+
   it("devolve uma lista vazia para o texto vazio", () => {
     expect(linkify("")).toEqual([]);
   });
