@@ -47,7 +47,8 @@ export const MessageItem = memo(function MessageItem({ message, status, showTime
         {status === "failed" && (
           <p className="flex items-center gap-2 pt-1 text-small text-danger-fg">
             <CircleAlert className="size-4 shrink-0" aria-hidden />
-            Não foi possível enviar.
+            {/* Anunciado ao leitor de tela, porque o foco fica no composer quando o envio falha. */}
+            <span role="alert">Não foi possível enviar.</span>
             <Button type="button" variant="link" size="inline" onClick={() => onRetry(message)}>
               Tentar de novo
             </Button>

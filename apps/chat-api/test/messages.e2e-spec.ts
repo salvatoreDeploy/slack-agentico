@@ -228,4 +228,18 @@ describe('Mensagens de uma Conversa (e2e)', () => {
       [other.id, 'de outra Pessoa'],
     ]);
   });
+
+  it('o mesmo client_message_id do mesmo autor em outra Conversa responde 409', async () => {
+    const { person, token, channelId } = await inChannel();
+    const otherChannel = await insertChannel({ participants: [person.id] });
+    const clientMessageId = randomUUID();
+    await send(token, channelId, 'na primeira Conversa', clientMessageId).expect(201);
+
+    const response = await send(token, otherChannel.id, 'na segunda Conversa', clientMessageId);
+
+    expect(response.status).toBe(409);
+    expect(response.body).toMatchObject({ code: 'client_message_id_conflict' });
+    const page = (await history(token, otherChannel.id)).body as MessagePage;
+    expect(page.messages).toEqual([]);
+  });
 });

@@ -1,7 +1,7 @@
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Injectable } from '@nestjs/common';
-import { Message } from './message.entity.js';
+import { Message, MESSAGES_AUTHOR_CLIENT_MESSAGE_UNIQUE } from './message.entity.js';
 
 @Injectable()
 export class MessagesRepository {
@@ -30,11 +30,17 @@ export class MessagesRepository {
 
   /**
    * Grava a Mensagem e diz se gravou. A repetição do par (autor, `client_message_id`) não grava nem
-   * levanta erro (`ON CONFLICT DO NOTHING`), para não abortar a transação de quem chama. O TypeORM
-   * devolve as datas que o banco gera na própria entidade, sem nova leitura.
+   * levanta erro (`ON CONFLICT ON CONSTRAINT … DO NOTHING`), para não abortar a transação de quem
+   * chama; qualquer outro conflito continua sendo erro. O TypeORM devolve as datas que o banco gera
+   * na própria entidade, sem nova leitura.
    */
   async insert(message: Message): Promise<boolean> {
-    const { raw } = await this.messages.createQueryBuilder().insert().values(message).orIgnore().execute();
+    const { raw } = await this.messages
+      .createQueryBuilder()
+      .insert()
+      .values(message)
+      .orUpdate([], MESSAGES_AUTHOR_CLIENT_MESSAGE_UNIQUE)
+      .execute();
     return (raw as unknown[]).length > 0;
   }
 

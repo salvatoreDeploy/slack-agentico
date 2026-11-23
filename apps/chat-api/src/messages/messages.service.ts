@@ -3,6 +3,7 @@ import { v7 as uuidv7 } from 'uuid';
 import { ValidationFailedError } from '../common/errors/validation-failed.error.js';
 import { ConversationsService } from '../conversations/conversations.service.js';
 import { countGraphemes } from './graphemes.js';
+import { ClientMessageIdConflictError } from './messages.errors.js';
 import { Message } from './message.entity.js';
 import { MessagesRepository } from './messages.repository.js';
 
@@ -46,7 +47,7 @@ export class MessagesService {
    * corpo vazio depois do corte e o acima do `tamanho da Mensagem` em grafemas. O autor é a Pessoa
    * da Sessão, que vem de quem chama, para a resposta não reler a Mensagem. A repetição do
    * `client_message_id` pelo mesmo autor devolve a Mensagem já gravada, sem gravar outra (LLD,
-   * "Concorrência e idempotência").
+   * "Concorrência e idempotência"); em outra Conversa, é recusada.
    */
   async sendMessage(
     conversationId: string,
@@ -73,6 +74,9 @@ export class MessagesService {
       return { message, created: true };
     }
     const existing = await this.messages.findByAuthorAndClientId(author.id, clientMessageId);
+    if (existing.conversationId !== conversationId) {
+      throw new ClientMessageIdConflictError();
+    }
     existing.author = author;
     return { message: existing, created: false };
   }

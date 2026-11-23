@@ -14,6 +14,7 @@ test.describe("Falha no envio", () => {
     release();
     await retryOf(item).click();
     await expect(item).not.toHaveAttribute("aria-busy");
+    await expect(failureOf(item)).toHaveCount(0);
 
     await page.reload();
 

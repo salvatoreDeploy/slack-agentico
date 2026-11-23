@@ -1231,6 +1231,59 @@
             },
             "description": ""
           },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code",
+                    "detail"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "about:blank"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "client_message_id_conflict"
+                      ]
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "description": ""
+          },
           "413": {
             "content": {
               "application/problem+json": {

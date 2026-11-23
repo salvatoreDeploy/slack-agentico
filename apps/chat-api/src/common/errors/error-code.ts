@@ -14,5 +14,6 @@ export type ErrorCode =
   | 'password_unchanged'
   | 'email_taken'
   | 'username_taken'
+  | 'client_message_id_conflict'
   | 'request_rejected'
   | 'internal_error';
