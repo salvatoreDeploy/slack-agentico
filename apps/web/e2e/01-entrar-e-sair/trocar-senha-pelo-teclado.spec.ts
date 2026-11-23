@@ -33,7 +33,9 @@ test.describe("Trocar senha", () => {
     await expect(page.getByRole("button", { name: menuName })).toBeFocused();
 
     await openByKeyboard(page, menuName);
-    // O foco chega à Senha atual depois de o diálogo abrir; digitar antes perde as teclas.
+    // O menu termina de fechar depois de o diálogo abrir e, ao fechar, mexe no foco: digitar antes
+    // disso perde as primeiras teclas. Espera o menu sumir e o foco assentar na Senha atual.
+    await expect(page.getByRole("menu")).toHaveCount(0);
     await expect(page.getByLabel("Senha atual")).toBeFocused();
     await page.keyboard.type(person.password);
     await page.keyboard.press("Tab");
