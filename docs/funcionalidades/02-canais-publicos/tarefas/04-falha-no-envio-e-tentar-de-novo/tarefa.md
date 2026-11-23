@@ -1,6 +1,6 @@
 # 04: Falha no envio e tentar de novo
 
-**Status:** a fazer
+**Status:** em andamento
 
 **O que construir:** quando o envio de uma Mensagem falha, por rede ou servidor, a Pessoa não perde
 o texto: a Mensagem fica marcada como não enviada, com "Tentar de novo". A nova tentativa nunca

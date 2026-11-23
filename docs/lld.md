@@ -1,6 +1,6 @@
 # LLD — Full Cycle Chat
 
-2026-11-22 · Luiz Carlos · Status: rascunho · HLD: [hld.md](hld.md)
+2026-11-23 · Luiz Carlos · Status: rascunho · HLD: [hld.md](hld.md)
 
 **Onde mora cada fato**
 
@@ -171,8 +171,8 @@ novas tentativas e idempotência").
 ### Concorrência e idempotência
 
 - **Envio de mensagem:** unicidade em (autor, identificador gerado no cliente). A inserção tolera
-  o conflito: se o identificador já existe, a API devolve a mensagem já gravada, com o mesmo
-  status de sucesso, e não gera de novo menções, notificações, contadores nem eventos.
+  o conflito: se o identificador já existe, a API devolve a mensagem já gravada, com 200, em vez
+  do 201 da primeira gravação, e não gera de novo menções, notificações, contadores nem eventos.
 - **Ação de bot:** unicidade em (identificador de pedido, tipo de ação). Tipos: resposta, pergunta
   ao usuário, aviso de início, entrega do PDF, criação de tarefa delegada. A repetição devolve o que já foi
   gravado, sem nova mensagem, tarefa delegada ou notificação.
