@@ -74,12 +74,12 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
        VALUES ($1, 'public_channel', $2, 'Canal de teste')`,
       [channel.id, channel.name],
     );
-    // Todas as Pessoas que já existem, como na criação de Canal (spec da F02). A dependência da
-    // fixture `person` garante que ela já foi gravada e entra no `SELECT`.
-    void person;
+    // Todas as Pessoas, como na criação de Canal (spec da F02), menos as de outros testes, que
+    // podem estar sendo apagadas em paralelo, e mais a Pessoa deste teste.
     await database.query(
-      "INSERT INTO participations (conversation_id, person_id) SELECT $1, id FROM people",
-      [channel.id],
+      `INSERT INTO participations (conversation_id, person_id)
+       SELECT $1, id FROM people WHERE email NOT LIKE 'e2e-%@teste.local' OR id = $2`,
+      [channel.id, person.id],
     );
     await provide(channel);
     await database.query("DELETE FROM conversations WHERE id = $1", [channel.id]);
@@ -97,8 +97,9 @@ export { expect };
 /**
  * Grava uma Pessoa direto no banco, com e-mail único e a senha de teste, e a participação dela em
  * todos os Canais públicos, como o `create` do comando de contas (spec da F02, "Conversas e
- * participação"). O `INSERT … SELECT` é cópia do `joinPublicChannels` do `ConversationsRepository`
- * da API, que é a fonte da regra; mude os dois juntos.
+ * participação"). O `INSERT … SELECT` segue o `joinPublicChannels` do `ConversationsRepository`
+ * da API, que é a fonte da regra, menos os Canais de outros testes, que podem estar sendo apagados
+ * em paralelo e quebrariam a chave estrangeira.
  */
 async function insertPerson(database: pg.Pool, name: string): Promise<TestPerson> {
   const id = randomUUID();
@@ -116,7 +117,7 @@ async function insertPerson(database: pg.Pool, name: string): Promise<TestPerson
   );
   await database.query(
     `INSERT INTO participations (conversation_id, person_id)
-     SELECT id, $1 FROM conversations WHERE type = 'public_channel'
+     SELECT id, $1 FROM conversations WHERE type = 'public_channel' AND name NOT LIKE 'e2e-%'
      ON CONFLICT DO NOTHING`,
     [person.id],
   );
