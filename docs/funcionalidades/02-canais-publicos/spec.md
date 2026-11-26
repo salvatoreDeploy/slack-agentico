@@ -330,7 +330,7 @@ está na rule de testes da API e no `apps/web/AGENTS.md`, "Testes de ponta a pon
 participação da Pessoa nova no `#geral` e em todos os outros Canais públicos que existem.
 
 **Normalização do nome, testes de unidade:** a tabela de "Nome do Canal" nas duas pontas. Na API,
-com o Jest que já existe. Na web, com o Vitest, que entra nesta funcionalidade, como a spec da F01
+com o Vitest que já existe. Na web, também com o Vitest, que entra nesta funcionalidade, como a spec da F01
 previa ("Decisões de teste", "Pontos de teste"). A tarefa que o traz acrescenta o `pnpm test` à
 "Verificação completa" do `apps/web/AGENTS.md` e aos "Comandos" dele. A contagem de grafemas, nas
 duas pontas, entra no mesmo nível.

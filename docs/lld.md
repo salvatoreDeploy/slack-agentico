@@ -1,6 +1,6 @@
 # LLD — Full Cycle Chat
 
-2026-11-22 · Luiz Carlos · Status: rascunho · HLD: [hld.md](hld.md)
+2026-11-25 · Luiz Carlos · Status: rascunho · HLD: [hld.md](hld.md)
 
 **Onde mora cada fato**
 
@@ -341,6 +341,7 @@ das planejadas, na spec da F02, até o snapshot recebê-las.
 | Método e caminho | Situação | Comportamento |
 | --- | --- | --- |
 | `GET /v1/channels` | existe | Os Canais de que a Pessoa participa, em ordem de nome |
+| `POST /v1/channels` | planejada | Cria o Canal público com o nome normalizado e grava a participação de todas as Pessoas; o nome já usado responde 409 `channel_name_taken` (spec da F02, "Nome do Canal") |
 | `GET /v1/conversations/:id` | existe | A Conversa, conferindo a participação; o 404 segue "Segurança" |
 | `GET /v1/conversations/:id/messages` | existe | A página do histórico ("Interfaces", paginação do histórico) |
 | `POST /v1/conversations/:id/messages` | existe | Envia a Mensagem; a repetição segue "Concorrência e idempotência" |
@@ -450,7 +451,8 @@ PDFs, perguntas pendentes vencidas) estão a definir.
 | A definir | Sessão | Atividade: Menções, DMs, Tarefas | Abrir a mensagem; concluir e reabrir tarefa delegada | a detalhar |
 | A definir | Sessão | Perfil próprio e de outras pessoas | Editar o próprio perfil e a presença | a detalhar |
 | A definir | Sessão | Busca de pessoas | Abrir conversa direta | a detalhar |
-| A definir | Sessão | — | Criar canal; convidar para canal privado | a detalhar |
+| Diálogo na casca | Sessão | — | Criar Canal público (F02), pela ação "Adicionar canal" da barra lateral | planejada |
+| A definir | Sessão | — | Convidar para Canal privado (F03) | a detalhar |
 | A definir | Sessão; conectar e desconectar só para administrador | Agentes e estado de conexão | Conectar e desconectar agente | a detalhar |
 
 O endereço de uma Conversa leva o id dela, e não o nome, para o nome de um Canal privado não
