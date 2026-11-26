@@ -26,4 +26,19 @@ test.describe("Criar canal", () => {
     await expect(intro.getByText(`@${person.username} criou este canal em ${today}.`)).toBeVisible();
     await expect(intro.getByText("Metas do time")).toBeVisible();
   });
+
+  test("o diálogo não reabre ao voltar à página em que foi aberto", async ({
+    loggedInPage: page,
+    createdChannelName: name,
+  }) => {
+    const dialog = await openCreateChannel(page);
+    await dialog.getByLabel("Nome").fill(name);
+    await dialog.getByRole("button", { name: "Criar canal" }).click();
+    await expectChannel(page, name);
+
+    await page.goBack();
+
+    await expectChannel(page, "geral");
+    await expect(page.getByRole("dialog", { name: "Criar canal" })).toHaveCount(0);
+  });
 });

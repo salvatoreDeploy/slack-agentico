@@ -42,12 +42,16 @@ async function submitCreateChannel(previous: CreateChannelState, formData: FormD
 /**
  * "Adicionar canal", no fim da seção Canais, e o diálogo "Criar canal" que ela abre (spec da F02,
  * "BFF e telas"). O foco começa no Nome, fica preso no diálogo e volta a "Adicionar canal" ao
- * fechar. O diálogo fica aberto só no endereço em que foi aberto: no sucesso, a ação leva ao Canal
- * novo, e ele fecha.
+ * fechar. A troca de endereço fecha o diálogo: no sucesso, a ação leva ao Canal novo. A barra
+ * lateral fica no layout e não desmonta, então o fechamento zera o estado, para o diálogo não
+ * reabrir quando a Pessoa voltar ao endereço em que o abriu.
  */
 export function CreateChannelDialog() {
   const pathname = usePathname();
   const [openedAt, setOpenedAt] = useState<string | null>(null);
+  if (openedAt !== null && openedAt !== pathname) {
+    setOpenedAt(null);
+  }
 
   return (
     <Dialog open={openedAt === pathname} onOpenChange={(open) => setOpenedAt(open ? pathname : null)}>
@@ -131,7 +135,6 @@ function CreateChannelForm() {
             ref={descriptionRef}
             id={DESCRIPTION_ID}
             name="description"
-            maxLength={CHANNEL_DESCRIPTION_MAX_LENGTH}
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             aria-invalid={Boolean(fieldErrors?.description) || undefined}

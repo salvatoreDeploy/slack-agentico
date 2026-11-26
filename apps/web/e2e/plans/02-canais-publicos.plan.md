@@ -281,6 +281,9 @@ Expected: a página é `/canais/<id>` do Canal novo, o diálogo fechou, a linha 
 está selecionada, e o começo do Canal mostra "@<usuário> criou este canal em <hoje>." e a
 descrição.
 
+O mesmo arquivo tem um segundo teste: depois de criar o Canal, voltar à página anterior pelo
+navegador. Expected: o `#geral`, sem o diálogo, que não reabre no endereço em que foi aberto.
+
 ### 4.3 criar-canal-nome-vazio-ou-invalido
 
 **File:** `e2e/02-canais-publicos/criar-canal-nome-vazio-ou-invalido.spec.ts`

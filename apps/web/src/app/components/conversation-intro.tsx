@@ -1,6 +1,6 @@
 import type { Conversation } from "../services/chat-api";
 import { ChannelIcon } from "./channel-icon";
-import { LongDate } from "./long-date";
+import { CreatedByLine } from "./created-by-line";
 
 interface ConversationIntroProps {
   name: string;
@@ -22,11 +22,7 @@ export function ConversationIntro({ name, description, createdBy, createdAt }: C
         <ChannelIcon className="size-6" />
       </span>
       <h2 className="text-heading font-black text-fg">Este é o começo do canal #{name}</h2>
-      {createdBy && (
-        <p className="text-body text-fg-muted">
-          @{createdBy.username} criou este canal em <LongDate iso={createdAt} />.
-        </p>
-      )}
+      {createdBy && <CreatedByLine username={createdBy.username} createdAt={createdAt} />}
       {description && <p className="max-w-160 text-body text-fg-muted">{description}</p>}
     </section>
   );
