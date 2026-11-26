@@ -67,18 +67,30 @@ que o que se escreve nele não vaze.
 passou a precisar da conversa.
 
 - O cabeçalho do Canal privado tem a ação "Convidar pessoas", disponível a todos os Participantes.
-- O campo de Convite busca Pessoas pelo nome ou pelo @usuário enquanto a Pessoa digita, sem
-  diferenciar maiúsculas e acentos. Cada resultado mostra o nome e o @usuário.
+- O campo de Convite busca Pessoas enquanto a Pessoa digita, a partir do primeiro caractere, pelo
+  começo de qualquer palavra do nome ou do @usuário, sem diferenciar maiúsculas e acentos: "car"
+  acha "Ana Carla" e "@carlos". Mostra até 10 resultados, em ordem de nome, cada um com o nome e o
+  @usuário. Bots não aparecem.
 - A Pessoa escolhe uma ou várias Pessoas antes de confirmar e pode tirar uma escolha antes disso.
-- Quem já participa aparece na busca marcado como Participante e não pode ser escolhido.
-- O campo avisa que quem for convidado vê todo o histórico do Canal.
+- Quem já participa, inclusive a própria Pessoa, aparece na busca marcado como Participante e não
+  pode ser escolhido.
+- Não há limite de Pessoas escolhidas de uma vez nem de Participantes num Canal privado.
+- O campo avisa que quem for convidado vê todo o histórico do Canal. O aviso só aparece em
+  "Convidar pessoas", porque no diálogo de criar o Canal ainda não tem histórico.
+- Ao confirmar, o diálogo fecha, e quem convidou vê na hora o Aviso no histórico e a contagem de
+  Participantes com os novos. Os outros Participantes os veem ao reabrir o Canal ou recarregar a
+  página, como as Mensagens até a funcionalidade 05.
 - A Pessoa convidada passa a participar na hora, sem aceitar nem recusar, e vê o Canal na barra
   lateral quando recarrega a página, com todo o histórico anterior.
 - Cada Convite fica num Aviso no histórico, como "@ana convidou @bruno e @carla", visível a todos
-  os Participantes, no ponto em que aconteceu. O Aviso no histórico não é Mensagem: ninguém o edita
-  nem o apaga.
-- Os Convites feitos no diálogo de criação seguem as mesmas regras e também ganham o Aviso no
-  histórico.
+  os Participantes, no ponto em que aconteceu. O Aviso lista todos os convidados, sem encurtar, e
+  mostra o @usuário atual de cada Pessoa. Se uma Pessoa for apagada (o que só acontece fora do
+  produto), o Aviso continua no histórico, com "alguém" no lugar dela.
+- O Aviso no histórico não é Mensagem: ninguém o edita nem o apaga, ele não conta como Não lida
+  (funcionalidade 06) e não entra no Resumo (funcionalidade 11).
+- Os Convites feitos no diálogo de criação seguem as mesmas regras e ganham um Aviso só, com
+  todos os convidados, no começo do histórico. O Canal privado criado só com quem o criou não tem
+  Aviso, porque o começo do Canal já mostra quem o criou.
 
 **H4.** Como Participante de um Canal privado, quero ver quem participa dele para saber quem lê o
 que escrevo ali.
@@ -108,6 +120,8 @@ depender do mouse.
 - Aviso na tela ou do navegador para a Pessoa convidada: as notificações ficam com a funcionalidade
   08. O Canal aparecer na hora, sem recarregar, fica com a funcionalidade 05.
 - Bots em Canais privados e Pedidos a Agentes neles: ficam com a funcionalidade 10.
+- Convidar por Menção: quando a funcionalidade 06 chegar, mencionar quem não participa do Canal
+  privado não o convida nem o avisa. O Convite só acontece por "Convidar pessoas".
 - Papel de dono ou de administrador do Canal privado.
 - Renomear, editar a descrição, arquivar e apagar Canais.
 - Lista de Participantes no Canal público.
@@ -121,7 +135,8 @@ Não se aplica. Esta funcionalidade não envolve Agentes.
 
 | Risco | Mitigação |
 | --- | --- |
-| O nome ou a existência de um Canal privado vaza para quem não participa | O endereço responde como Conversa inexistente, a barra lateral só mostra os Canais privados da Pessoa, e o aviso de nome já usado não diz o tipo do Canal |
+| O nome ou a existência de um Canal privado vaza para quem não participa | O endereço responde como Conversa inexistente, e a barra lateral só mostra os Canais privados da Pessoa |
+| Quem tenta criar um Canal com o nome de um Canal privado descobre que existe um Canal com esse nome | Aceito: o nome é único em todo o Workspace (decidido na F02) para não haver dois `#nome` iguais. O aviso não diz se o Canal é público ou privado |
 | A Pessoa convida alguém por engano e não consegue desfazer, porque remover fica para a Fase 2 | As escolhas mostram o nome e o @usuário e podem ser tiradas antes de confirmar. Um comando do Operador para remover Participante é A definir, se o problema aparecer no uso |
 | O convidado lê Mensagens antigas que não eram para ele | O campo de Convite avisa que quem for convidado vê todo o histórico |
 | As Pessoas não percebem que foram convidadas, porque não há aviso | O Aviso no histórico e o Canal na barra lateral cobrem até a funcionalidade 05 trazer a barra lateral na hora e a 08 as notificações |
