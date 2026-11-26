@@ -56,6 +56,15 @@ _Evitar_: grupo, canal aberto
 Conversa que só as Pessoas convidadas veem e de que só elas participam.
 _Evitar_: grupo fechado, canal secreto
 
+**Participante**:
+Pessoa que participa de uma Conversa: num Canal público, todas as Pessoas; num Canal privado, quem
+o criou e quem foi convidado.
+_Evitar_: membro, integrante
+
+**Convite**:
+A inclusão de uma Pessoa num Canal privado por um Participante, que vale na hora, sem aceite.
+_Evitar_: adicionar, chamar, solicitação
+
 **Conversa direta**:
 Conversa entre duas Pessoas, ou entre uma Pessoa e um Bot.
 _Evitar_: DM (fora do rótulo da tela Atividade), 1:1, mensagem privada
@@ -63,6 +72,11 @@ _Evitar_: DM (fora do rótulo da tela Atividade), 1:1, mensagem privada
 **Mensagem**:
 O que uma Pessoa ou um Bot escreve numa Conversa; só quem escreveu pode editar ou apagar.
 _Evitar_: post, comentário
+
+**Aviso no histórico**:
+Uma linha no histórico da Conversa que registra um fato dela, como um Convite, e que ninguém
+escreveu, edita ou apaga; não é Mensagem.
+_Evitar_: mensagem de sistema, evento, log
 
 **Menção**:
 A citação de uma Pessoa ou de um Bot pelo @usuário dentro de uma Mensagem, que a avisa.
