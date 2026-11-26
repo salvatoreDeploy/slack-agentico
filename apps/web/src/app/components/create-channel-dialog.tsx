@@ -11,8 +11,8 @@ import { countGraphemes } from "../utils/graphemes";
 import { Button } from "./button";
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader } from "./dialog";
 import { Field, fieldDescribedBy } from "./field";
+import { ChannelIcon } from "./channel-icon";
 import { Input } from "./input";
-import { Textarea } from "./textarea";
 
 // Textos dos frames "Diálogos / Criar canal / <Estado>" do Pencil, donos do microtexto.
 const DESCRIPTION = "Canais organizam a conversa por assunto, projeto ou time.";
@@ -77,7 +77,7 @@ function CreateChannelForm() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
-  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const descriptionRef = useRef<HTMLInputElement>(null);
 
   const { fieldErrors } = state;
   const normalized = normalizeChannelName(name);
@@ -110,16 +110,20 @@ function CreateChannelForm() {
     <form onSubmit={handleSubmit} noValidate>
       <DialogBody>
         <Field htmlFor={NAME_ID} label="Nome" error={fieldErrors?.name} hint={nameHint}>
-          <Input
-            ref={nameRef}
-            id={NAME_ID}
-            name="name"
-            autoComplete="off"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            aria-invalid={Boolean(fieldErrors?.name) || undefined}
-            aria-describedby={fieldDescribedBy(NAME_ID, { error: fieldErrors?.name, hint: nameHint })}
-          />
+          <div className="relative">
+            <ChannelIcon className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-muted" />
+            <Input
+              ref={nameRef}
+              id={NAME_ID}
+              name="name"
+              autoComplete="off"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              aria-invalid={Boolean(fieldErrors?.name) || undefined}
+              aria-describedby={fieldDescribedBy(NAME_ID, { error: fieldErrors?.name, hint: nameHint })}
+              className="pl-8"
+            />
+          </div>
         </Field>
         <Field
           htmlFor={DESCRIPTION_ID}
@@ -131,7 +135,7 @@ function CreateChannelForm() {
           error={fieldErrors?.description}
           hint={descriptionCounter}
         >
-          <Textarea
+          <Input
             ref={descriptionRef}
             id={DESCRIPTION_ID}
             name="description"
@@ -152,7 +156,7 @@ function CreateChannelForm() {
       </DialogBody>
       <DialogFooter>
         <DialogClose asChild>
-          <Button type="button" variant="secondary">
+          <Button type="button" variant="secondary" disabled={isPending}>
             Cancelar
           </Button>
         </DialogClose>
