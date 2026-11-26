@@ -59,6 +59,31 @@ export class ConversationsRepository {
     );
   }
 
+  /**
+   * Grava o Canal; com o nome já usado, não grava e devolve `false`. O `ON CONFLICT DO NOTHING`
+   * deixa a transação de pé, sem o erro da violação do índice único.
+   */
+  async insertChannel(conversation: Conversation): Promise<boolean> {
+    const result = await this.conversations
+      .createQueryBuilder()
+      .insert()
+      .values(conversation)
+      .orIgnore()
+      .returning('id')
+      .execute();
+    return (result.raw as unknown[]).length > 0;
+  }
+
+  /** Grava a participação de todas as Pessoas na Conversa. */
+  async joinAllPeople(conversationId: string): Promise<void> {
+    await this.txHost.tx.query(
+      `INSERT INTO participations (conversation_id, person_id)
+       SELECT $1, id FROM people
+       ON CONFLICT DO NOTHING`,
+      [conversationId],
+    );
+  }
+
   /** Toma o lock das participações nos Canais públicos até o fim da transação atual. */
   async lockPublicChannelParticipations(): Promise<void> {
     await this.txHost.tx.query('SELECT pg_advisory_xact_lock($1)', [PUBLIC_CHANNEL_PARTICIPATIONS_LOCK]);

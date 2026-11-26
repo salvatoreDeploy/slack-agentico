@@ -15,5 +15,6 @@ export type ErrorCode =
   | 'email_taken'
   | 'username_taken'
   | 'client_message_id_conflict'
+  | 'channel_name_taken'
   | 'request_rejected'
   | 'internal_error';

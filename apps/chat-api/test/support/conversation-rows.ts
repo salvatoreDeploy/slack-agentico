@@ -28,3 +28,8 @@ export async function insertChannel(
   }
   return { id, name };
 }
+
+/** Apaga o Canal que o teste criou; as participações e as Mensagens dele vão junto. */
+export async function deleteChannel(id: string): Promise<void> {
+  await queryTestDatabase('DELETE FROM conversations WHERE id = $1', [id]);
+}

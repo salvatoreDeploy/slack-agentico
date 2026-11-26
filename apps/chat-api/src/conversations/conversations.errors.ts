@@ -11,3 +11,15 @@ export class ConversationNotFoundError extends DomainError {
     super('A conversa não existe ou você não participa dela.');
   }
 }
+
+/**
+ * Já existe um Canal com o nome normalizado. O `detail` é genérico, e a tela diz o nome (spec da
+ * F02, "Rotas da API do chat").
+ */
+export class ChannelNameTakenError extends DomainError {
+  readonly code = 'channel_name_taken';
+
+  constructor() {
+    super('Já existe um Canal com esse nome.');
+  }
+}

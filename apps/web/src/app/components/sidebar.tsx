@@ -1,6 +1,7 @@
 import type { Channel } from "../services/chat-api";
 import { channelPath } from "../utils/conversation-path";
 import { ChannelIcon } from "./channel-icon";
+import { CreateChannelDialog } from "./create-channel-dialog";
 import { SidebarRow } from "./sidebar-row";
 import { SidebarSection } from "./sidebar-section";
 
@@ -12,8 +13,8 @@ interface SidebarProps {
 }
 
 /**
- * Lista de conversas: o cabeçalho do Workspace e a seção Canais (F02). As Conversas diretas e os
- * Agentes entram com as F04 e F10, e a ação de criar Canal com a tarefa F02-T05.
+ * Lista de conversas: o cabeçalho do Workspace e a seção Canais (F02), com "Adicionar canal" no
+ * fim. As Conversas diretas e os Agentes entram com as F04 e F10.
  */
 export function Sidebar({ channels }: SidebarProps) {
   return (
@@ -30,6 +31,9 @@ export function Sidebar({ channels }: SidebarProps) {
               </SidebarRow>
             </li>
           ))}
+          <li>
+            <CreateChannelDialog />
+          </li>
         </SidebarSection>
       </nav>
     </aside>

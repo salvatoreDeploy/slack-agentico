@@ -12,7 +12,10 @@ este plano é dono dos passos de cada cenário. Cada tarefa de tela acrescenta o
 - `otherPerson`: uma segunda Pessoa, autora das Mensagens "de outra Pessoa";
 - `testChannel`: um Canal público com nome único, com a participação das Pessoas, apagado ao fim
   com as Mensagens;
-- `loggedInPage`: uma página que já entrou pelo formulário e está no `#geral`.
+- `loggedInPage`: uma página que já entrou pelo formulário e está no `#geral`;
+- `createdChannelName`: um nome único `e2e-criado-<id>` para o Canal criado pela tela, apagado ao
+  fim. A limpeza da `person` toma o lock das participações, para não correr com uma criação de
+  Canal de outro teste.
 
 Os atalhos `expectGeral` e `openChannel` conferem que a página está no Canal, com o título, e o
 `insertMessage` grava uma Mensagem direto no banco, com a data opcional.
@@ -248,3 +251,93 @@ Steps:
 2. Liberar o envio, levar o foco a "Tentar de novo" com Shift+Tab e apertar Enter.
 
 Expected: a Mensagem é confirmada, e o foco volta ao composer.
+
+## 4. Criar Canal (F02-T05)
+
+O atalho `openCreateChannel` abre o diálogo por "Adicionar canal" e espera o foco no Nome, e o
+`failCreateChannel` bloqueia o `POST` da Server Action. No 1.3, o `#geral` também confere que não
+tem a linha do criador.
+
+### 4.1 criar-canal-mostra-a-previa-do-nome
+
+**File:** `e2e/02-canais-publicos/criar-canal-mostra-a-previa-do-nome.spec.ts`
+
+Steps:
+1. Abrir o diálogo.
+2. Digitar "Café & Vendas" no Nome.
+
+Expected: no passo 1, a dica "Minúsculas, sem espaços. Ex.: planejamento-q4"; no passo 2, "O
+canal vai se chamar #cafe-vendas.".
+
+### 4.2 criar-canal-com-sucesso
+
+**File:** `e2e/02-canais-publicos/criar-canal-com-sucesso.spec.ts`
+
+Steps:
+1. Abrir o diálogo, preencher o nome da fixture e a descrição "Metas do time".
+2. Clicar em "Criar canal".
+
+Expected: a página é `/canais/<id>` do Canal novo, o diálogo fechou, a linha dele na barra lateral
+está selecionada, e o começo do Canal mostra "@<usuário> criou este canal em <hoje>." e a
+descrição.
+
+### 4.3 criar-canal-nome-vazio-ou-invalido
+
+**File:** `e2e/02-canais-publicos/criar-canal-nome-vazio-ou-invalido.spec.ts`
+
+Steps:
+1. Abrir o diálogo e clicar em "Criar canal" sem nome.
+2. Preencher "!!!" e clicar em "Criar canal".
+
+Expected: no passo 1, "Informe o nome do canal.", com o foco no Nome marcado como inválido; no
+passo 2, "Use letras ou números no nome."; nenhuma chamada da Server Action.
+
+### 4.4 criar-canal-nome-ja-usado
+
+**File:** `e2e/02-canais-publicos/criar-canal-nome-ja-usado.spec.ts`
+
+Steps:
+1. Abrir o diálogo, preencher "GERAL" e clicar em "Criar canal".
+
+Expected: "Já existe um canal chamado #geral." no campo, com o diálogo aberto, "GERAL" no Nome e o
+foco nele.
+
+### 4.5 criar-canal-falha-ao-criar
+
+**File:** `e2e/02-canais-publicos/criar-canal-falha-ao-criar.spec.ts`
+
+Steps:
+1. Bloquear a Server Action, abrir o diálogo, preencher o nome e a descrição.
+2. Clicar em "Criar canal".
+
+Expected: "Não foi possível criar o canal. Tente de novo." como alerta no corpo do diálogo, com os
+dois campos preenchidos.
+
+### 4.6 criar-canal-esc-devolve-o-foco
+
+**File:** `e2e/02-canais-publicos/criar-canal-esc-devolve-o-foco.spec.ts`
+
+Steps:
+1. Abrir o diálogo e apertar Esc.
+
+Expected: o diálogo fecha, e o foco está em "Adicionar canal".
+
+### 4.7 criar-canal-pelo-teclado
+
+**File:** `e2e/02-canais-publicos/criar-canal-pelo-teclado.spec.ts`
+
+Steps:
+1. Levar o foco a "Adicionar canal" com Tab e apertar Enter.
+2. Digitar o nome e apertar Enter.
+
+Expected: no passo 1, o diálogo abre com o foco no Nome; no passo 2, a Pessoa cai no Canal novo.
+
+### 4.8 acessibilidade-dialogo-criar-canal
+
+**File:** `e2e/02-canais-publicos/acessibilidade-dialogo-criar-canal.spec.ts`
+
+Steps:
+1. Abrir o diálogo com a prévia de "Café & Vendas" e rodar o axe-core.
+2. Abrir o diálogo, criar sem nome e rodar o axe-core com o erro no campo.
+
+Expected: nenhuma violação nos dois casos.

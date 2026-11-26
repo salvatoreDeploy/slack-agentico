@@ -12,5 +12,6 @@ test.describe("#geral", () => {
     await expect(page).toHaveTitle("#geral · Full Cycle Chat");
     await expect(intro.getByRole("heading", { name: "Este é o começo do canal #geral" })).toBeVisible();
     await expect(intro.getByText("Canal de todo o Workspace")).toBeVisible();
+    await expect(intro.getByText(/criou este canal/)).toHaveCount(0);
   });
 });

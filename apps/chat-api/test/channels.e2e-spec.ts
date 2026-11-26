@@ -1,10 +1,11 @@
 import { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { createPerson, login, sessionCookie } from './support/auth-routes.js';
-import { insertChannel } from './support/conversation-rows.js';
+import { deleteChannel, insertChannel } from './support/conversation-rows.js';
 import { createTestApp } from './support/create-test-app.js';
-import { closeTestDatabase } from './support/test-database.js';
+import { closeTestDatabase, queryTestDatabase } from './support/test-database.js';
 
 describe('GET /v1/channels (e2e)', () => {
   let app: INestApplication<App>;
@@ -49,5 +50,162 @@ describe('GET /v1/channels (e2e)', () => {
 
     expect(response.status).toBe(401);
     expect(response.body).toMatchObject({ code: 'unauthenticated' });
+  });
+});
+
+interface ChannelBody {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+describe('POST /v1/channels (e2e)', () => {
+  let app: INestApplication<App>;
+  const created: string[] = [];
+
+  beforeAll(async () => {
+    app = await createTestApp();
+  });
+
+  afterEach(async () => {
+    for (const id of created.splice(0)) {
+      await deleteChannel(id);
+    }
+  });
+
+  afterAll(async () => {
+    await app.close();
+    await closeTestDatabase();
+  });
+
+  /** Um sufixo para o nome de cada teste não colidir com o de outro. */
+  function suffix(): string {
+    return randomUUID().slice(-12);
+  }
+
+  function create(token: string, body: object) {
+    return request(app.getHttpServer()).post('/v1/channels').set('Cookie', sessionCookie(token)).send(body);
+  }
+
+  /** Cria o Canal no Arrange, falhando sozinho se não for criado, e o apaga no fim do teste. */
+  async function createChannel(token: string, name: string): Promise<ChannelBody> {
+    const channel = (await create(token, { name }).expect(201)).body as ChannelBody;
+    created.push(channel.id);
+    return channel;
+  }
+
+  it('cria o Canal com o nome normalizado e a descrição tratada', async () => {
+    const person = await createPerson(app);
+    const token = await login(app, person);
+    const id = suffix();
+
+    const response = await create(token, { name: `Café & Vendas ${id}!`, description: '  Metas\ndo time  ' });
+
+    expect(response.status).toBe(201);
+    const channel = response.body as ChannelBody;
+    created.push(channel.id);
+    expect(channel).toEqual({ id: expect.any(String), name: `cafe-vendas-${id}`, description: 'Metas do time' });
+    const conversation = await request(app.getHttpServer())
+      .get(`/v1/conversations/${channel.id}`)
+      .set('Cookie', sessionCookie(token));
+    expect(conversation.body).toMatchObject({
+      type: 'public_channel',
+      created_by: { id: person.id, name: person.name, username: person.username },
+    });
+  });
+
+  it('o Canal novo aparece na lista de outra Pessoa', async () => {
+    const other = await createPerson(app);
+    const otherToken = await login(app, other);
+    const token = await login(app, await createPerson(app));
+    const channel = await createChannel(token, `novo-${suffix()}`);
+
+    const response = await request(app.getHttpServer()).get('/v1/channels').set('Cookie', sessionCookie(otherToken));
+
+    expect((response.body as { channels: ChannelBody[] }).channels).toContainEqual(channel);
+  });
+
+  it.each([[{}], [{ description: '' }], [{ description: ' \n ' }], [{ description: null }]])(
+    'a descrição ausente ou vazia (%j) fica nula',
+    async (extra) => {
+      const token = await login(app, await createPerson(app));
+
+      const response = await create(token, { name: `sem-descricao-${suffix()}`, ...extra });
+
+      expect(response.status).toBe(201);
+      created.push((response.body as ChannelBody).id);
+      expect((response.body as ChannelBody).description).toBeNull();
+    },
+  );
+
+  it.each([['!!!'], ['a'.repeat(81)], [42]])('um nome vazio depois da normalização ou longo demais (%j) responde 400', async (name) => {
+    const token = await login(app, await createPerson(app));
+
+    const response = await create(token, { name });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({ code: 'validation_failed', errors: [{ field: 'name' }] });
+  });
+
+  it('80 caracteres no nome passam', async () => {
+    const token = await login(app, await createPerson(app));
+    const name = `${suffix()}${'a'.repeat(68)}`;
+
+    const response = await create(token, { name });
+
+    expect(response.status).toBe(201);
+    created.push((response.body as ChannelBody).id);
+    expect((response.body as ChannelBody).name).toBe(name);
+  });
+
+  it('uma descrição com 250 caracteres passa', async () => {
+    const token = await login(app, await createPerson(app));
+
+    const response = await create(token, { name: `descricao-${suffix()}`, description: 'é'.repeat(250) });
+
+    expect(response.status).toBe(201);
+    created.push((response.body as ChannelBody).id);
+  });
+
+  it('uma descrição longa demais responde 400', async () => {
+    const token = await login(app, await createPerson(app));
+
+    const response = await create(token, { name: `descricao-${suffix()}`, description: 'é'.repeat(251) });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({ code: 'validation_failed', errors: [{ field: 'description' }] });
+  });
+
+  it.each([['GERAL'], ['existente']])('um nome já usado (%s) responde 409 sem gravar nada', async (kind) => {
+    const token = await login(app, await createPerson(app));
+    const existing = kind === 'GERAL' ? 'GERAL' : (await createChannel(token, `Usado ${suffix()}`)).name.toUpperCase();
+    const before = await request(app.getHttpServer()).get('/v1/channels').set('Cookie', sessionCookie(token));
+
+    const response = await create(token, { name: existing, description: 'outra' });
+
+    expect(response.status).toBe(409);
+    expect(response.body).toMatchObject({ code: 'channel_name_taken', detail: 'Já existe um Canal com esse nome.' });
+    const after = await request(app.getHttpServer()).get('/v1/channels').set('Cookie', sessionCookie(token));
+    expect(after.body).toEqual(before.body);
+  });
+
+  it('duas criações simultâneas com o mesmo nome criam um Canal só', async () => {
+    const token = await login(app, await createPerson(app));
+    const name = `simultaneo-${suffix()}`;
+
+    const responses = await Promise.all([create(token, { name }), create(token, { name })]);
+
+    for (const response of responses.filter((r) => r.status === 201)) {
+      created.push((response.body as ChannelBody).id);
+    }
+    expect(responses.map((r) => r.status).toSorted((a, b) => a - b)).toEqual([201, 409]);
+    const rows = await queryTestDatabase('SELECT id FROM conversations WHERE name = $1', [name]);
+    expect(rows).toHaveLength(1);
+  });
+
+  it('responde 401 sem Sessão', async () => {
+    const response = await request(app.getHttpServer()).post('/v1/channels').send({ name: 'sem-sessao' });
+
+    expect(response.status).toBe(401);
   });
 });
