@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { v7 as uuidv7 } from 'uuid';
 import { ValidationFailedError } from '../common/errors/validation-failed.error.js';
 import { ConversationsService } from '../conversations/conversations.service.js';
-import { countGraphemes } from './graphemes.js';
+import { countGraphemes } from '../common/text/graphemes.js';
 import { ClientMessageIdConflictError } from './messages.errors.js';
 import { Message } from './message.entity.js';
 import { MessagesRepository } from './messages.repository.js';

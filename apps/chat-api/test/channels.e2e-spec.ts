@@ -83,15 +83,25 @@ describe('POST /v1/channels (e2e)', () => {
     return randomUUID().slice(-12);
   }
 
-  function create(token: string, body: object) {
-    return request(app.getHttpServer()).post('/v1/channels').set('Cookie', sessionCookie(token)).send(body);
+  /** `POST /v1/channels`; o Canal criado é apagado no fim do teste. */
+  async function create(token: string, body: object) {
+    const response = await request(app.getHttpServer())
+      .post('/v1/channels')
+      .set('Cookie', sessionCookie(token))
+      .send(body);
+    if (response.status === 201) {
+      created.push((response.body as ChannelBody).id);
+    }
+    return response;
   }
 
-  /** Cria o Canal no Arrange, falhando sozinho se não for criado, e o apaga no fim do teste. */
+  /** Cria o Canal no Arrange, falhando sozinho se não for criado. */
   async function createChannel(token: string, name: string): Promise<ChannelBody> {
-    const channel = (await create(token, { name }).expect(201)).body as ChannelBody;
-    created.push(channel.id);
-    return channel;
+    const response = await create(token, { name });
+    if (response.status !== 201) {
+      throw new Error(`O Canal do Arrange não foi criado: ${response.status}`);
+    }
+    return response.body as ChannelBody;
   }
 
   it('cria o Canal com o nome normalizado e a descrição tratada', async () => {
@@ -103,7 +113,6 @@ describe('POST /v1/channels (e2e)', () => {
 
     expect(response.status).toBe(201);
     const channel = response.body as ChannelBody;
-    created.push(channel.id);
     expect(channel).toEqual({ id: expect.any(String), name: `cafe-vendas-${id}`, description: 'Metas do time' });
     const conversation = await request(app.getHttpServer())
       .get(`/v1/conversations/${channel.id}`)
@@ -133,7 +142,6 @@ describe('POST /v1/channels (e2e)', () => {
       const response = await create(token, { name: `sem-descricao-${suffix()}`, ...extra });
 
       expect(response.status).toBe(201);
-      created.push((response.body as ChannelBody).id);
       expect((response.body as ChannelBody).description).toBeNull();
     },
   );
@@ -154,7 +162,6 @@ describe('POST /v1/channels (e2e)', () => {
     const response = await create(token, { name });
 
     expect(response.status).toBe(201);
-    created.push((response.body as ChannelBody).id);
     expect((response.body as ChannelBody).name).toBe(name);
   });
 
@@ -164,7 +171,6 @@ describe('POST /v1/channels (e2e)', () => {
     const response = await create(token, { name: `descricao-${suffix()}`, description: 'é'.repeat(250) });
 
     expect(response.status).toBe(201);
-    created.push((response.body as ChannelBody).id);
   });
 
   it('uma descrição longa demais responde 400', async () => {
@@ -176,15 +182,27 @@ describe('POST /v1/channels (e2e)', () => {
     expect(response.body).toMatchObject({ code: 'validation_failed', errors: [{ field: 'description' }] });
   });
 
-  it.each([['GERAL'], ['existente']])('um nome já usado (%s) responde 409 sem gravar nada', async (kind) => {
+  it('o nome do #geral responde 409 sem gravar nada', async () => {
     const token = await login(app, await createPerson(app));
-    const existing = kind === 'GERAL' ? 'GERAL' : (await createChannel(token, `Usado ${suffix()}`)).name.toUpperCase();
     const before = await request(app.getHttpServer()).get('/v1/channels').set('Cookie', sessionCookie(token));
 
-    const response = await create(token, { name: existing, description: 'outra' });
+    const response = await create(token, { name: 'GERAL', description: 'outra' });
 
     expect(response.status).toBe(409);
     expect(response.body).toMatchObject({ code: 'channel_name_taken', detail: 'Já existe um Canal com esse nome.' });
+    const after = await request(app.getHttpServer()).get('/v1/channels').set('Cookie', sessionCookie(token));
+    expect(after.body).toEqual(before.body);
+  });
+
+  it('o nome de um Canal criado antes responde 409 sem gravar nada', async () => {
+    const token = await login(app, await createPerson(app));
+    const existing = await createChannel(token, `Usado ${suffix()}`);
+    const before = await request(app.getHttpServer()).get('/v1/channels').set('Cookie', sessionCookie(token));
+
+    const response = await create(token, { name: existing.name.toUpperCase(), description: 'outra' });
+
+    expect(response.status).toBe(409);
+    expect(response.body).toMatchObject({ code: 'channel_name_taken' });
     const after = await request(app.getHttpServer()).get('/v1/channels').set('Cookie', sessionCookie(token));
     expect(after.body).toEqual(before.body);
   });
@@ -195,9 +213,6 @@ describe('POST /v1/channels (e2e)', () => {
 
     const responses = await Promise.all([create(token, { name }), create(token, { name })]);
 
-    for (const response of responses.filter((r) => r.status === 201)) {
-      created.push((response.body as ChannelBody).id);
-    }
     expect(responses.map((r) => r.status).toSorted((a, b) => a - b)).toEqual([201, 409]);
     const rows = await queryTestDatabase('SELECT id FROM conversations WHERE name = $1', [name]);
     expect(rows).toHaveLength(1);

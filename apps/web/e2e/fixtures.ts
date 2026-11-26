@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { test as base, expect, type Locator, type Page, type Route } from "@playwright/test";
+import { test as base, expect, type Locator, type Page, type Request, type Route } from "@playwright/test";
 import pg from "pg";
 
 /** Senha de teste das Pessoas criadas pela fixture `person`. */
@@ -198,24 +198,29 @@ export function historyOf(page: Page, channel: TestChannel): Locator {
   return page.getByRole("list", { name: `Mensagens de #${channel.name}` });
 }
 
-/**
- * Intercepta as chamadas de Server Action do Canal, que vão por `POST` ao endereço da página com
- * o cabeçalho `next-action`, como o envio de Mensagem. `handle` decide o destino de cada uma; o
- * resto segue normal.
- */
-export async function routeSend(
-  page: Page,
-  channel: TestChannel,
-  handle: (route: Route) => Promise<void>,
-): Promise<void> {
-  await page.route(`**/canais/${channel.id}`, async (route) => {
-    const request = route.request();
-    if (request.method() === "POST" && request.headers()["next-action"]) {
+/** Se a requisição é uma chamada de Server Action: um `POST` ao endereço da página, com o cabeçalho `next-action`. */
+export function isServerActionRequest(request: Request): boolean {
+  return request.method() === "POST" && Boolean(request.headers()["next-action"]);
+}
+
+/** Intercepta as chamadas de Server Action nos endereços de `url`; `handle` decide o destino de cada uma, e o resto segue normal. */
+export async function routeServerAction(page: Page, url: string, handle: (route: Route) => Promise<void>): Promise<void> {
+  await page.route(url, async (route) => {
+    if (isServerActionRequest(route.request())) {
       await handle(route);
     } else {
       await route.continue();
     }
   });
+}
+
+/** Intercepta as chamadas de Server Action do Canal, como o envio de Mensagem. */
+export async function routeSend(
+  page: Page,
+  channel: TestChannel,
+  handle: (route: Route) => Promise<void>,
+): Promise<void> {
+  await routeServerAction(page, `**/canais/${channel.id}`, handle);
 }
 
 /**
@@ -388,16 +393,9 @@ export async function openCreateChannel(page: Page): Promise<Locator> {
 }
 
 /**
- * Faz a criação de Canal falhar no caminho entre o navegador e o BFF: a chamada da Server Action,
- * um `POST` com o cabeçalho `next-action`, nunca chega.
+ * Faz a criação de Canal falhar no caminho entre o navegador e o BFF: a chamada da Server Action
+ * nunca chega, em qualquer página em que o diálogo esteja aberto.
  */
 export async function failCreateChannel(page: Page): Promise<void> {
-  await page.route("**/canais/*", async (route) => {
-    const request = route.request();
-    if (request.method() === "POST" && request.headers()["next-action"]) {
-      await route.abort();
-    } else {
-      await route.continue();
-    }
-  });
+  await routeServerAction(page, "**/*", (route) => route.abort());
 }

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { isUUID } from 'class-validator';
 import { v7 as uuidv7 } from 'uuid';
 import { FieldError, ValidationFailedError } from '../common/errors/validation-failed.error.js';
-import { countGraphemes } from '../messages/graphemes.js';
+import { countGraphemes } from '../common/text/graphemes.js';
 import {
   CHANNEL_DESCRIPTION_MAX_LENGTH,
   CHANNEL_NAME_MAX_LENGTH,
@@ -24,13 +24,10 @@ export class ConversationsService {
   }
 
   /**
-   * Cria o Canal público com o nome normalizado e a descrição tratada, e grava a participação de
-   * todas as Pessoas, sob o lock das participações, para uma conta criada ao mesmo tempo não ficar
-   * fora dele (spec da F02, "Conversas e participação"). O nome já usado é conferido pelo índice
-   * único, e não por uma leitura antes, para duas criações simultâneas não passarem as duas.
+   * Cria o Canal público com o nome normalizado e a descrição tratada (spec da F02, "Nome do
+   * Canal"). A entrada é conferida antes de abrir a transação, para o 400 não ocupar uma conexão.
    */
-  @Transactional()
-  async createChannel(personId: string, rawName: string, rawDescription?: string | null): Promise<Conversation> {
+  createChannel(personId: string, rawName: string, rawDescription?: string | null): Promise<Conversation> {
     const name = normalizeChannelName(rawName);
     const description = normalizeChannelDescription(rawDescription ?? '');
     const errors: FieldError[] = [];
@@ -49,6 +46,17 @@ export class ConversationsService {
     if (errors.length > 0) {
       throw new ValidationFailedError(errors);
     }
+    return this.insertChannel(personId, name, description);
+  }
+
+  /**
+   * Grava o Canal e a participação de todas as Pessoas, sob o lock das participações, para uma
+   * conta criada ao mesmo tempo não ficar fora dele (spec da F02, "Conversas e participação"). O
+   * nome já usado é conferido pelo índice único, e não por uma leitura antes, para duas criações
+   * simultâneas não passarem as duas.
+   */
+  @Transactional()
+  private async insertChannel(personId: string, name: string, description: string | null): Promise<Conversation> {
     await this.conversations.lockPublicChannelParticipations();
     const channel = new Conversation();
     channel.id = uuidv7();

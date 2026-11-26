@@ -18,10 +18,8 @@ import { SESSION_COOKIE } from "../utils/session-cookie-name";
 
 export interface CreateChannelState {
   fieldErrors?: CreateChannelFieldErrors;
-  /** A falha que o diálogo mostra no corpo, com `role="alert"`. */
+  /** A falha que o diálogo mostra no corpo, com `role="alert"`: rede, 5xx ou uma recusa inesperada. */
   error?: "unavailable";
-  /** Muda a cada envio respondido, para o diálogo reagir mesmo quando o erro se repete. */
-  attempt: number;
 }
 
 /**
@@ -29,12 +27,11 @@ export interface CreateChannelState {
  * cookie de sessão e, no sucesso, revalida a casca, para a barra lateral trazer o Canal novo, e
  * leva a Pessoa a ele. Um 401 apaga o cookie e manda para Entrar (LLD, "Sessão no cliente").
  */
-export async function createChannel(previous: CreateChannelState, formData: FormData): Promise<CreateChannelState> {
-  const attempt = previous.attempt + 1;
+export async function createChannel(_previous: CreateChannelState, formData: FormData): Promise<CreateChannelState> {
   const fields = readCreateChannelFields(formData);
   const fieldErrors = validateCreateChannel(fields);
   if (fieldErrors) {
-    return { fieldErrors, attempt };
+    return { fieldErrors };
   }
 
   const cookieStore = await cookies();
@@ -48,22 +45,11 @@ export async function createChannel(previous: CreateChannelState, formData: Form
       revalidatePath("/", "layout");
       redirect(channelPath(result.channel.id));
     case "name_taken":
-      return {
-        fieldErrors: { name: CREATE_CHANNEL_FIELD_MESSAGES.nameTaken(normalizeChannelName(fields.name)) },
-        attempt,
-      };
-    case "invalid":
-      return {
-        fieldErrors:
-          result.field === "description"
-            ? { description: CREATE_CHANNEL_FIELD_MESSAGES.descriptionLength }
-            : { name: CREATE_CHANNEL_FIELD_MESSAGES.nameInvalid },
-        attempt,
-      };
+      return { fieldErrors: { name: CREATE_CHANNEL_FIELD_MESSAGES.nameTaken(normalizeChannelName(fields.name)) } };
     case "unauthenticated":
       cookieStore.set(SESSION_COOKIE, "", { ...sessionCookieOptions(), maxAge: 0 });
       redirect(signInPath(HOME_PATH));
     case "unavailable":
-      return { error: "unavailable", attempt };
+      return { error: "unavailable" };
   }
 }

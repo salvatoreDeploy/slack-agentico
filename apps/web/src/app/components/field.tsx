@@ -20,6 +20,17 @@ export function fieldHintId(htmlFor: string): string {
   return `${htmlFor}-hint`;
 }
 
+/**
+ * O `aria-describedby` do controle: o erro, quando há, senão a dica, como o `Field` mostra; sem
+ * nenhum dos dois, `undefined`.
+ */
+export function fieldDescribedBy(htmlFor: string, { error, hint }: { error?: string; hint?: unknown }): string | undefined {
+  if (error) {
+    return fieldErrorId(htmlFor);
+  }
+  return hint ? fieldHintId(htmlFor) : undefined;
+}
+
 /** Rótulo, controle e dica ou erro (design system, "Comportamentos registrados"). */
 export function Field({ htmlFor, label, error, hint, children }: FieldProps) {
   return (

@@ -1,12 +1,12 @@
 // spec: e2e/plans/02-canais-publicos.plan.md
 // seed: e2e/seed.spec.ts
-import { expect, openCreateChannel, test } from "../fixtures";
+import { expect, isServerActionRequest, openCreateChannel, test } from "../fixtures";
 
 test.describe("Criar canal", () => {
   test("recusa o nome vazio e o sem letras nem números, sem enviar", async ({ loggedInPage: page }) => {
     let sent = 0;
     page.on("request", (request) => {
-      if (request.method() === "POST" && request.headers()["next-action"]) {
+      if (isServerActionRequest(request)) {
         sent++;
       }
     });

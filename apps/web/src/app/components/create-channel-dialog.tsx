@@ -6,16 +6,13 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { startTransition, useActionState, useEffect, useRef, useState, type FormEvent } from "react";
 import { createChannel, type CreateChannelState } from "../actions/create-channel";
 import { CHANNEL_DESCRIPTION_MAX_LENGTH, normalizeChannelName } from "../utils/channel-name";
-import {
-  readCreateChannelFields,
-  validateCreateChannel,
-  type CreateChannelFieldErrors,
-} from "../utils/create-channel-validation";
+import { readCreateChannelFields, validateCreateChannel } from "../utils/create-channel-validation";
 import { countGraphemes } from "../utils/graphemes";
 import { Button } from "./button";
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader } from "./dialog";
-import { Field, fieldErrorId, fieldHintId } from "./field";
+import { Field, fieldDescribedBy } from "./field";
 import { Input } from "./input";
+import { Textarea } from "./textarea";
 
 // Textos dos frames "Diálogos / Criar canal / <Estado>" do Pencil, donos do microtexto.
 const DESCRIPTION = "Canais organizam a conversa por assunto, projeto ou time.";
@@ -25,34 +22,35 @@ const FAILURE_MESSAGE = "Não foi possível criar o canal. Tente de novo.";
 const NAME_ID = "channel-name";
 const DESCRIPTION_ID = "channel-description";
 
-const INITIAL_STATE: CreateChannelState = { attempt: 0 };
-
-/** Se o envio do navegador para o BFF falha, o diálogo mostra a falha, sem cair no error boundary. */
+/**
+ * Confere os campos no navegador e só chama a ação com eles bons; a ação confere de novo. Se o
+ * envio do navegador para o BFF falha, o diálogo mostra a falha, sem cair no error boundary.
+ */
 async function submitCreateChannel(previous: CreateChannelState, formData: FormData): Promise<CreateChannelState> {
+  const fieldErrors = validateCreateChannel(readCreateChannelFields(formData));
+  if (fieldErrors) {
+    return { fieldErrors };
+  }
   try {
     return await createChannel(previous, formData);
   } catch (error) {
     unstable_rethrow(error);
-    return { error: "unavailable", attempt: previous.attempt + 1 };
+    return { error: "unavailable" };
   }
 }
 
 /**
  * "Adicionar canal", no fim da seção Canais, e o diálogo "Criar canal" que ela abre (spec da F02,
  * "BFF e telas"). O foco começa no Nome, fica preso no diálogo e volta a "Adicionar canal" ao
- * fechar. No sucesso, a ação leva ao Canal novo, e o diálogo fecha com a troca de endereço.
+ * fechar. O diálogo fica aberto só no endereço em que foi aberto: no sucesso, a ação leva ao Canal
+ * novo, e ele fecha.
  */
 export function CreateChannelDialog() {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const [openedAt, setOpenedAt] = useState(pathname);
-  if (openedAt !== pathname) {
-    setOpenedAt(pathname);
-    setOpen(false);
-  }
+  const [openedAt, setOpenedAt] = useState<string | null>(null);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={openedAt === pathname} onOpenChange={(open) => setOpenedAt(open ? pathname : null)}>
       <DialogPrimitive.Trigger className="flex h-7 w-full items-center gap-2 rounded-item px-2 text-body text-sidebar-fg hover:bg-sidebar-hover">
         <Plus className="size-4" aria-hidden />
         <span className="truncate">Adicionar canal</span>
@@ -71,23 +69,26 @@ export function CreateChannelDialog() {
 }
 
 function CreateChannelForm() {
-  const [state, formAction, isPending] = useActionState(submitCreateChannel, INITIAL_STATE);
-  const [clientErrors, setClientErrors] = useState<CreateChannelFieldErrors | undefined>();
+  const [state, formAction, isPending] = useActionState(submitCreateChannel, {});
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
-  // A ação também confere os campos; os avisos dela aparecem se o cliente deixar passar.
-  const fieldErrors = clientErrors ?? state.fieldErrors;
+  const { fieldErrors } = state;
   const normalized = normalizeChannelName(name);
   const nameHint = normalized ? `O canal vai se chamar #${normalized}.` : NAME_HINT;
+  const descriptionCounter = (
+    <span className="flex justify-end">
+      {countGraphemes(description)}/{CHANNEL_DESCRIPTION_MAX_LENGTH}
+    </span>
+  );
 
+  // O foco vai para o primeiro campo inválido, a cada resposta, inclusive quando o erro se repete.
   useEffect(() => {
     if (state.fieldErrors) {
-      focusFirstInvalid(state.fieldErrors, nameRef.current, descriptionRef.current);
+      (state.fieldErrors.name ? nameRef : descriptionRef).current?.focus();
     }
-    // Reage a cada resposta da ação, inclusive quando o erro se repete.
   }, [state]);
 
   /**
@@ -97,16 +98,7 @@ function CreateChannelForm() {
    */
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isPending) {
-      return;
-    }
     const formData = new FormData(event.currentTarget);
-    const errors = validateCreateChannel(readCreateChannelFields(formData));
-    setClientErrors(errors);
-    if (errors) {
-      focusFirstInvalid(errors, nameRef.current, descriptionRef.current);
-      return;
-    }
     startTransition(() => formAction(formData));
   }
 
@@ -122,7 +114,7 @@ function CreateChannelForm() {
             value={name}
             onChange={(event) => setName(event.target.value)}
             aria-invalid={Boolean(fieldErrors?.name) || undefined}
-            aria-describedby={fieldErrors?.name ? fieldErrorId(NAME_ID) : fieldHintId(NAME_ID)}
+            aria-describedby={fieldDescribedBy(NAME_ID, { error: fieldErrors?.name, hint: nameHint })}
           />
         </Field>
         <Field
@@ -133,13 +125,9 @@ function CreateChannelForm() {
             </>
           }
           error={fieldErrors?.description}
-          hint={
-            <span className="flex justify-end">
-              {countGraphemes(description)}/{CHANNEL_DESCRIPTION_MAX_LENGTH}
-            </span>
-          }
+          hint={descriptionCounter}
         >
-          <textarea
+          <Textarea
             ref={descriptionRef}
             id={DESCRIPTION_ID}
             name="description"
@@ -147,8 +135,10 @@ function CreateChannelForm() {
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             aria-invalid={Boolean(fieldErrors?.description) || undefined}
-            aria-describedby={fieldErrors?.description ? fieldErrorId(DESCRIPTION_ID) : fieldHintId(DESCRIPTION_ID)}
-            className="min-h-20 w-full resize-none rounded-control border border-border-strong bg-surface px-3 py-2 text-body text-fg placeholder:text-fg-muted focus-visible:border-focus focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus/30 aria-invalid:border-danger aria-invalid:focus-visible:ring-danger/25"
+            aria-describedby={fieldDescribedBy(DESCRIPTION_ID, {
+              error: fieldErrors?.description,
+              hint: descriptionCounter,
+            })}
           />
         </Field>
         {state.error === "unavailable" && (
@@ -169,13 +159,4 @@ function CreateChannelForm() {
       </DialogFooter>
     </form>
   );
-}
-
-/** O foco vai para o primeiro campo inválido, na ordem do diálogo. */
-function focusFirstInvalid(
-  errors: CreateChannelFieldErrors,
-  name: HTMLInputElement | null,
-  description: HTMLTextAreaElement | null,
-) {
-  (errors.name ? name : description)?.focus();
 }

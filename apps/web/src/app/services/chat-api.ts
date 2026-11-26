@@ -294,9 +294,8 @@ export async function sendMessage(
 export type CreateChannelResult =
   | { status: "created"; channel: Channel }
   | { status: "name_taken" }
-  /** A API recusou um campo (400) que o BFF deixou passar. */
-  | { status: "invalid"; field: "name" | "description" }
   | { status: "unauthenticated" }
+  /** Rede, 5xx ou uma recusa que o BFF não esperava, como um 400 depois da validação dele. */
   | { status: "unavailable" };
 
 /**
@@ -318,10 +317,6 @@ export async function createChannel(token: string, name: string, description: st
   switch (response.status) {
     case 201:
       return { status: "created", channel: (await response.json()) as Channel };
-    case 400: {
-      const body = (await response.json().catch(() => ({}))) as { errors?: { field: string }[] };
-      return { status: "invalid", field: body.errors?.some((e) => e.field === "description") ? "description" : "name" };
-    }
     case 401:
       return { status: "unauthenticated" };
     case 409:

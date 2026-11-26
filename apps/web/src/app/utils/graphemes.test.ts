@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { countGraphemes } from "./graphemes";
 
-// A mesma tabela do teste da API (`apps/chat-api/src/messages/graphemes.spec.ts`): as duas pontas
+// A mesma tabela do teste da API (`apps/chat-api/src/common/text/graphemes.spec.ts`): as duas pontas
 // têm de contar igual (spec da F02, "Mensagens").
 describe("countGraphemes", () => {
   it.each([
