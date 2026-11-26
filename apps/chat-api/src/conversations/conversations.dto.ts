@@ -1,4 +1,5 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PickType } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
 import { Person } from '../people/person.entity.js';
 import { PersonResponse } from '../sessions/sessions.dto.js';
 import { Conversation, CONVERSATION_TYPES, type ConversationType } from './conversation.entity.js';
@@ -24,6 +25,22 @@ export class ChannelResponse {
       description: conversation.description,
     };
   }
+}
+
+/** Entrada de `POST /v1/channels`. O nome e a descrição são tratados pela API. */
+export class CreateChannelDto {
+  @ApiProperty({ type: String, example: 'Café & Vendas', description: 'Normalizado pela API; de 1 a 80 caracteres depois disso' })
+  @IsString()
+  name: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description: 'Quebras de linha viram espaço e as pontas são cortadas; vazia, fica nula; até 250 caracteres',
+  })
+  @IsOptional()
+  @IsString()
+  description?: string | null;
 }
 
 /** Saída de `GET /v1/channels`. */

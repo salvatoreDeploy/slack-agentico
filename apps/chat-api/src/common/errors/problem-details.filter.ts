@@ -23,6 +23,7 @@ const ERROR_STATUS: Record<ErrorCode, number> = {
   email_taken: 409,
   username_taken: 409,
   client_message_id_conflict: 409,
+  channel_name_taken: 409,
   request_rejected: 400,
   internal_error: 500,
 };

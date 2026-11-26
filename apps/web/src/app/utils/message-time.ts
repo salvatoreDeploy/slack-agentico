@@ -27,5 +27,10 @@ export function dayLabel(date: Date, now: Date): string {
   if (key === dayKey(yesterday)) {
     return "Ontem";
   }
+  return formatLongDate(date, now);
+}
+
+/** A data por extenso: "20 de novembro" e, num ano que não é o de `now`, "20 de novembro de 2025". */
+export function formatLongDate(date: Date, now: Date): string {
   return (date.getFullYear() === now.getFullYear() ? DAY_FORMAT : DAY_WITH_YEAR_FORMAT).format(date);
 }

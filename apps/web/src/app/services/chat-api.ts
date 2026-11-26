@@ -290,3 +290,38 @@ export async function sendMessage(
   }
   return { status: "failed" };
 }
+
+export type CreateChannelResult =
+  | { status: "created"; channel: Channel }
+  | { status: "name_taken" }
+  | { status: "unauthenticated" }
+  /** Rede, 5xx ou uma recusa que o BFF não esperava, como um 400 depois da validação dele. */
+  | { status: "unavailable" };
+
+/**
+ * Cria o Canal público: `POST /v1/channels`, com o cookie de sessão repassado. Nunca lança; a
+ * Server Action traduz cada resultado num estado do diálogo.
+ */
+export async function createChannel(token: string, name: string, description: string): Promise<CreateChannelResult> {
+  let response: Response;
+  try {
+    response = await fetch(url("/v1/channels"), {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie: `${SESSION_COOKIE}=${token}` },
+      body: JSON.stringify({ name, description }),
+      cache: "no-store",
+    });
+  } catch {
+    return { status: "unavailable" };
+  }
+  switch (response.status) {
+    case 201:
+      return { status: "created", channel: (await response.json()) as Channel };
+    case 401:
+      return { status: "unauthenticated" };
+    case 409:
+      return { status: "name_taken" };
+    default:
+      return { status: "unavailable" };
+  }
+}

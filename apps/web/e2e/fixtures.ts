@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { test as base, expect, type Locator, type Page, type Route } from "@playwright/test";
+import { test as base, expect, type Locator, type Page, type Request, type Route } from "@playwright/test";
 import pg from "pg";
 
 /** Senha de teste das Pessoas criadas pela fixture `person`. */
@@ -38,6 +38,11 @@ interface Fixtures {
   testChannel: TestChannel;
   /** Uma página que já entrou pelo formulário da tela Entrar, com a Pessoa da fixture. */
   loggedInPage: Page;
+  /**
+   * Um nome único, já normalizado, para o Canal que o teste cria pela tela. O Canal com esse nome é
+   * apagado ao fim, com as participações e as Mensagens.
+   */
+  createdChannelName: string;
 }
 
 interface WorkerFixtures {
@@ -90,6 +95,12 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
     await expectGeral(page);
     await provide(page);
   },
+
+  createdChannelName: async ({ database }, provide) => {
+    const name = `e2e-criado-${randomUUID().slice(-12)}`;
+    await provide(name);
+    await database.query("DELETE FROM conversations WHERE name = $1", [name]);
+  },
 });
 
 export { expect };
@@ -125,12 +136,32 @@ async function insertPerson(database: pg.Pool, name: string): Promise<TestPerson
 }
 
 /**
+ * A chave do lock consultivo das participações nos Canais públicos, copiada do
+ * `PUBLIC_CHANNEL_PARTICIPATIONS_LOCK` do `ConversationsRepository` da API do chat.
+ */
+const PUBLIC_CHANNEL_PARTICIPATIONS_LOCK = 2_024_0201;
+
+/**
  * Apaga a Pessoa. As tentativas de login não a referenciam e saem à parte; as Sessões, as
- * participações e as Mensagens dela saem junto (ON DELETE CASCADE).
+ * participações e as Mensagens dela saem junto (ON DELETE CASCADE). O `DELETE` toma o lock das
+ * participações, como quem as grava (spec da F02, "Conversas e participação"): sem ele, um Canal
+ * criado pela tela em outro teste podia gravar a participação desta Pessoa enquanto ela é apagada,
+ * e a chave estrangeira falhava.
  */
 async function deletePerson(database: pg.Pool, person: TestPerson): Promise<void> {
   await database.query("DELETE FROM login_attempts WHERE email = $1", [person.email]);
-  await database.query("DELETE FROM people WHERE id = $1", [person.id]);
+  const client = await database.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock($1)", [PUBLIC_CHANNEL_PARTICIPATIONS_LOCK]);
+    await client.query("DELETE FROM people WHERE id = $1", [person.id]);
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 /**
@@ -167,24 +198,29 @@ export function historyOf(page: Page, channel: TestChannel): Locator {
   return page.getByRole("list", { name: `Mensagens de #${channel.name}` });
 }
 
-/**
- * Intercepta as chamadas de Server Action do Canal, que vão por `POST` ao endereço da página com
- * o cabeçalho `next-action`, como o envio de Mensagem. `handle` decide o destino de cada uma; o
- * resto segue normal.
- */
-export async function routeSend(
-  page: Page,
-  channel: TestChannel,
-  handle: (route: Route) => Promise<void>,
-): Promise<void> {
-  await page.route(`**/canais/${channel.id}`, async (route) => {
-    const request = route.request();
-    if (request.method() === "POST" && request.headers()["next-action"]) {
+/** Se a requisição é uma chamada de Server Action: um `POST` ao endereço da página, com o cabeçalho `next-action`. */
+export function isServerActionRequest(request: Request): boolean {
+  return request.method() === "POST" && Boolean(request.headers()["next-action"]);
+}
+
+/** Intercepta as chamadas de Server Action nos endereços de `url`; `handle` decide o destino de cada uma, e o resto segue normal. */
+export async function routeServerAction(page: Page, url: string, handle: (route: Route) => Promise<void>): Promise<void> {
+  await page.route(url, async (route) => {
+    if (isServerActionRequest(route.request())) {
       await handle(route);
     } else {
       await route.continue();
     }
   });
+}
+
+/** Intercepta as chamadas de Server Action do Canal, como o envio de Mensagem. */
+export async function routeSend(
+  page: Page,
+  channel: TestChannel,
+  handle: (route: Route) => Promise<void>,
+): Promise<void> {
+  await routeServerAction(page, `**/canais/${channel.id}`, handle);
 }
 
 /**
@@ -341,4 +377,25 @@ export async function openChangePassword(page: Page, person: TestPerson): Promis
   await page.getByRole("button", { name: `Menu de ${person.name}` }).click();
   await page.getByRole("menuitem", { name: "Trocar senha" }).click();
   await expect(page.getByLabel("Senha atual")).toBeFocused();
+}
+
+/** "Adicionar canal", na seção Canais da barra lateral. */
+export function addChannelButton(page: Page): Locator {
+  return page.getByRole("region", { name: "Canais" }).getByRole("button", { name: "Adicionar canal" });
+}
+
+/** Abre o diálogo "Criar canal" pela barra lateral e espera o foco no Nome. */
+export async function openCreateChannel(page: Page): Promise<Locator> {
+  await addChannelButton(page).click();
+  const dialog = page.getByRole("dialog", { name: "Criar canal" });
+  await expect(dialog.getByLabel("Nome")).toBeFocused();
+  return dialog;
+}
+
+/**
+ * Faz a criação de Canal falhar no caminho entre o navegador e o BFF: a chamada da Server Action
+ * nunca chega, em qualquer página em que o diálogo esteja aberto.
+ */
+export async function failCreateChannel(page: Page): Promise<void> {
+  await routeServerAction(page, "**/*", (route) => route.abort());
 }

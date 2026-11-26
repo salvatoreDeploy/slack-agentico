@@ -24,7 +24,7 @@ criado.
 | # | Funcionalidade | Ao final, a pessoa consegue… | Depende de | Status |
 | --- | --- | --- | --- | --- |
 | 01 | [Entrar e sair](funcionalidades/01-entrar-e-sair/) | entrar com e-mail e senha numa conta criada pela empresa e sair; a sessão vale no navegador todo | — | concluída |
-| 02 | [Canais públicos](funcionalidades/02-canais-publicos/) | criar um canal público e conversar nele com todo o workspace | 01 | em andamento |
+| 02 | [Canais públicos](funcionalidades/02-canais-publicos/) | criar um canal público e conversar nele com todo o workspace | 01 | concluída |
 | 03 | Canais privados | criar um canal privado, convidar pessoas e conversar só com quem foi convidado | 02 | planejada |
 | 04 | Conversas diretas e perfis | buscar alguém por nome ou @usuário, ver o perfil e abrir uma Conversa direta | 02 | planejada |
 | 05 | Tempo real | ver as mensagens chegarem na hora, o aviso de "digitando", o histórico paginado e recuperar o que perdeu numa queda de conexão | 02 | planejada |

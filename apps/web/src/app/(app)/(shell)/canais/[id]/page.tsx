@@ -55,7 +55,12 @@ export default async function ChannelPage({ params }: PageProps<"/canais/[id]">)
         initialMessages={page.messages}
         intro={
           page.hasMore ? null : (
-            <ConversationIntro name={conversation.name} description={conversation.description} />
+            <ConversationIntro
+              name={conversation.name}
+              description={conversation.description}
+              createdBy={conversation.created_by}
+              createdAt={conversation.created_at}
+            />
           )
         }
       />
