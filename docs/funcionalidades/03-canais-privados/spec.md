@@ -171,6 +171,11 @@ tarefa de tela, seguindo o `docs/design-system.md`, "Fluxo com a ferramenta de d
 - **Fora da F03:** o `Conversa / Sobreposições / Membros do canal`, do Canal público, que o PRD
   deixa fora.
 
+Depois da tarefa, os frames passam a se chamar `Conversa / Sobreposições / Participantes do canal
+privado` e `Diálogos / Convidar pessoas / <Estado>` (`Escolhidas`, `Ninguém encontrado`,
+`Enviando`, `Falha ao convidar` e `Pela lista de Participantes`), e o Aviso fica em `Conversa /
+Lista / Aviso no histórico` (decidido na F03-T01).
+
 ### Tempo real
 
 A F03 não sobe o WebSocket. O Canal privado aparece na barra lateral da Pessoa convidada, e o

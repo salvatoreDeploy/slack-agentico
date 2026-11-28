@@ -1,6 +1,6 @@
 # 01: Design da F03 no Pencil
 
-**Status:** a fazer
+**Status:** em andamento
 
 **O que construir:** os frames do Canal privado no `slack-ia.pen` ajustados à spec, para as tarefas
 de tela terem o desenho e o microtexto de cada estado antes do código. A tarefa ajusta os frames
@@ -15,7 +15,8 @@ Fonte: spec da F03, "Design no Pencil" e "BFF e telas"; PRD da F03, H1 a H5.
   - "Adicionar pessoas", "Adicionar" e "Membros" viram "Convidar pessoas", "Convidar" e
     "Participantes", no microtexto e nos nomes dos frames;
   - o diálogo de Convite tem os estados Escolhidas, Ninguém encontrado, Enviando e Falha ao
-    convidar, com o aviso de que quem for convidado vê todo o histórico do Canal;
+    convidar, e o frame do modo normal tem o aviso de que quem for convidado vê todo o histórico
+    do Canal;
   - a lista "Participantes de #nome" tem "(você)" na própria Pessoa e o botão "Convidar pessoas".
 - [ ] **CA2** · Os resultados da busca mostram só o nome e o @usuário, sem cargo nem Presença, e
   quem já participa aparece com a marca "Participante".
