@@ -22,13 +22,14 @@
 
 ### Fluxo principal
 
-1. No diálogo "Criar canal", a Pessoa liga "Tornar privado" e, se quiser, busca e escolhe as
-   Pessoas que vai convidar.
-2. Ela cria o Canal e cai direto nele. O Canal aparece na barra lateral dela com o cadeado no lugar
-   do `#`.
+1. No diálogo "Criar canal", a Pessoa liga "Tornar privado" e cria o Canal.
+2. Ela cai direto no Canal novo, que aparece na barra lateral dela com o cadeado no lugar do `#`, e
+   o diálogo "Convidar pessoas" abre em seguida. Ela busca e escolhe quem convidar, ou pula esse
+   passo.
 3. As Pessoas convidadas passam a participar na hora e veem o Canal na barra lateral quando
    recarregam a página. As outras não o veem.
-4. Qualquer Participante convida mais Pessoas pelo cabeçalho do Canal. Cada Convite fica num Aviso
+4. Qualquer Participante convida mais Pessoas pelo cabeçalho do Canal, a partir da lista de
+   Participantes. Cada Convite fica num Aviso
    no histórico.
 5. O cabeçalho mostra quantas Pessoas participam e abre a lista delas.
 
@@ -39,8 +40,8 @@ precisa saber dele.
 
 - O diálogo "Criar canal" tem a opção "Tornar privado", desligada por padrão, com a explicação "Só
   pessoas convidadas veem e participam de um canal privado.".
-- Com a opção ligada, o diálogo mostra o campo "Convidar pessoas", opcional. A Pessoa pode criar o
-  Canal privado só com ela mesma.
+- Depois de criar o Canal privado, a Pessoa cai nele e o diálogo "Convidar pessoas" abre em
+  seguida, com a opção "Pular". Pulando, o Canal fica só com ela.
 - O nome segue as regras do Canal público (PRD da F02, H3): é normalizado enquanto a Pessoa
   digita, tem até 80 caracteres e é único entre todos os Canais do Workspace, públicos e privados.
 - Com um nome já usado, o diálogo avisa que já existe um Canal com esse nome, sem dizer se ele é
@@ -66,7 +67,8 @@ que o que se escreve nele não vaze.
 **H3.** Como Participante de um Canal privado, quero convidar outras Pessoas para trazer quem
 passou a precisar da conversa.
 
-- O cabeçalho do Canal privado tem a ação "Convidar pessoas", disponível a todos os Participantes.
+- O cabeçalho do Canal privado leva à lista de Participantes, que tem a ação "Convidar pessoas",
+  disponível a todos os Participantes.
 - O campo de Convite busca Pessoas enquanto a Pessoa digita, a partir do primeiro caractere, pelo
   começo de qualquer palavra do nome ou do @usuário, sem diferenciar maiúsculas e acentos: "car"
   acha "Ana Carla" e "@carlos". Mostra até 10 resultados, em ordem de nome, cada um com o nome e o
@@ -75,8 +77,8 @@ passou a precisar da conversa.
 - Quem já participa, inclusive a própria Pessoa, aparece na busca marcado como Participante e não
   pode ser escolhido.
 - Não há limite de Pessoas escolhidas de uma vez nem de Participantes num Canal privado.
-- O campo avisa que quem for convidado vê todo o histórico do Canal. O aviso só aparece em
-  "Convidar pessoas", porque no diálogo de criar o Canal ainda não tem histórico.
+- O diálogo avisa que quem for convidado vê todo o histórico do Canal. O aviso não aparece no
+  diálogo que abre logo depois de criar o Canal, porque ele ainda não tem histórico.
 - Ao confirmar, o diálogo fecha, e quem convidou vê na hora o Aviso no histórico e a contagem de
   Participantes com os novos. Os outros Participantes os veem ao reabrir o Canal ou recarregar a
   página, como as Mensagens até a funcionalidade 05.
@@ -88,8 +90,8 @@ passou a precisar da conversa.
   produto), o Aviso continua no histórico, com "alguém" no lugar dela.
 - O Aviso no histórico não é Mensagem: ninguém o edita nem o apaga, ele não conta como Não lida
   (funcionalidade 06) e não entra no Resumo (funcionalidade 11).
-- Os Convites feitos no diálogo de criação seguem as mesmas regras e ganham um Aviso só, com
-  todos os convidados, no começo do histórico. O Canal privado criado só com quem o criou não tem
+- Os Convites feitos no diálogo que abre logo depois de criar o Canal seguem as mesmas regras e
+  ganham um Aviso só, com todos os convidados, no começo do histórico. O Canal privado criado só com quem o criou não tem
   Aviso, porque o começo do Canal já mostra quem o criou.
 
 **H4.** Como Participante de um Canal privado, quero ver quem participa dele para saber quem lê o
@@ -107,7 +109,7 @@ depender do mouse.
 - "Tornar privado" liga e desliga pelo teclado.
 - Na busca de Pessoas, as setas percorrem os resultados, Enter escolhe, e as escolhas podem ser
   tiradas pelo teclado.
-- "Convidar pessoas" e a lista de Participantes abrem e fecham pelo teclado (Esc fecha), e o foco
+- "Convidar pessoas", "Pular" e a lista de Participantes abrem e fecham pelo teclado (Esc fecha), e o foco
   volta ao botão que os abriu.
 - Os textos e os avisos da tela estão em português do Brasil.
 
@@ -138,6 +140,6 @@ Não se aplica. Esta funcionalidade não envolve Agentes.
 | O nome ou a existência de um Canal privado vaza para quem não participa | O endereço responde como Conversa inexistente, e a barra lateral só mostra os Canais privados da Pessoa |
 | Quem tenta criar um Canal com o nome de um Canal privado descobre que existe um Canal com esse nome | Aceito: o nome é único em todo o Workspace (decidido na F02) para não haver dois `#nome` iguais. O aviso não diz se o Canal é público ou privado |
 | A Pessoa convida alguém por engano e não consegue desfazer, porque remover fica para a Fase 2 | As escolhas mostram o nome e o @usuário e podem ser tiradas antes de confirmar. Um comando do Operador para remover Participante é A definir, se o problema aparecer no uso |
-| O convidado lê Mensagens antigas que não eram para ele | O campo de Convite avisa que quem for convidado vê todo o histórico |
+| O convidado lê Mensagens antigas que não eram para ele | O diálogo de Convite avisa que quem for convidado vê todo o histórico |
 | As Pessoas não percebem que foram convidadas, porque não há aviso | O Aviso no histórico e o Canal na barra lateral cobrem até a funcionalidade 05 trazer a barra lateral na hora e a 08 as notificações |
 | A Pessoa escreve num Canal privado achando que é público, ou o contrário | O cadeado no lugar do `#` na barra lateral e no cabeçalho, e a contagem de Participantes só no Canal privado |
